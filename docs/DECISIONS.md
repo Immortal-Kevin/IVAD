@@ -37,3 +37,13 @@ YOLO26 与 YOLO11 输出与 NMS 分别适配；原始张量对齐和最终检测
 - UI中文，Qt翻译入口保留；显示时间为Asia/Shanghai（UTC+8），存储时间UTC。正式安装包/备份恢复GUI/长期负载/商用许可后续单独验收。
 
 官方工程参考（2026-10-13访问）：Qt线程/高DPI文档 https://doc.qt.io/qtforpython-6/overviews/qtdoc-highdpi.html ，Alembic迁移/共享连接 https://alembic.sqlalchemy.org/en/latest/cookbook.html 。版本安装来源与文件hash保存在artifacts/p1/install.json。
+
+## P2已批准的实施决策（2026-10-13）
+
+- 用户提供P2正式指令，授权当前阶段增量业务；P3–P6继续严格门禁。P0/P1报告原址保留，当前进展以P2报告说明。
+- GUI原venv仅追加av15.1.0、Pillow11.2.1、numpy2.2.5、PyYAML6.0.2；原有版本与P0 GPU清单全部一致，pip来源hash见P2_DEPENDENCIES.md。
+- 已真实评估QtMultimedia播放；选共享PyAV时间戳解码保证播放/逐帧/抽帧一致。拒绝缺/倒退/重复PTS和未知时长，真实拍摄日期未知保留，不以FPS推算；不安装系统ffmpeg或改PATH。
+- 人工真值使用原图像素，ROI独立归一化，稳定类别UUID与修订快照，简单多边形真实分割，不用box伪Mask。Detection转换polygon外接框显式警告并完整保存旁车。
+- 冻结只接受已人工审核，来源组划分优先于精确比例。正常空目标可以是负样本，未知/异常空目标不得默认为正常；SHA256重复去重，近重复只警告，避免自动删除关键异常。
+- 文件和数据库不是分布式事务。可捕获异常回退.partial，保留中断证据；强杀窗口人工核对，绝不自动删除未知用户资源。不存在工业准确率/大规模稳定性承诺。
+- PyAV资料：https://pyav.basswood.io/docs/stable/api/video.html；Qt6.8 QMediaPlayer毫秒position：https://doc.qt.io/qt-6.8/qmediaplayer.html；真实YOLOpolygon规范：https://docs.ultralytics.com/datasets/segment/ 。仅以实际输出与测试宣布兼容。

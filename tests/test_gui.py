@@ -1,4 +1,5 @@
 import time
+import os
 from pathlib import Path
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtTest import QTest
@@ -128,7 +129,8 @@ def test_resizable_layout_and_screenshot(qtbot, services):
         assert window.nav.width() >= 170
         assert window.stack.width() >= 600
     window.resize(1440, 900); window.show_page('projects'); qtbot.wait(100)
-    window.grab().save(str(services.root / 'artifacts/p1/gui-projects.png'))
+    evidence=services.root/os.environ.get('IVAD_TEST_EVIDENCE_DIR','artifacts/p2/regression');evidence.mkdir(parents=True,exist_ok=True)
+    window.grab().save(str(evidence / 'gui-projects.png'))
     window.workspace.setCurrentIndex(1); qtbot.wait(100)
-    window.grab().save(str(services.root / 'artifacts/p1/gui-production.png'))
+    window.grab().save(str(evidence / 'gui-production.png'))
     close_window(qtbot, window)

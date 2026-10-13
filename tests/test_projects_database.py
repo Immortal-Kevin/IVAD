@@ -4,6 +4,7 @@ import pytest
 from sqlalchemy import text
 from ivad_app.core.contracts import AppError
 from ivad_app.storage.database import Database
+from ivad_app.storage.database import SCHEMA_HEAD
 
 def test_chinese_project_save_reopen_move(services, tmp_path):
     project = services.projects.create(str(tmp_path), '中文选煤厂', '设备说明', '北厂区')
@@ -19,7 +20,7 @@ def test_chinese_project_save_reopen_move(services, tmp_path):
     moved = tmp_path / '移动后的中文目录'
     shutil.copytree(project.root, moved)
     copied = services.projects.open(str(moved))
-    assert copied.id == project.id and copied.schema == '0002'
+    assert copied.id == project.id and copied.schema == SCHEMA_HEAD
     assert json.loads((moved / 'project.json').read_text())['database'] == 'project.sqlite'
 
 @pytest.mark.parametrize('name', ['', ' ', 'x' * 121])

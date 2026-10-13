@@ -16,7 +16,14 @@ QPushButton:disabled { color: #a1adbc; background: #f0f3f7; }
 QPushButton#primary { background: #2563a8; color: white; border: none; }
 QPushButton#primary:hover { background: #1d508c; }
 QLineEdit, QTextEdit, QPlainTextEdit, QComboBox { background: white; border: 1px solid #cbd6e4; border-radius: 5px; padding: 7px; }
+QSpinBox, QDoubleSpinBox { background: white; color: #203047; border: 1px solid #cbd6e4; border-radius: 5px; padding: 5px; min-height: 22px; }
+QCheckBox::indicator { background: white; border: 1px solid #8a9bb0; width: 16px; height: 16px; }
+QCheckBox::indicator:checked { background: #2563a8; }
+QTableWidget::indicator { background: white; border: 1px solid #8a9bb0; width: 16px; height: 16px; }
+QTableWidget::indicator:checked { background: #2563a8; }
 QTableWidget { background: white; border: 1px solid #dde4ee; gridline-color: #edf1f6; }
+QListWidget { background: white; border: 1px solid #dde4ee; }
+QListWidget::item:selected { background: #d6e8ff; color: #203047; }
 QHeaderView::section { background: #eaf0f7; border: none; padding: 8px; font-weight: 600; }
 QLabel#notice { background: #e7effb; color: #234f84; padding: 10px; border-radius: 6px; }
 QLabel#error { background: #fff0ed; color: #943b2f; padding: 10px; border-radius: 6px; }

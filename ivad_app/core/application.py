@@ -6,6 +6,10 @@ from ivad_app.services.settings_service import SettingsService
 from ivad_app.services.project_service import ProjectService
 from ivad_app.services.device_service import DeviceService
 from ivad_app.jobs.manager import JobService
+from ivad_app.storage.project_store import ProjectStore
+from ivad_app.services.media_service import MediaService
+from ivad_app.services.annotation_service import AnnotationService
+from ivad_app.services.dataset_service import DatasetService
 
 class ApplicationServices:
     def __init__(self, root: Path, data_dir: Path | None = None, *, step_seconds: float = 0.1):
@@ -18,7 +22,15 @@ class ApplicationServices:
         self.projects = ProjectService(self.settings, self.logs)
         self.devices = DeviceService(self.db, self.settings, self.logs, self.root)
         self.jobs = JobService(self.db, self.logs, step_seconds=step_seconds)
-        self.logs.write('application', 'IVAD P1启动，后续阶段未实现。')
+        self.store = ProjectStore(self.projects)
+        self.media = MediaService(self.store, self.logs)
+        self.annotations = AnnotationService(self.store, self.media, self.logs)
+        self.datasets = DatasetService(self.store, self.logs)
+        self.jobs.register('p2_import', self.media.import_batch)
+        self.jobs.register('p2_extract', self.media.extract)
+        self.jobs.register('p2_freeze', self.datasets.freeze)
+        self.jobs.register('p2_export', self.datasets.export)
+        self.logs.write('application', 'IVAD P2启动，P3–P6尚未实现。')
         self.closed = False
 
     def close(self):

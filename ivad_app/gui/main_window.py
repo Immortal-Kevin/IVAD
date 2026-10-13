@@ -47,13 +47,13 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout(outer); layout.setContentsMargins(16, 14, 16, 12)
         header = QHBoxLayout()
         brand = QLabel('IVAD Platform'); brand.setObjectName('brand'); header.addWidget(brand)
-        header.addWidget(QLabel(f'{__version__}  /  应用基础')); header.addStretch()
+        header.addWidget(QLabel(f'{__version__}  /  视频与人工标注')); header.addStretch()
         self.project_label = QLabel('当前项目：未打开'); self.project_label.setMinimumWidth(200); self.project_label.setMaximumWidth(280)
         header.addWidget(self.project_label)
         self.workspace = QComboBox(); self.workspace.setObjectName('workspace_mode')
         self.workspace.addItems([tr('开发模式'), tr('生产监控模式')]); self.workspace.currentIndexChanged.connect(self.switch_workspace)
         header.addWidget(self.workspace); layout.addLayout(header)
-        self.notice = QLabel('P1 · GPU检查尚未执行。后续功能显示 Not Implemented。')
+        self.notice = QLabel('P2 · GPU检查尚未执行。后续功能显示 Not Implemented。')
         self.notice.setObjectName('notice'); self.notice.setWordWrap(True); layout.addWidget(self.notice)
         splitter = QSplitter(); layout.addWidget(splitter, 1)
         sidebar = QFrame(); sidebar.setObjectName('sidebar'); sidebar.setMinimumWidth(180); sidebar.setMaximumWidth(260)
@@ -61,7 +61,7 @@ class MainWindow(QMainWindow):
         self.nav = QListWidget(); self.nav.setMinimumWidth(170); self.nav.setObjectName('navigation'); self.nav.currentRowChanged.connect(self.navigate); side.addWidget(self.nav, 1)
         for title, key in [('任务中心', 'jobs'), ('设备与后端', 'devices'), ('诊断日志', 'logs')]:
             side.addWidget(button(title, lambda _=False, key=key: self.show_page(key)))
-        side.addWidget(QLabel('仅 P1\n本地运行 · 不启动网络服务'))
+        side.addWidget(QLabel('仅 P2\n本地运行 · 不启动网络服务'))
         splitter.addWidget(sidebar)
         self.stack = QStackedWidget(); self.stack.setMinimumWidth(610); splitter.addWidget(self.stack)
         self.pages = {'dashboard': Dashboard(), 'projects': ProjectsPage(), 'jobs': JobsPage(), 'devices': DevicesPage(), 'logs': LogsPage(), 'settings': SettingsPage()}
@@ -80,12 +80,13 @@ class MainWindow(QMainWindow):
         for key, args in placeholders.items(): self.pages[key] = Placeholder(*args)
         for page in self.pages.values(): self.stack.addWidget(page)
         right = QFrame(); right.setObjectName('card'); right.setMinimumWidth(170); right.setMaximumWidth(260)
+        self.context_panel=right
         props = QVBoxLayout(right); props.addWidget(QLabel('当前上下文'))
         self.properties = QLabel('未打开项目\n\n后端：尚未检查'); self.properties.setWordWrap(True); self.properties.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        props.addWidget(self.properties); props.addStretch(); props.addWidget(QLabel('阶段：P1\n运行模式：本地\nIntel：未验证'))
+        props.addWidget(self.properties); props.addStretch(); props.addWidget(QLabel('阶段：P2\n运行模式：本地\nIntel：未验证'))
         splitter.addWidget(right); splitter.setSizes([220, 980, 200]); splitter.setChildrenCollapsible(False)
         self.global_tasks = QLabel('任务队列：读取中'); self.statusBar().addPermanentWidget(self.global_tasks)
-        self.statusBar().showMessage('就绪 · P1')
+        self.statusBar().showMessage('就绪 · P2')
         p = self.pages['projects']
         p.create_requested.connect(self.create_project); p.open_requested.connect(self.open_project)
         p.save_requested.connect(self.save_project); p.close_requested.connect(self.close_project); p.check_requested.connect(self.check_project)
@@ -97,7 +98,11 @@ class MainWindow(QMainWindow):
         self.pages['logs'].copy_requested.connect(self.copy_diagnostics)
         self.pages['logs'].clear_filter_requested.connect(lambda: self.show_job_logs(None))
         self.timer = QTimer(self); self.timer.setInterval(600); self.timer.timeout.connect(self.refresh); self.timer.start()
+        from ivad_app.gui.p2_controller import P2Controller
+        self.p2=P2Controller(self)
         self.switch_workspace(0); self.load_settings(); self.refresh()
+        self.pages['projects'].set_project(self.s.projects.current)
+        self.update_project_summary();self.p2.set_project(self.s.projects.current)
         if auto_probe: QTimer.singleShot(100, self.probe_devices)
 
     def show_error(self, message):
@@ -120,6 +125,7 @@ class MainWindow(QMainWindow):
         if 0 <= row < len(self.navigation): self.show_page(self.navigation[row][1])
 
     def show_page(self, key):
+        self.context_panel.setVisible(key not in {'media','annotation','dataset'})
         self.nav.blockSignals(True)
         self.nav.setCurrentRow(next((i for i, (_, value) in enumerate(self.navigation) if value == key), -1))
         self.nav.blockSignals(False)
@@ -128,12 +134,16 @@ class MainWindow(QMainWindow):
 
     def project_operation(self, operation, message):
         if self.project_busy: return
+        if not self.p2.annotation.flush(lambda:self.project_operation(operation,message)):
+            self.show_notice('等待人工标注保存完成后再切换项目。');return
+        self.p2.media.player.stop()
         self.project_busy = True; self.pages['projects'].refresh_controls(True)
         def done(result, error):
             self.project_busy = False
             if not error: self.pages['projects'].set_project(self.s.projects.current)
             else: self.pages['projects'].refresh_controls()
             self.update_project_summary()
+            self.p2.set_project(self.s.projects.current)
             if not error: self.show_notice(message)
             self.refresh()
         self.runner.run(operation, done)
@@ -242,7 +252,8 @@ class MainWindow(QMainWindow):
             self.refresh_busy = False
             if error: return
             jobs, logs, recent = result
-            fill_table(self.pages['jobs'].jobs, [[j['id'], '非AI诊断' if j['kind'] == 'diagnostic' else '可控异常测试', j['state'], str(j['progress']) + '%', local_time(j['updated_at']), j['error']] for j in jobs])
+            names={'diagnostic':'非AI诊断','diagnostic_failure':'可控异常测试','p2_import':'视频批量导入','p2_extract':'PTS抽帧','p2_freeze':'数据集冻结','p2_export':'数据集导出'}
+            fill_table(self.pages['jobs'].jobs, [[j['id'], names.get(j['kind'],j['kind']), j['state'], str(j['progress']) + '%', local_time(j['updated_at']), j['error']] for j in jobs])
             self.pages['jobs'].show_detail()
             self.global_tasks.setText(f"任务：运行{sum(j['state']=='RUNNING' for j in jobs)} / 排队{sum(j['state']=='QUEUED' for j in jobs)} / 历史{len(jobs)}")
             if log_filter == self.log_filter:
@@ -261,13 +272,15 @@ class MainWindow(QMainWindow):
         if self.may_close: event.accept(); return
         event.ignore()
         if self.is_closing: return
+        if not self.p2.annotation.flush(self.close):
+            self.show_notice('正在保存人工标注；保存成功后安全关闭。');return
         if not self.confirm_discard(): return
         self.is_closing = True; self.timer.stop(); self.s.jobs.request_shutdown()
         self.show_notice('正在安全关闭：取消诊断任务，等待后台检查并关闭数据库…')
         self.centralWidget().setEnabled(False)
         def shutdown():
             try:
-                self.runner.stop(); self.s.close(); self.shutdown_done.emit('')
+                self.p2.shutdown();self.runner.stop(); self.s.close(); self.shutdown_done.emit('')
             except Exception:
                 try: self.s.logs.exception('application', '后台关闭失败，保留数据库等待重试。')
                 except OSError: pass
