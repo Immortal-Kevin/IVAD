@@ -95,6 +95,21 @@ def test_gui_settings_save_without_manual_config(qtbot, services):
     assert services.devices.snapshot()[0].status == 'Error'
     close_window(qtbot, window)
 
+def test_shutdown_error_can_retry_without_deleting_data(qtbot, services, monkeypatch):
+    window = make_window(qtbot, services)
+    original = services.close
+    attempts = []
+    def close_with_one_failure():
+        attempts.append(True)
+        if len(attempts) == 1: raise RuntimeError('controlled shutdown failure')
+        original()
+    monkeypatch.setattr(services, 'close', close_with_one_failure)
+    window.close()
+    qtbot.waitUntil(lambda: '重试' in window.notice.text(), timeout=5000)
+    assert not window.is_closing and not services.closed
+    assert services.db.path.is_file()
+    close_window(qtbot, window)
+
 def test_slow_device_probe_does_not_freeze_gui(qtbot, services, monkeypatch):
     window = make_window(qtbot, services)
     def slow_probe(): time.sleep(0.3); return []
