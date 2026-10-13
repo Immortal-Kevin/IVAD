@@ -107,3 +107,13 @@ ADR-001 One GUI two workspaces; ADR-002 API-Ready without mandatory network; ADR
 应用级catalog.sqlite与每项目project.sqlite分离；SQLAlchemy事务访问，Alembic0001/0002迁移，迁移前备份，稳定UUID与相对路径清单。
 任务后台线程串行、服务IO线程池、Qt信号回GUI；设备检查固定脚本通过独立P0解释器执行。GPU枚举/可用/历史实测分别报告，Worker注册与资源互斥留真实接口。
 具体v1服务契约与未来实体边界见`P1_SERVICE_CONTRACTS.md`。以上只实现P1基础，没有视频、标注、AI业务、报警、网络服务或P2–P6模块。
+
+## 13. P2实施映射（2026-10-13，用户已批准）
+
+P2在同一MainWindow替换media/annotation/dataset三个P1占位页，依旧由ApplicationServices持有服务、AsyncRunner承担IO、JobService串行后台任务记录进度/结果/取消/中断恢复。媒体/帧/标签/人工修订/ROI/片段/快照/导出登记统一保存在项目SQLite，Schema0003仅添加；模型见DATABASE_SCHEMA.md。
+
+FileVideoSource基于PyAV15.1.0 wheel的FFmpeg库真实解码。QtMultimedia实际评估通过，但应用播放与抽帧共用PyAV实际显示帧PTS；视频播放使用独立解码线程和generation令牌防止切换后的旧画面，seek从关键帧解码到实际目标。普通视频CPU解码不属于AI降级；P0 GPU-only规范不变。
+
+AnnotationCanvas场景坐标等于解码图片像素，显示变换不改真值；ROI独立按显示坐标归一化关联视频/camera，标注和ROI修订CAS事务保存。350ms自动保存和项目/退出flush避免静默遗失。数据集只冻结已人工审核图片，保存图片/类别/真值/ROI/片段快照；精确hash去重、来源分组、随机风险确认。
+
+Export adapters输出YOLO detect/真实polygon segment/COCO/native；无法表达的语义保留native旁车，segment遇box整次拒绝。暂存文件校验后唯一目录rename，数据库异常可回退.partial；强杀跨资源窗口不作原子分布式保证，完整恢复后续阶段验收。P3–P6依旧未实施，未经批准不得进入。

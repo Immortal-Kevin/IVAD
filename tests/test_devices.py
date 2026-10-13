@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 from dataclasses import asdict
 import json, time
 import pytest
@@ -19,7 +20,8 @@ def test_real_nvidia_worker_and_intel_not_validated(services):
     assert services.devices.require_gpu('').id == nvidia[0].id
     services.settings.save_preferences({'language': 'zh_CN', 'worker_python': '', 'preferred_gpu': 'nvidia:absent'})
     with pytest.raises(AppError): services.devices.require_gpu('')
-    evidence = services.root / 'artifacts/p1/device-live.json'
+    evidence = services.root / os.environ.get('IVAD_TEST_EVIDENCE_DIR','artifacts/p2/regression') / 'device-live.json'
+    evidence.parent.mkdir(parents=True,exist_ok=True)
     evidence.write_text(json.dumps([asdict(d) for d in devices], ensure_ascii=False, indent=2), encoding='utf-8')
 
 def test_missing_worker_gpu_rejection_and_no_cpu(services):
