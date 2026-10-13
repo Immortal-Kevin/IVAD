@@ -1,8 +1,10 @@
 # P2 数据集与导出报告
 
-执行日期：2026-10-13，Windows本机。P2最终自动化 71 passed / 0 failed / 0 errors，P1回归 37 项；证据 artifacts/p2/pytest.xml、pytest.log。源码本地 nvidia-first（报告生成时HEAD 2626af8，最终提交见Git记录）。未经用户另行批准不得进入P3–P6。
+执行日期：2026-10-13，Windows本机。P2最终自动化 71 passed / 0 failed / 0 errors，P1回归 37 项；证据 artifacts/p2/pytest.xml、pytest.log。源码本地 nvidia-first（报告生成时HEAD 52d36f1，最终提交见Git记录）。未经用户另行批准不得进入P3–P6。
 
 所有视频为scripts/p2/make_samples.py自行生成：320×180、36帧、运动色块和文字；无第三方/工厂素材。人工测试几何只验证工具和格式，不代表选煤厂缺陷真值。真实厂区视频/标注质量/工业精度：NOT TESTED。
+
+一键启动实际验证PASS：独立smoke实例正常退出，默认实例实际窗口标题IVAD Platform 1.0.0-P2，保留运行供用户使用；证据launcher-validation.json。
 
 人工REVIEWED/APPROVED入选；DRAFT/REJECTED不入选。COPY冻结图片，标注修订/类别/媒体/ROI/片段快照写不可覆盖vNNNN；清单hash保存在SQLite。每次导出校验清单和图片，不修改原版本。
 

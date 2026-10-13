@@ -8,6 +8,7 @@ def write(path,text):(ROOT/path).write_text(text.strip()+'\n',encoding='utf-8')
 suite=ET.parse(out/'pytest.xml').getroot().find('testsuite');assert int(suite.get('failures'))==0 and int(suite.get('errors'))==0
 total=int(suite.get('tests'));cases=suite.findall('testcase');p1=sum('test_p2_' not in c.get('classname','') for c in cases)
 preserved=read('preservation.json');assert preserved['status']=='PASS'
+launcher=read('launcher-validation.json');assert launcher['status']=='PASS' and launcher['smoke_normal_shutdown']
 media=read('media-validation.json');exports=read('export-validation.json');qt=read('qt-decode.json')
 commit=subprocess.check_output(['git','rev-parse','--short','HEAD'],cwd=ROOT,text=True).strip()
 counts=Counter(c.get('classname') for c in cases)
@@ -16,7 +17,9 @@ media_table='\n'.join(f"|{r['file']}|{r.get('metadata',{}).get('codec','—')}|{
 export_table='\n'.join(f"|{r['format']}|{r['images']}|{r['objects']}|{r['splits']}|{r['status']}|" for r in exports[:4])
 common=f'''执行日期：2026-10-13，Windows本机。P2最终自动化 {total} passed / 0 failed / 0 errors，P1回归 {p1} 项；证据 artifacts/p2/pytest.xml、pytest.log。源码本地 nvidia-first（报告生成时HEAD {commit}，最终提交见Git记录）。未经用户另行批准不得进入P3–P6。
 
-所有视频为scripts/p2/make_samples.py自行生成：320×180、36帧、运动色块和文字；无第三方/工厂素材。人工测试几何只验证工具和格式，不代表选煤厂缺陷真值。真实厂区视频/标注质量/工业精度：NOT TESTED。'''
+所有视频为scripts/p2/make_samples.py自行生成：320×180、36帧、运动色块和文字；无第三方/工厂素材。人工测试几何只验证工具和格式，不代表选煤厂缺陷真值。真实厂区视频/标注质量/工业精度：NOT TESTED。
+
+一键启动实际验证PASS：独立smoke实例正常退出，默认实例实际窗口标题IVAD Platform 1.0.0-P2，保留运行供用户使用；证据launcher-validation.json。'''
 write('reports/P2_IMPLEMENTATION.md',f'''# P2 实施报告
 
 状态：PASS（P2工程功能；工业场景未验收）。
