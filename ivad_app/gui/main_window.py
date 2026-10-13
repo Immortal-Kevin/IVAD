@@ -269,11 +269,14 @@ class MainWindow(QMainWindow):
             try:
                 self.runner.stop(); self.s.close(); self.shutdown_done.emit('')
             except Exception:
-                self.shutdown_done.emit('后台关闭失败，请查看技术日志。')
+                try: self.s.logs.exception('application', '后台关闭失败，保留数据库等待重试。')
+                except OSError: pass
+                self.shutdown_done.emit('后台关闭失败，请查看技术日志并再次点击窗口关闭按钮重试。')
         threading.Thread(target=shutdown, name='IVAD-Shutdown', daemon=False).start()
 
     @Slot(str)
     def finish_shutdown(self, error):
         if error:
+            self.is_closing = False  # 允许用户再次关闭；业务控件仍禁用，防止使用已停止的线程池。
             self.show_error(error); return
         self.may_close = True; self.close()

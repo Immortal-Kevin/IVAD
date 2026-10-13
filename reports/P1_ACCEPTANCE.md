@@ -12,7 +12,7 @@
 | 后台队列与进度/取消/失败/历史/恢复 | PASS，含实际测试进程终止重启 |
 | 真实NVIDIA硬件、CUDA可用、后端状态 | PASS，NVIDIA GeForce RTX 5070 Ti / 驱动617.42 / CUDA12.8，P0匹配验证 |
 | GUI后台运行时不冻结 | PASS，Qt事件循环持续响应 |
-| 核心自动化 | PASS，36项通过，0失败 |
+| 核心自动化 | PASS，37项通过，0失败 |
 | 未实现范围如实标识 | PASS，后续页面Not Implemented，无虚假AI/生产数据 |
 | P0环境与资产保护 | PASS，47根文件/5报告hash和依赖包快照不变 |
 

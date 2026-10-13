@@ -1,7 +1,7 @@
 # P1 测试结果
 
 日期：2026-10-13（Asia/Shanghai）。真实Windows11桌面与RTX5070 Ti本机测试。
-最终pytest：**36 passed，0 failed，0 errors**，XML记录耗时14.19s。
+最终pytest：**37 passed，0 failed，0 errors**，XML记录耗时14.71s。
 命令：`.venv-p1/Scripts/python.exe -m pytest -q --junitxml=artifacts/p1/pytest.xml`。
 原始日志/逐项结果：artifacts/p1/pytest.log、pytest.xml。
 
