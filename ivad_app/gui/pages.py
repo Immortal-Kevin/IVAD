@@ -42,10 +42,10 @@ class Placeholder(Page):
 
 class Dashboard(Page):
     def __init__(self):
-        super().__init__('应用总览', 'P1 · 本地应用基础已实现。生产检测与报警尚未实现。')
+        super().__init__('应用总览', 'P2 · 视频、人工标注与数据集管理已接入。生产检测与报警尚未实现。')
         self.summary = QLabel('尚未打开项目'); self.summary.setWordWrap(True); self.summary.setObjectName('notice')
         self.layout.addWidget(self.summary)
-        self.layout.addWidget(QLabel('可用功能：项目创建与保存、目录完整性检查、任务队列、设备检查、诊断日志。'))
+        available=QLabel('可用功能：项目、视频导入与播放、PTS抽帧、人工框/多边形/ROI标注、类别管理、数据集冻结与导出、任务与诊断。');available.setWordWrap(True);self.layout.addWidget(available)
         self.layout.addWidget(QLabel('默认模型候选：YOLO26n（NVIDIA P0实测）\nIntel后端：Not Tested；独立历史P0 BLOCKED。'))
         self.layout.addStretch()
 

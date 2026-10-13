@@ -4,6 +4,7 @@ runtime/
 user_projects/
 IVAD-*/
 .ivad-staging-*/
+.ivad-export-*.partial/
 **/project.json
 *.backup
 Ultralytics/

@@ -1,5 +1,6 @@
-"""P1串行非AI诊断队列；资源互斥接口用于以后GPU调度。"""
+"""统一P1/P2非AI后台队列；资源互斥接口用于以后GPU调度。"""
 import queue, threading, traceback
+import json
 from contextlib import contextmanager
 from uuid import uuid4
 from sqlalchemy import select, update
@@ -29,22 +30,27 @@ class JobService:
         self.lock = threading.RLock()
         self.gate = ResourceGate()
         self.stopping = False
+        self.handlers = {}
         with self.db.transaction() as session:
             recovered = session.execute(update(JobRecord).where(JobRecord.state.in_(['RUNNING', 'QUEUED'])).values(state='INTERRUPTED', error='应用上次退出后Worker已丢失，请重新提交。', updated_at=utc_now())).rowcount
         if recovered: self.logs.write('job', f'已将{recovered}个丢失Worker的任务恢复为INTERRUPTED。', level='WARNING')
         self.thread = threading.Thread(target=self._worker, name='IVAD-P1-Jobs', daemon=False)
         self.thread.start()
 
-    def submit(self, kind: str = 'diagnostic', project_id: str | None = None) -> str:
-        if kind not in {'diagnostic', 'diagnostic_failure'}:
-            raise AppError('JOB_UNSUPPORTED', '当前P1仅支持非AI诊断任务，训练/推理尚未实现。')
+    def register(self, kind: str, handler):
+        if not kind.startswith('p2_'): raise AppError('JOB_UNSUPPORTED', '本阶段只允许注册P2非AI任务。')
+        self.handlers[kind] = handler
+
+    def submit(self, kind: str = 'diagnostic', project_id: str | None = None, payload: dict | None = None) -> str:
+        if kind not in {'diagnostic', 'diagnostic_failure'} and kind not in self.handlers:
+            raise AppError('JOB_UNSUPPORTED', '不支持该任务；AI训练/推理尚未实现。')
         with self.lock:
             if self.stopping: raise AppError('JOB_SHUTDOWN', '应用正在关闭，不能创建任务。')
             job_id = str(uuid4()); now = utc_now()
             with self.db.transaction() as session:
-                session.add(JobRecord(id=job_id, project_id=project_id, kind=kind, state='QUEUED', progress=0, created_at=now, updated_at=now, error=''))
+                session.add(JobRecord(id=job_id, project_id=project_id, kind=kind, state='QUEUED', progress=0, created_at=now, updated_at=now, error='', payload=json.loads(json.dumps(payload or {})), result={}))
             self.events[job_id] = threading.Event()
-            self.logs.write('job', '非AI诊断任务已排队。', job_id=job_id)
+            self.logs.write('job', '非AI任务已排队：' + kind, job_id=job_id)
             self.queue.put(job_id)
             return job_id
 
@@ -66,18 +72,26 @@ class JobService:
                 if event.is_set():
                     self._change(job_id, 'CANCELLED'); continue
                 self._change(job_id, 'RUNNING')
-                self.logs.write('job', '诊断开始：可取消的计时与进度测试，不执行AI。', job_id=job_id)
                 row = self.get(job_id)
-                for step in range(1, 31):
-                    if event.wait(self.step_seconds): break
-                    if row['kind'] == 'diagnostic_failure' and step == 6:
-                        raise RuntimeError('P1 controlled diagnostic failure')
-                    self._change(job_id, progress=round(step * 100 / 30))
+                self.logs.write('job', '非AI任务开始：' + row['kind'], job_id=job_id)
+                result = {}
+                if row['kind'] in self.handlers:
+                    result = self.handlers[row['kind']](JobContext(self, job_id, event), row['payload']) or {}
+                    with self.db.transaction() as session: session.get(JobRecord, job_id).result = result
+                else:
+                    for step in range(1, 31):
+                        if event.wait(self.step_seconds): break
+                        if row['kind'] == 'diagnostic_failure' and step == 6:
+                            raise RuntimeError('P1 controlled diagnostic failure')
+                        self._change(job_id, progress=round(step * 100 / 30))
                 state = 'CANCELLED' if event.is_set() else 'SUCCEEDED'
                 with self.lock: self._change(job_id, state)
-                self.logs.write('job', '任务已取消。' if state == 'CANCELLED' else '非AI诊断成功。', job_id=job_id)
+                self.logs.write('job', '任务已取消。' if state == 'CANCELLED' else '非AI任务完成。', job_id=job_id)
+            except AppError as exc:
+                self._change(job_id, 'CANCELLED' if exc.code == 'JOB_CANCELLED' else 'FAILED', error=exc.message)
+                self.logs.exception('job', exc.message, job_id)
             except Exception:
-                self._change(job_id, 'FAILED', error='诊断任务发生可控异常，请查看详细日志。')
+                self._change(job_id, 'FAILED', error='后台任务失败，请查看详细日志；完整资源保留。')
                 self.logs.exception('job', '任务失败，队列将继续处理后续任务。', job_id)
             finally:
                 self.queue.task_done()
@@ -94,7 +108,7 @@ class JobService:
         with self.db.transaction() as session:
             row = session.get(JobRecord, job_id)
             if not row: raise AppError('JOB_MISSING', '任务不存在。')
-            return {key: getattr(row, key) for key in ['id', 'kind', 'project_id', 'state', 'progress', 'created_at', 'updated_at', 'error']}
+            return {key: getattr(row, key) for key in ['id', 'kind', 'project_id', 'state', 'progress', 'created_at', 'updated_at', 'error', 'payload', 'result']}
 
     def history(self) -> list[dict]:
         with self.db.transaction() as session:
@@ -112,3 +126,12 @@ class JobService:
         self.request_shutdown()
         self.thread.join(timeout=10)
         if self.thread.is_alive(): raise AppError('JOB_SHUTDOWN', '后台任务尚未结束，数据库暂不关闭。')
+
+class JobContext:
+    def __init__(self, service, job_id, cancel):
+        self.service, self.job_id, self.cancel = service, job_id, cancel
+    def check(self):
+        if self.cancel.is_set(): raise AppError('JOB_CANCELLED', '任务已取消；已提交的完整资源保留。')
+    def progress(self, percent):
+        self.check(); self.service._change(self.job_id, progress=max(0, min(100, int(percent))))
+    def log(self, message): self.service.logs.write('job', message, job_id=self.job_id)

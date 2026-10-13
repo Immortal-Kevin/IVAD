@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ivad-platform"
-version = "1.0.0.dev1"
-description = "IVAD P1 local desktop application foundation"
+version = "1.0.0.dev2"
+description = "IVAD P2 local media, human annotation and dataset application"
 requires-python = ">=3.12,<3.13"
-dependencies = ["PySide6==6.8.3", "SQLAlchemy==2.0.40", "alembic==1.15.2"]
+dependencies = ["PySide6==6.8.3", "SQLAlchemy==2.0.40", "alembic==1.15.2", "av==15.1.0", "Pillow==11.2.1", "numpy==2.2.5", "PyYAML==6.0.2"]
 
 [tool.setuptools.packages.find]
 include = ["ivad_app*"]

@@ -1,0 +1,5 @@
+-r requirements-p1.txt
+av==15.1.0
+Pillow==11.2.1
+numpy==2.2.5
+PyYAML==6.0.2
