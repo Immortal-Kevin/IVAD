@@ -10,3 +10,6 @@ Schema0003添加业务表，旧0002数据/迁移备份验证；原P0/P1报告和
 未开始P3–P6；等待用户明确批准，Intel独立历史BLOCKED不变。
 
 2026-10-14：用户批准P2补充修改，左右媒体布局/蓝白标签/可见参数说明/人工实际视频裁剪完成。Schema0004增量保留旧数据，主套84通过/0失败，原71项回归；100/200%DPI新GUI流程各1通过。报告P2_UI_ADJUSTMENT.md、P2_CLIP_SAVE_FEATURE.md及更新验收/测试报告；原P2证据与报告历史保留。没有进入P3。
+
+
+2026-10-14 P2-Test Distribution：冻结db81c49，P2 Lite Beta onedir ZIP与独立IVAD.exe已构建；86项最终回归、15条真实EXE链路、另进程原生打开项目恢复均通过。跨电脑/无NVIDIA实机/真实断网尚未测。分发审核BLOCKED（FFmpeg/x264/x265/Qt许可与源资料未闭合）；历史保护FAIL（3文件hash变化，另1旧截图重新写入，未找到原版）。后续测试输出已隔离，原GPU/GUI环境包版本未变。报告P2_DISTRIBUTION_ACCEPTANCE.md和P2_DISTRIBUTION_TEST_RESULTS.md；仅供用户审核，不建议外发，无Setup版，未进入P3。

@@ -1,5 +1,6 @@
 import json, threading, sqlite3
 import time
+import os
 from pathlib import Path
 from fractions import Fraction
 from uuid import uuid4
@@ -109,7 +110,7 @@ def test_gui_clip_save_and_layout(qtbot,services,long_reference):
     clip_index=next(i for i,r in enumerate(media.media_rows) if r['kind']=='CLIP');assert media.table.item(clip_index,0).text().startswith('CLIP')
     media.table.selectRow(clip_index)
     qtbot.waitUntil(lambda:media.selected_media and media.selected_media['kind']=='CLIP' and media.player.last_image is not None,timeout=5000)
-    evidence=services.root/'artifacts/p2-adjustment';window.grab().save(str(evidence/'gui-clip-save.png'))
+    evidence=services.root/os.environ.get('IVAD_P2_ADJUSTMENT_EVIDENCE_DIR',f'artifacts/test-runs/{time.time_ns()}/adjustment');evidence.mkdir(parents=True,exist_ok=True);window.grab().save(str(evidence/'gui-clip-save.png'))
     media.table.selectRow(next(i for i,r in enumerate(media.media_rows) if r['id']==mid))
     qtbot.waitUntil(lambda:media.selected_media['id']==mid,timeout=5000)
     assert media.end.value()==pytest.approx(20,abs=.001)
