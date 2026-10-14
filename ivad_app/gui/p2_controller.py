@@ -14,7 +14,7 @@ def put_table(table,rows):
 
 class P2Controller(QObject):
     def __init__(self,window):
-        super().__init__(window);self.window=window;self.s=window.s;self.runner=window.runner;self.root=None;self.refreshing=False;self.tracked={};self.jobs_checking=False
+        super().__init__(window);self.window=window;self.s=window.s;self.runner=window.runner;self.root=None;self.refreshing=False;self.refresh_pending=False;self.tracked={};self.jobs_checking=False
         self.media=MediaPage();self.annotation=AnnotationPage(self.s,self.runner);self.dataset=DatasetPage()
         for key,page in [('media',self.media),('annotation',self.annotation),('dataset',self.dataset)]:
             old=window.pages[key];window.stack.removeWidget(old);old.deleteLater();window.pages[key]=page;window.stack.addWidget(page);page.setEnabled(False)
@@ -35,8 +35,9 @@ class P2Controller(QObject):
         if root:self.refresh()
 
     def refresh(self):
-        if not self.root or self.refreshing:return
-        root=self.root;self.refreshing=True
+        if not self.root:return
+        if self.refreshing:self.refresh_pending=True;return
+        root=self.root;self.refreshing=True;self.refresh_pending=False
         def collect():
             frames=self.s.media.frames(root);states=self.s.annotations.frames_status(root)
             for frame in frames:frame.update(states.get(frame['id'],{}))
@@ -44,7 +45,9 @@ class P2Controller(QObject):
         def done(result,error):
             self.refreshing=False
             if root!=self.root:self.refresh();return
-            if error:return
+            if error:
+                if self.refresh_pending:QTimer.singleShot(0,self.refresh)
+                return
             media,frames,labels,candidates,versions=result;selected=self.media.media_id
             self.media.media_rows=media
             put_table(self.media.table,[[('CLIP · ' if r.get('kind')=='CLIP' else '')+r['name'],r['mode'],r['state'],f"{r['video'].get('duration_us',0)/1000000:.3f}s",r['video'].get('codec',''),f"{r['video'].get('display_width','')}×{r['video'].get('display_height','')}"] for r in media])
@@ -68,6 +71,7 @@ class P2Controller(QObject):
             for version in versions:
                 if version['dataset_id'] not in seen:self.dataset.existing.addItem(version['name'],version['dataset_id']);seen.add(version['dataset_id'])
             self.dataset.existing.setCurrentIndex(max(0,self.dataset.existing.findData(existing)));self.dataset.existing.blockSignals(False)
+            if self.refresh_pending:QTimer.singleShot(0,self.refresh)
         self.runner.run(collect,done)
 
     def submit(self,kind,payload):
