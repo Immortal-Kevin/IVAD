@@ -1,6 +1,7 @@
 """PyAV/FFmpeg实际PTS，统一播放器和抽帧时间定义；不按FPS推算。"""
 from dataclasses import dataclass
 from fractions import Fraction
+from itertools import chain
 from pathlib import Path
 import av
 from PIL import Image
@@ -58,11 +59,25 @@ class FileVideoSource:
     def iter_frames(self, start_us: int = 0, end_us: int | None = None):
         with av.open(str(self.path), timeout=(5, 10)) as container:
             stream = container.streams.video[0]
-            if start_us > 0:
-                target = Fraction(start_us + self.metadata['origin_us'], 1000000) / stream.time_base
-                container.seek(int(target), stream=stream, backward=True, any_frame=False)
+            indexed_seek=start_us>0 and not {'mpeg','mpegts'}.intersection(container.format.name.split(','))
+            if indexed_seek:
+                # Some MPEG recordings have coarse/incomplete seek indexes and
+                # return a frame AFTER the requested time despite backward=True.
+                # Back off using actual decoded PTS; finally decode from start.
+                for retreat in [0,1000000,2000000,4000000,8000000,16000000,None]:
+                    requested=0 if retreat is None else max(0,start_us-retreat)
+                    target=Fraction(requested+self.metadata['origin_us'],1000000)/stream.time_base
+                    container.seek(int(target),stream=stream,backward=True,any_frame=False)
+                    decoded=container.decode(stream);first=next(decoded,None)
+                    if first is None:continue
+                    if first.pts is None or first.time_base is None:
+                        raise AppError('PTS_MISSING','解码帧缺少PTS；停止处理，不按FPS补造时间。')
+                    if micros(first.pts,first.time_base)-self.metadata['origin_us']<=start_us or requested==0:
+                        decoded=chain([first],decoded);break
+                else:decoded=iter(())
+            else:decoded=container.decode(stream)
             previous_pts = None
-            for index, frame in enumerate(container.decode(stream)):
+            for index, frame in enumerate(decoded):
                 if frame.pts is None or frame.time_base is None:
                     raise AppError('PTS_MISSING', '解码帧缺少PTS；停止处理，不按FPS补造时间。')
                 pts_us = micros(frame.pts, frame.time_base)
@@ -77,6 +92,13 @@ class FileVideoSource:
 
     def at(self, time_us: int, *, before=False) -> VideoFrame:
         if before:
+            if {'mpeg','mpegts'}.intersection(self.metadata['container'].split(',')):
+                previous=None
+                for frame in self.iter_frames(max(0,time_us-2000000),time_us):
+                    if frame.time_us>=time_us:break
+                    previous=frame
+                if previous:return previous
+                return self._before_sequential(time_us)
             # 从前一个关键帧到目标顺序解码，返回严格早于目标的实际显示帧。
             with av.open(str(self.path), timeout=(5, 10)) as container:
                 stream = container.streams.video[0]

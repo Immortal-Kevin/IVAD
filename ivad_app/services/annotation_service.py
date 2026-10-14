@@ -56,14 +56,17 @@ class AnnotationService:
 
     @staticmethod
     def scope(media, camera=False):
-        if camera and not media.camera: raise AppError('ROI_CAMERA','视频没有摄像头编号，请使用当前视频ROI。')
+        if camera and not media.camera: raise AppError('ROI_CAMERA','当前视频未配置摄像头编号。ROI 为可选辅助信息，不影响基础标注；如需保存 ROI，请选择关联当前视频。')
         return 'camera:'+media.camera if camera else 'media:'+media.id
 
     def load(self,frame_id,root=None,camera_roi=False):
         with self.store.open(root) as (_,db,_),db.transaction() as session:
             frame=session.get(ExtractedFrame,frame_id)
             if not frame: raise AppError('FRAME_MISSING','候选帧不存在。')
-            media=session.get(MediaAsset,frame.media_id);scope=self.scope(media,camera_roi)
+            media=session.get(MediaAsset,frame.media_id)
+            # Optional camera ROI must never prevent loading ordinary annotations.
+            effective_camera_roi=bool(camera_roi and media.camera)
+            scope=self.scope(media,effective_camera_roi)
             doc=session.scalar(select(Annotation).where(Annotation.frame_id==frame_id))
             roi=session.scalar(select(RegionOfInterest).where(RegionOfInterest.scope==scope))
             payload=copy.deepcopy(doc.payload) if doc else {'objects':[],'image_tag':'UNKNOWN','image_label_id':None,'coordinate_system':'image_pixels','width':frame.width,'height':frame.height}
@@ -71,7 +74,7 @@ class AnnotationService:
             for obj in objects:
                 if obj['kind']=='roi_box':obj['geometry']=[v*(frame.width if i%2==0 else frame.height) for i,v in enumerate(obj['geometry'])]
                 else:obj['geometry']=[[x*frame.width,y*frame.height] for x,y in obj['geometry']]
-            return {'frame':row_dict(frame),'payload':payload,'revision':doc.revision if doc else 0,'status':doc.status if doc else 'DRAFT','source':'Human Generated','scope':scope,'roi_revision':roi.revision if roi else 0,'roi_objects':objects}
+            return {'frame':row_dict(frame),'payload':payload,'revision':doc.revision if doc else 0,'status':doc.status if doc else 'DRAFT','source':'Human Generated','scope':scope,'roi_revision':roi.revision if roi else 0,'roi_objects':objects,'camera_roi':effective_camera_roi,'camera_available':bool(media.camera),'notice':'' if media.camera else '当前视频未配置摄像头编号。ROI 为可选辅助信息，不影响基础标注。'}
 
     def save(self,frame_id,payload,status,expected_revision,roi_objects=None,expected_roi_revision=0,camera_roi=False,root=None):
         if status not in REVIEW_STATES or payload.get('image_tag') not in IMAGE_TAGS: raise AppError('ANNOTATION_STATE','图片标签或审核状态无效。')

@@ -10,7 +10,7 @@ class AnnotationPage(Page):
     saved=Signal()
     def __init__(self,services,runner):
         super().__init__('标注工作台','人工真值 · 原始图片像素坐标 · ROI独立存储；多边形右键/Enter完成，Esc取消。')
-        self.s,self.runner=services,runner;self.root=None;self.frame_id=None;self.revision=self.roi_revision=0;self.dirty=self.saving=False;self.pending=None;self.save_error=False;self.roi_snapshot=[];self.loading=False;self.loaded_camera_roi=False;self.load_serial=0
+        self.s,self.runner=services,runner;self.root=None;self.frame_id=None;self.revision=self.roi_revision=0;self.dirty=self.saving=False;self.pending=None;self.save_error=False;self.roi_snapshot=[];self.loading=False;self.loaded_camera_roi=False;self.load_serial=0;self.roi_notice=''
         toolbar=QHBoxLayout();self.tool=QComboBox();self.tool.setObjectName('annotation_tool')
         for text,value in [('选择/移动/顶点编辑','select'),('矩形框','box'),('多边形','polygon'),('矩形ROI','roi_box'),('多边形ROI','roi_polygon')]:self.tool.addItem(text,value)
         toolbar.addWidget(self.tool);toolbar.addWidget(button('适应窗口',lambda:self.canvas.fit()));toolbar.addWidget(button('撤销',lambda:self.canvas.undo(),name='annotation_undo'));toolbar.addWidget(button('重做',lambda:self.canvas.redo(),name='annotation_redo'))
@@ -20,7 +20,7 @@ class AnnotationPage(Page):
         browser=QWidget();browser.setMaximumWidth(220);browser_layout=QVBoxLayout(browser);browser_layout.setContentsMargins(0,0,0,0)
         self.media_filter=QComboBox();self.media_filter.addItem('全部来源',None);self.media_filter.currentIndexChanged.connect(self.filter_frames);browser_layout.addWidget(self.media_filter);browser_layout.addWidget(self.frames);splitter.addWidget(browser);self.frame_rows=[]
         self.canvas=AnnotationCanvas();splitter.addWidget(self.canvas)
-        props=QWidget();props.setStyleSheet('QWidget { background: #ffffff; }');props.setMinimumWidth(150);props.setMaximumWidth(210);p=QVBoxLayout(props)
+        props=QWidget();props.setObjectName('annotation_properties');props.setStyleSheet('QWidget#annotation_properties { background: #ffffff; }');props.setMinimumWidth(150);props.setMaximumWidth(210);p=QVBoxLayout(props)
         self.classes=QComboBox();self.classes.setObjectName('annotation_class');self.classes.currentIndexChanged.connect(self.class_changed)
         self.review=QComboBox();self.review.setObjectName('annotation_review')
         for value in ['DRAFT','REVIEWED','APPROVED','REJECTED']:self.review.addItem(value,value)
@@ -57,7 +57,8 @@ class AnnotationPage(Page):
 
     def filter_frames(self):
         selected=self.frame_id;self.frames.blockSignals(True);self.frames.clear();mid=self.media_filter.currentData()
-        for row in self.frame_rows:
+        source_order={value:i for i,value in enumerate(dict.fromkeys(r['media_id'] for r in self.frame_rows))}
+        for row in sorted(self.frame_rows,key=lambda r:(source_order[r['media_id']],r['time_us'],r['id'])):
             if mid and row['media_id']!=mid:continue
             self.frames.addItem(f"{row['time_us']/1000000:.3f}s · {row['id'][:8]}"+(' Missing' if row['state']=='MISSING' else ''));self.frames.item(self.frames.count()-1).setData(Qt.ItemDataRole.UserRole,row['id'])
         index=next((i for i in range(self.frames.count()) if self.frames.item(i).data(Qt.ItemDataRole.UserRole)==selected),-1)
@@ -67,10 +68,19 @@ class AnnotationPage(Page):
     def select_frame(self,index):
         if index>=0:self.request_load(self.frames.item(index).data(Qt.ItemDataRole.UserRole))
     def navigate(self,delta):
-        row=self.frames.currentRow()+delta
+        row=next((i for i in range(self.frames.count()) if self.frames.item(i).data(Qt.ItemDataRole.UserRole)==self.frame_id),self.frames.currentRow())+delta
         if 0<=row<self.frames.count():self.frames.setCurrentRow(row)
     def request_load(self,frame_id,force=False):
         if not frame_id or (frame_id==self.frame_id and not force):return
+        if self.save_error:
+            dialog=QMessageBox(self);dialog.setWindowTitle('当前标注尚未保存');dialog.setText('保存失败。请选择保存后继续、不保存继续或取消。')
+            save=dialog.addButton('保存后继续',QMessageBox.ButtonRole.AcceptRole)
+            discard=dialog.addButton('不保存继续',QMessageBox.ButtonRole.DestructiveRole)
+            dialog.addButton('取消',QMessageBox.ButtonRole.RejectRole);dialog.exec()
+            if dialog.clickedButton()==save:
+                self.pending=lambda:self.request_load(frame_id,force=force);self.save_error=False;self.save_now();return
+            if dialog.clickedButton()==discard:self.dirty=False;self.save_error=False;self.debounce.stop()
+            else:self.restore_selection();return
         if self.dirty or self.saving:
             self.pending=lambda:self.request_load(frame_id,force=force);self.save_now();return
         root=self.root;camera_roi=self.roi_scope.currentIndex()==1;self.loading=True;self.load_serial+=1;serial=self.load_serial;self.canvas.setEnabled(False)
@@ -83,13 +93,20 @@ class AnnotationPage(Page):
             self.canvas.setEnabled(True)
             for widget in [self.review,self.image_tag,self.image_label,self.classes,self.roi_scope]:widget.setEnabled(True)
             if error:
-                self.roi_scope.blockSignals(True);self.roi_scope.setCurrentIndex(int(self.loaded_camera_roi));self.roi_scope.blockSignals(False);self.info.setText(error);return
-            self.loaded_camera_roi=camera_roi
+                self.roi_scope.blockSignals(True);self.roi_scope.setCurrentIndex(int(self.loaded_camera_roi));self.roi_scope.blockSignals(False);self.restore_selection();self.info.setText(error);return
+            self.loaded_camera_roi=result[1]['camera_roi']
             image,data=result;self.frame_id=frame_id;self.revision=data['revision'];self.roi_revision=data['roi_revision'];self.roi_snapshot=copy.deepcopy(data['roi_objects']);self.save_error=False
+            self.roi_scope.blockSignals(True);self.roi_scope.setCurrentIndex(int(self.loaded_camera_roi));self.roi_scope.model().item(1).setEnabled(data['camera_available']);self.roi_scope.blockSignals(False)
+            self.roi_notice=data['notice'];self.roi_scope.setToolTip(data['notice'] or 'ROI 为可选辅助信息，与目标标注及整帧标签独立。')
             self.canvas.set_image(qimage(image));self.canvas.set_shapes(data['payload']['objects']+data['roi_objects']);self.canvas.label_id=self.classes.currentData()
             for widget,value in [(self.review,data['status']),(self.image_tag,data['payload']['image_tag']),(self.image_label,data['payload'].get('image_label_id'))]:widget.blockSignals(True);widget.setCurrentIndex(max(0,widget.findData(value)));widget.blockSignals(False)
-            self.dirty=False;self.update_objects();self.info.setText(f"PTS {data['frame']['pts_us']} µs · {image.width}×{image.height} · 标注修订 {self.revision} · Human Generated")
+            self.dirty=False;self.update_objects();self.restore_selection();self.info.setText(f"PTS {data['frame']['pts_us']} µs · {image.width}×{image.height} · 标注修订 {self.revision} · Human Generated\n"+data['notice'])
         self.runner.run(operation,done)
+
+    def restore_selection(self):
+        self.frames.blockSignals(True)
+        self.frames.setCurrentRow(next((i for i in range(self.frames.count()) if self.frames.item(i).data(Qt.ItemDataRole.UserRole)==self.frame_id),-1))
+        self.frames.blockSignals(False)
 
     def mark_dirty(self,*args):
         if not self.frame_id or self.loading:return
@@ -124,8 +141,8 @@ class AnnotationPage(Page):
         def done(result,error):
             self.saving=False
             if root!=self.root or frame_id!=self.frame_id:return
-            if error:self.dirty=True;self.save_error=True;self.pending=None;self.info.setText('保存失败：'+error);return
-            self.revision=result['revision'];self.roi_revision=result['roi_revision'];self.roi_snapshot=rois;self.info.setText(f'已保存 · 修订 {self.revision} · {status}');self.saved.emit()
+            if error:self.dirty=True;self.save_error=True;self.pending=None;self.restore_selection();self.info.setText('保存失败：'+error+'；可重试保存，或切换图片时明确选择不保存继续。');return
+            self.revision=result['revision'];self.roi_revision=result['roi_revision'];self.roi_snapshot=rois;self.info.setText(f'已保存 · 修订 {self.revision} · {status}\n'+self.roi_notice);self.saved.emit()
             if self.dirty:self.save_now()
             elif self.pending:callback=self.pending;self.pending=None;callback()
         self.runner.run(lambda:self.s.annotations.save(frame_id,payload,status,revision,changed_roi,roi_revision,camera,root),done)
