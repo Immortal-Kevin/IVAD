@@ -12,7 +12,7 @@ class AnnotationPage(Page):
     def __init__(self,services,runner):
         super().__init__('标注工作台','人工真值 · 原始图片像素坐标 · ROI独立存储；多边形右键/Enter完成，Esc取消。')
         self.s,self.runner=services,runner;self.root=None;self.frame_id=None;self.revision=self.roi_revision=0;self.dirty=self.saving=False;self.pending=None;self.save_error=False;self.roi_snapshot=[];self.loading=False;self.loaded_camera_roi=False;self.load_serial=0;self.roi_notice=''
-        self.current_tag='UNKNOWN';self.loaded_payload={};self.normal_confirmed=False;self.media_id=None;self.camera_id=None;self.camera_records=[];self.batch_busy=False;self.checked_ids=set();self.excluded=False
+        self.current_tag='UNKNOWN';self.loaded_payload={};self.normal_confirmed=False;self.media_id=None;self.camera_id=None;self.camera_records=[];self.camera_load_serial=0;self.camera_choice_dirty=False;self.camera_desired=None;self.batch_busy=False;self.checked_ids=set();self.excluded=False
         toolbar=QHBoxLayout();self.tool=QComboBox();self.tool.setObjectName('annotation_tool')
         for text,value in [('选择/移动/顶点编辑','select'),('矩形框','box'),('多边形','polygon'),('矩形ROI','roi_box'),('多边形ROI','roi_polygon')]:self.tool.addItem(text,value)
         toolbar.addWidget(self.tool);toolbar.addWidget(button('适应窗口',lambda:self.canvas.fit()));toolbar.addWidget(button('撤销',lambda:self.canvas.undo(),name='annotation_undo'));toolbar.addWidget(button('重做',lambda:self.canvas.redo(),name='annotation_redo'))
@@ -56,6 +56,7 @@ class AnnotationPage(Page):
         self.save_button=button('保存标注',self.save_now,True,'save_annotation');p.addWidget(self.save_button);p.addWidget(button('放弃修改并重载',self.reload_discard));p.addStretch()
         p.addWidget(button('恢复历史标注…',self.restore_history,name='annotation_restore_history'))
         p.addWidget(QLabel('所属摄像头（录像及其片段共用）'));self.camera_choice=QComboBox();self.camera_choice.setObjectName('annotation_camera');self.camera_choice.addItem('未关联摄像头',None);p.addWidget(self.camera_choice)
+        self.camera_choice.currentIndexChanged.connect(self.camera_selected)
         for text,handler,name in [('新建摄像头…',lambda:self.edit_camera(False),'camera_create'),('编辑摄像头名称…',lambda:self.edit_camera(True),'camera_rename'),('保存摄像头关联',self.associate_camera,'camera_associate')]:p.addWidget(button(text,handler,name=name))
         props.setMinimumHeight(920);scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setWidget(props);scroll.setMinimumWidth(250);scroll.setMaximumWidth(330);splitter.addWidget(scroll);splitter.setSizes([220,650,290]);self.layout.addWidget(splitter,1)
         row=QHBoxLayout();row.addWidget(button('上一张',lambda:self.navigate(-1)));row.addWidget(button('下一张',lambda:self.navigate(1)));self.info=QLabel('请打开项目并抽帧。');self.info.setWordWrap(True);row.addWidget(self.info,1);self.layout.addLayout(row)
@@ -70,7 +71,7 @@ class AnnotationPage(Page):
         self.quick_shortcut=QShortcut(QKeySequence('Ctrl+Return'),self);self.quick_shortcut.setContext(Qt.ShortcutContext.WidgetWithChildrenShortcut);self.quick_shortcut.activated.connect(self.quick_save)
 
     def set_project(self,root):
-        self.root=root;self.frame_id=None;self.dirty=False;self.saving=False;self.pending=None;self.save_error=False;self.debounce.stop();self.checked_ids.clear();self.frames.clear();self.frame_rows=[];self.canvas.pixmap=None;self.canvas.shapes=[];self.canvas.render();self.setEnabled(bool(root))
+        self.root=root;self.frame_id=None;self.media_id=None;self.camera_id=None;self.camera_choice_dirty=False;self.camera_load_serial+=1;self.dirty=False;self.saving=False;self.pending=None;self.save_error=False;self.debounce.stop();self.checked_ids.clear();self.frames.clear();self.frame_rows=[];self.canvas.pixmap=None;self.canvas.shapes=[];self.canvas.render();self.setEnabled(bool(root))
     def set_data(self,frames,labels):
         self.frame_rows=frames;selected_filter=self.media_filter.currentData();self.media_filter.blockSignals(True);self.media_filter.clear();self.media_filter.addItem('全部来源',None)
         for mid in dict.fromkeys(r['media_id'] for r in frames):self.media_filter.addItem('录像 '+mid[:8],mid)
@@ -133,6 +134,7 @@ class AnnotationPage(Page):
                 self.roi_scope.blockSignals(True);self.roi_scope.setCurrentIndex(int(self.loaded_camera_roi));self.roi_scope.blockSignals(False);self.restore_selection();self.info.setText(error);return
             self.loaded_camera_roi=result[1]['camera_roi']
             image,data=result;self.frame_id=frame_id;self.revision=data['revision'];self.roi_revision=data['roi_revision'];self.roi_snapshot=copy.deepcopy(data['roi_objects']);self.save_error=False
+            if self.media_id!=data['frame']['media_id']:self.camera_choice_dirty=False
             self.current_tag=data['payload']['image_tag'];self.loaded_payload=copy.deepcopy(data['payload']);self.normal_confirmed=False;self.media_id=data['frame']['media_id'];self.camera_id=data['frame']['camera_id'];self.excluded=data['processing_state']=='EXCLUDED'
             self.roi_scope.blockSignals(True);self.roi_scope.setCurrentIndex(int(self.loaded_camera_roi));self.roi_scope.model().item(1).setEnabled(data['camera_available']);self.roi_scope.blockSignals(False)
             self.roi_notice=data['notice'];self.roi_scope.setToolTip(data['notice'] or 'ROI 为可选辅助信息，与目标标注及整帧标签独立。')
@@ -287,13 +289,15 @@ class AnnotationPage(Page):
 
     def load_cameras(self,selected=None):
         if not self.root:return
-        root=self.root;fid=self.frame_id
+        if selected is not None:self.camera_desired=selected;self.camera_choice_dirty=True
+        root=self.root;fid=self.frame_id;self.camera_load_serial+=1;serial=self.camera_load_serial
         def done(rows,error):
-            if error or root!=self.root or fid!=self.frame_id:return
+            if error or root!=self.root or fid!=self.frame_id or serial!=self.camera_load_serial:return
             self.camera_records=rows;self.camera_choice.blockSignals(True);self.camera_choice.clear();self.camera_choice.addItem('未关联摄像头',None)
             for r in rows:self.camera_choice.addItem(r['name']+' · '+r['id'][:8],r['id'])
-            self.camera_choice.setCurrentIndex(max(0,self.camera_choice.findData(selected or self.camera_id)));self.camera_choice.blockSignals(False)
+            self.camera_choice.setCurrentIndex(max(0,self.camera_choice.findData(self.camera_desired if self.camera_choice_dirty else self.camera_id)));self.camera_choice.blockSignals(False)
         self.runner.run(lambda:self.s.cameras.list(root),done)
+    def camera_selected(self,*args):self.camera_desired=self.camera_choice.currentData();self.camera_choice_dirty=True
     def edit_camera(self,existing):
         root=self.root;camera_id=self.camera_choice.currentData() if existing else None
         record=next((r for r in self.camera_records if r['id']==camera_id),None)
@@ -306,11 +310,12 @@ class AnnotationPage(Page):
             self.load_cameras(row['id']);self.info.setText('摄像头已保存，UUID不变；新建后点击保存摄像头关联。')
         self.runner.run(lambda:self.s.cameras.save(name,camera_id,record['revision'] if record else None,root),done)
     def associate_camera(self):
-        if not self.media_id or self.dirty or self.saving:self.info.setText('请先等待或保存当前标注，再关联摄像头。');return
+        if not self.media_id or self.loading or self.dirty or self.saving:self.info.setText('请先等待或保存当前标注，再关联摄像头。');return
         root=self.root;mid=self.media_id;cid=self.camera_choice.currentData();old=self.camera_id
         def done(result,error):
             if root!=self.root:return
             if error:self.info.setText(error);return
+            self.camera_choice_dirty=False;self.camera_id=result['camera_id']
             self.saved.emit();self.request_load(self.frame_id,force=True);self.info.setText('摄像头已关联，同录像及来源片段复用；标注UUID不变。')
         self.runner.run(lambda:self.s.cameras.associate(mid,cid,old,root),done)
     def restore_history(self):

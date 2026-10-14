@@ -17,7 +17,7 @@ def run(directory):
     directory=Path(directory).resolve();directory.mkdir(parents=True,exist_ok=True)
     result={'status':'RUNNING','frozen':bool(getattr(sys,'frozen',False)),'steps':[],'ai':'DISABLED','loaded_torch':False,'environment_scope':'same physical developer PC; isolated PATH/environment, not a clean VM'}
     app=QApplication.instance() or QApplication(sys.argv[:1]);services=None;window=None
-    def wait(predicate,timeout=25):
+    def wait(predicate,timeout=60):
         until=time.monotonic()+timeout
         while time.monotonic()<until:
             app.processEvents();QTest.qWait(25)

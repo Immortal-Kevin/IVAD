@@ -43,7 +43,11 @@ def test_gui_quick_batch_camera_exclude_restore(qtbot,services,media_project,mon
     assert services.annotations.load(third)['payload']['image_tag']=='UNKNOWN'
     monkeypatch.setattr(QInputDialog,'getText',lambda *args,**kwargs:('1204-1202给煤机摄像头',True))
     click(qtbot,a,'camera_create');qtbot.waitUntil(lambda:a.camera_choice.currentData() is not None,timeout=10000)
-    camera=a.camera_choice.currentData();click(qtbot,a,'camera_associate')
+    qtbot.waitUntil(lambda:not a.loading and not w.p2.refreshing,timeout=10000)
+    camera=a.camera_choice.currentData();w.p2.refresh()
+    qtbot.waitUntil(lambda:not w.p2.refreshing and not a.loading,timeout=10000);qtbot.wait(80)
+    assert a.camera_choice.currentData()==camera
+    click(qtbot,a,'camera_associate')
     qtbot.waitUntil(lambda:a.camera_id==camera and not a.loading,timeout=10000)
     assert services.media.get(a.media_id)['camera_id']==camera
     # A normal DRAFT frame is soft-excluded; the saved document survives.
