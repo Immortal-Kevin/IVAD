@@ -1,5 +1,6 @@
 """应用组合根；GUI依赖服务，不直接执行CRUD或GPU操作。"""
 from pathlib import Path
+import sys
 from ivad_app.storage.database import Database
 from ivad_app.services.logging_service import LoggingService
 from ivad_app.services.settings_service import SettingsService
@@ -12,15 +13,16 @@ from ivad_app.services.annotation_service import AnnotationService
 from ivad_app.services.dataset_service import DatasetService
 
 class ApplicationServices:
-    def __init__(self, root: Path, data_dir: Path | None = None, *, step_seconds: float = 0.1):
+    def __init__(self, root: Path, data_dir: Path | None = None, *, step_seconds: float = 0.1, lite: bool | None = None):
         self.root = Path(root)
+        self.lite = bool(getattr(sys, 'frozen', False)) if lite is None else lite
         self.data_dir = Path(data_dir) if data_dir else self.root / 'runtime'
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.db = Database(self.data_dir / 'catalog.sqlite', create=not (self.data_dir / 'catalog.sqlite').exists())
         self.logs = LoggingService(self.db, self.data_dir / 'logs')
         self.settings = SettingsService(self.db)
         self.projects = ProjectService(self.settings, self.logs)
-        self.devices = DeviceService(self.db, self.settings, self.logs, self.root)
+        self.devices = DeviceService(self.db, self.settings, self.logs, self.root, lite=self.lite)
         self.jobs = JobService(self.db, self.logs, step_seconds=step_seconds)
         self.store = ProjectStore(self.projects)
         self.media = MediaService(self.store, self.logs)
