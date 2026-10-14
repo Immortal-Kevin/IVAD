@@ -11,7 +11,7 @@ from alembic.config import Config
 from alembic import command
 from ivad_app.core.contracts import AppError
 
-SCHEMA_HEAD = '0003'
+SCHEMA_HEAD = '0004'
 MIGRATION_LOCK = threading.Lock()  # Alembic使用模块级代理，不并发运行迁移。
 
 class Database:
@@ -28,7 +28,7 @@ class Database:
                     if raw.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
                         raise AppError('DB_CORRUPT', '数据库完整性检查失败，已停止打开。')
                     current = raw.execute('SELECT version_num FROM alembic_version').fetchone()[0]
-                if current not in {'0001', '0002', SCHEMA_HEAD}:
+                if current not in {'0001', '0002', '0003', SCHEMA_HEAD}:
                     raise AppError('SCHEMA_UNSUPPORTED', '数据库版本不受支持，请使用兼容版本。')
                 if current != revision:
                     backup = self.path.with_name(self.path.name + f'.migration-{uuid4().hex}.backup')

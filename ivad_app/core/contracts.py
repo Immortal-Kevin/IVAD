@@ -21,7 +21,7 @@ class ProjectInfo:
     site: str
     root: str
     revision: int
-    schema: str = '0003'
+    schema: str = '0004'
 
     def to_dict(self) -> dict:
         return asdict(self)

@@ -28,6 +28,7 @@ class ApplicationServices:
         self.datasets = DatasetService(self.store, self.logs)
         self.jobs.register('p2_import', self.media.import_batch)
         self.jobs.register('p2_extract', self.media.extract)
+        self.jobs.register('p2_clip', self.media.save_video_clip)
         self.jobs.register('p2_freeze', self.datasets.freeze)
         self.jobs.register('p2_export', self.datasets.export)
         self.logs.write('application', 'IVAD P2启动，P3–P6尚未实现。')

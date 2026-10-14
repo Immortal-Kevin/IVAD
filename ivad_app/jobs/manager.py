@@ -84,8 +84,10 @@ class JobService:
                         if row['kind'] == 'diagnostic_failure' and step == 6:
                             raise RuntimeError('P1 controlled diagnostic failure')
                         self._change(job_id, progress=round(step * 100 / 30))
-                state = 'CANCELLED' if event.is_set() else 'SUCCEEDED'
-                with self.lock: self._change(job_id, state)
+                # Clip publication is complete when its handler returns the committed asset.
+                published_clip=row['kind']=='p2_clip' and bool(result.get('media_id'))
+                state = 'SUCCEEDED' if published_clip else ('CANCELLED' if event.is_set() else 'SUCCEEDED')
+                with self.lock: self._change(job_id, state, progress=100 if state=='SUCCEEDED' else None)
                 self.logs.write('job', '任务已取消。' if state == 'CANCELLED' else '非AI任务完成。', job_id=job_id)
             except AppError as exc:
                 self._change(job_id, 'CANCELLED' if exc.code == 'JOB_CANCELLED' else 'FAILED', error=exc.message)

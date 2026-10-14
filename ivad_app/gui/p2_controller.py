@@ -19,6 +19,7 @@ class P2Controller(QObject):
         for key,page in [('media',self.media),('annotation',self.annotation),('dataset',self.dataset)]:
             old=window.pages[key];window.stack.removeWidget(old);old.deleteLater();window.pages[key]=page;window.stack.addWidget(page);page.setEnabled(False)
         self.media.import_requested.connect(lambda p:self.submit('p2_import',p));self.media.extract_requested.connect(lambda p:self.submit('p2_extract',p));self.media.capture_requested.connect(self.capture)
+        self.media.clip_file_requested.connect(lambda p:self.submit('p2_clip',p));self.media.cancel_clip_requested.connect(lambda:self.cancel_tasks('p2_clip'))
         self.media.load_requested.connect(self.load_media);self.media.relocate_requested.connect(self.relocate);self.media.clip_requested.connect(self.save_clip);self.media.clip_delete_requested.connect(self.delete_clip)
         self.media.check_requested.connect(self.check);self.media.cancel_requested.connect(self.cancel_tasks)
         self.media.labels_requested.connect(self.labels);self.annotation.labels_requested.connect(self.labels);self.annotation.saved.connect(self.refresh)
@@ -43,7 +44,7 @@ class P2Controller(QObject):
             if error:return
             media,frames,labels,candidates,versions=result;selected=self.media.media_id
             self.media.media_rows=media
-            put_table(self.media.table,[[r['name'],r['mode'],r['state'],f"{r['video'].get('duration_us',0)/1000000:.3f}s",r['video'].get('codec',''),f"{r['video'].get('display_width','')}×{r['video'].get('display_height','')}"] for r in media])
+            put_table(self.media.table,[[('CLIP · ' if r.get('kind')=='CLIP' else '')+r['name'],r['mode'],r['state'],f"{r['video'].get('duration_us',0)/1000000:.3f}s",r['video'].get('codec',''),f"{r['video'].get('display_width','')}×{r['video'].get('display_height','')}"] for r in media])
             if selected:
                 self.media.table.blockSignals(True)
                 for i,row in enumerate(media):
@@ -70,7 +71,7 @@ class P2Controller(QObject):
         if not self.root:self.window.show_error('请先打开项目。');return
         root=self.root;project=self.s.projects.current;value=dict(payload,root=root)
         def done(job,error):
-            if not error:self.tracked[job]={'root':root,'kind':kind};self.window.show_notice('P2非AI任务已排队，可在任务中心查看或取消。')
+            if not error:self.tracked[job]={'root':root,'kind':kind,'media_id':payload.get('media_id')};self.window.show_notice('P2非AI任务已排队，可在任务中心查看或取消。')
         self.runner.run(lambda:self.s.jobs.submit(kind,project.id,value),done)
 
     def watch_jobs(self):
@@ -80,6 +81,8 @@ class P2Controller(QObject):
             self.jobs_checking=False
             if error:return
             for job in rows:
+                info=self.tracked.get(job['id'])
+                if info and info['root']==self.root and info['kind']=='p2_clip' and job['state'] in {'RUNNING','QUEUED'}:self.media.info.setText(f"视频片段保存：{job['state']} · {job['progress']}%，可在任务中心查看。")
                 if job['state'] in {'SUCCEEDED','FAILED','CANCELLED','INTERRUPTED'}:
                     info=self.tracked.pop(job['id'],None)
                     if info and info['root']==self.root:
@@ -87,20 +90,25 @@ class P2Controller(QObject):
                         if job['state']!='SUCCEEDED':message=f"任务{job['state']}："+(job['error'] or '已提交的完整资源保留。')
                         elif kind=='p2_import':message=f"导入完成：成功{len(result.get('imported',[]))}、重复{len(result.get('duplicates',[]))}、失败{len(result.get('failed',[]))}。逐项结果见任务日志。"
                         elif kind=='p2_extract':message=f"已生成{result.get('count',0)}张候选图片，可在标注工作台人工审核。"
+                        elif kind=='p2_clip':message='视频片段已保存：'+result.get('name','')+'，左侧CLIP资源可播放和抽帧。'
                         elif kind=='p2_freeze':message=f"数据集v{result.get('number')}已冻结：{result.get('images',0)}图片/{result.get('objects',0)}目标。"+'；'.join(result.get('warnings',[])[:2])
                         else:message='数据集导出完成：'+result.get('path','')+'；'.join(result.get('warnings',[]))
                         self.media.info.setText(message);self.dataset.summary.setText(message)
                         if job['state']=='FAILED':self.window.show_error(job['error'])
                         else:self.window.show_notice(message)
                         self.refresh()
-            self.media.cancel_button.setEnabled(any(v['root']==self.root for v in self.tracked.values()))
-        self.media.cancel_button.setEnabled(any(v['root']==self.root for v in self.tracked.values()))
+            self.update_cancel_buttons()
+        self.update_cancel_buttons()
         self.runner.run(lambda:[self.s.jobs.get(job_id) for job_id in ids],done)
 
-    def cancel_tasks(self):
+    def update_cancel_buttons(self):
+        self.media.cancel_button.setEnabled(any(v['root']==self.root and v['kind']=='p2_extract' and v.get('media_id')==self.media.media_id for v in self.tracked.values()))
+        self.media.cancel_clip_button.setEnabled(any(v['root']==self.root and v['kind']=='p2_clip' and v.get('media_id')==self.media.media_id for v in self.tracked.values()))
+    def cancel_tasks(self,kind='p2_extract'):
         for job,info in list(self.tracked.items()):
-            if info['root']==self.root:self.runner.run(lambda job=job:self.s.jobs.cancel(job))
+            if info['root']==self.root and info['kind']==kind and info.get('media_id')==self.media.media_id:self.runner.run(lambda job=job:self.s.jobs.cancel(job))
     def load_media(self,media_id):
+        self.update_cancel_buttons()
         root=self.root
         def done(row,error):
             if error:self.media.player.stop();self.media.info.setText(error);return

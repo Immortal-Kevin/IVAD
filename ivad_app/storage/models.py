@@ -51,6 +51,9 @@ class LogRecord(Base):
 
 class MediaAsset(Base):
     __tablename__ = 'media_assets'
+    kind: Mapped[str] = mapped_column(String(16), default='ORIGINAL')
+    parent_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    clip_info: Mapped[dict] = mapped_column(JSON, default=dict)
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     project_id: Mapped[str] = mapped_column(String(36))
     name: Mapped[str] = mapped_column(Text)
