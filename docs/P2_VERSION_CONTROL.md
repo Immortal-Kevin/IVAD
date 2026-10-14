@@ -5,3 +5,5 @@
 源码ivad_app/、tests/、scripts/p2/、prompts/P2_IMPLEMENTATION_PROMPT.md、六份P2报告与依赖锁纳入版本控制。venv、artifacts、runtime、原视频/模型/用户项目/导出、P0历史敏感环境文件均被排除。测试原始JSON/XML/截图仍保存在本机artifacts/p2，不上传。
 
 P1原测试只调整Schema最新版本期望及证据输出位置，避免覆写历史artifacts/p1；P1报告/锁/截图/hash保持一致。Git源码回滚不应擅自回退已经迁移的用户数据库；使用迁移前备份与完整项目备份另行恢复。未经明确批准不进入P3。
+
+2026-10-14：P2补充修改在同一nvidia-first分支提交，左右媒体页/人工MP4片段/Schema0004及84项测试纳入本地版本。旧P2报告副本在artifacts/p2-adjustment/history，旧原始证据hash不变。详细提交ID以git log为准，没有远程推送，没有进入P3。
