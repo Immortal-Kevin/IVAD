@@ -163,6 +163,9 @@ class MediaService:
         with self.store.open(root) as (folder, db, _):
             for frame in source.iter_frames(start, end):
                 context.check()
+                # Extraction uses [start,end); the player reader also supports
+                # inclusive seeking, so enforce the sampling boundary here.
+                if frame.time_us >= end: break
                 sample = frame.time_us >= next_fixed
                 if mode == 'smart':
                     array = np.asarray(frame.image.convert('L').resize((64,64)), dtype=np.float32)
