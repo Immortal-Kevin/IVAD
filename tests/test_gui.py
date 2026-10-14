@@ -129,7 +129,7 @@ def test_resizable_layout_and_screenshot(qtbot, services):
         assert window.nav.width() >= 170
         assert window.stack.width() >= 600
     window.resize(1440, 900); window.show_page('projects'); qtbot.wait(100)
-    evidence=services.root/os.environ.get('IVAD_TEST_EVIDENCE_DIR','artifacts/p2/regression');evidence.mkdir(parents=True,exist_ok=True)
+    evidence=services.root/os.environ.get('IVAD_TEST_EVIDENCE_DIR',f'artifacts/test-runs/{time.time_ns()}/regression');evidence.mkdir(parents=True,exist_ok=True)
     window.grab().save(str(evidence / 'gui-projects.png'))
     window.workspace.setCurrentIndex(1); qtbot.wait(100)
     window.grab().save(str(evidence / 'gui-production.png'))

@@ -1,4 +1,5 @@
 import json
+import time
 from pathlib import Path
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QPushButton, QScrollArea
@@ -69,7 +70,7 @@ def test_gui_import_play_extract_annotate_freeze_export_reopen(qtbot,services,tm
         assert services.annotations.load(frame['id'],root)['payload']['objects'][0]['source']=='Human Generated'
         selected.append(frame['id'])
     import os
-    evidence=services.root/os.environ.get('IVAD_P2_GUI_EVIDENCE_DIR','artifacts/p2/gui');evidence.mkdir(parents=True,exist_ok=True)
+    evidence=services.root/os.environ.get('IVAD_P2_GUI_EVIDENCE_DIR',f'artifacts/test-runs/{time.time_ns()}/gui');evidence.mkdir(parents=True,exist_ok=True)
     window.grab().save(str(evidence/'annotation.png'))
     window.show_page('dataset');dataset=window.p2.dataset
     qtbot.waitUntil(lambda:dataset.candidates.rowCount()==3,timeout=10000)
