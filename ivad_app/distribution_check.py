@@ -103,10 +103,18 @@ def run(directory):
         record('GUI diagnostic ZIP export contains allowlisted JSON only')
         window.close();wait(lambda:window.may_close);services.close();services=ApplicationServices(root,directory/'重新启动 应用数据',lite=True)
         window=MainWindow(services,auto_probe=False);window.show();wait(lambda:not window.refresh_busy);window.open_project(project);wait(lambda:services.projects.current and not window.project_busy);window.show_page('annotation');wait(lambda:window.p2.annotation.frame_id and not window.p2.annotation.loading)
-        a=window.p2.annotation;a.media_filter.setCurrentIndex(a.media_filter.findData(clip['id']));wait(lambda:not a.loading and a.frame_id==fid and len(a.canvas.shapes)>=3);record('new GUI window reopens project with persisted annotations and ROI')
+        a=window.p2.annotation;a.media_filter.setCurrentIndex(a.media_filter.findData(clip['id']));wait(lambda:not a.loading and a.frames.count()>0)
+        # Fixed and smart batches can share a PTS; choose the saved UUID rather
+        # than assuming the first chronological item is the saved annotation.
+        index=next(i for i in range(a.frames.count()) if a.frames.item(i).data(Qt.ItemDataRole.UserRole)==fid)
+        a.frames.setCurrentRow(index);wait(lambda:not a.loading and a.frame_id==fid and len(a.canvas.shapes)>=3);record('new GUI window reopens project with persisted annotations and ROI')
         window.close();wait(lambda:window.may_close);services.close();services=None;result['status']='PASS';return 0
     except Exception:
         result['status']='FAIL';result['error']=traceback.format_exc();return 1
     finally:
         (directory/'deployment-results.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+        if window and not window.may_close:
+            try:window.close();wait(lambda:window.may_close,15)
+            except Exception:
+                window.runner.stop();window.p2.shutdown()
         if services:services.close()
