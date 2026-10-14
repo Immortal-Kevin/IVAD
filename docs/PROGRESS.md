@@ -13,3 +13,6 @@ Schema0003添加业务表，旧0002数据/迁移备份验证；原P0/P1报告和
 
 
 2026-10-14 P2-Test Distribution：冻结db81c49，P2 Lite Beta onedir ZIP与独立IVAD.exe已构建；86项最终回归、15条真实EXE链路、另进程原生打开项目恢复均通过。跨电脑/无NVIDIA实机/真实断网尚未测。分发审核BLOCKED（FFmpeg/x264/x265/Qt许可与源资料未闭合）；历史保护FAIL（3文件hash变化，另1旧截图重新写入，未找到原版）。后续测试输出已隔离，原GPU/GUI环境包版本未变。报告P2_DISTRIBUTION_ACCEPTANCE.md和P2_DISTRIBUTION_TEST_RESULTS.md；仅供用户审核，不建议外发，无Setup版，未进入P3。
+
+
+2026-10-14 P2 Annotation UX v2：正常/异常/未知快捷保存、自动翻页开关、处理状态图标/勾选筛选、批量正常、UUID摄像头/ROI/片段关联、软剔除/恢复和保护已实现。0005增量迁移前备份，真实45帧复用仅在副本测试，用户原数据与环境保留。最终完整100测试通过，额外真实GUI及DPI验证见P2_ANNOTATION_UX_V2_TEST_RESULTS.md；原生自动化访问冲突仍未定位。Word18页/PDF1页更新；旧Beta.1过期，新Beta.2另名本地候选，许可/分发继续BLOCKED。停止在P2，等待用户审阅，未进入P3–P6。构建/哈希/验收按本轮package-summary和P2_ACCEPTANCE为准。
