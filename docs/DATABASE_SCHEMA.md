@@ -24,3 +24,14 @@
 ## Schema0004：人工保存视频片段（2026-10-14）
 
 当前HEAD=0004，0003仍是历史业务基线。新增media_assets.kind（ORIGINAL/CLIP，旧行默认ORIGINAL）、parent_id（来源媒体UUID，可空）、clip_info JSON（旧行默认{}）。来源为应用层关系，不重建现表；完整性检查验证父记录、来源hash与有效范围。clip_info保留请求start/end微秒、实际first/last源相对时间微秒、生成时间、源hash、帧数、编码、旋转、备注。路径/媒体UUID/任务/导入时间使用原列，片段COPY存media/。0003迁移前自动备份，原列和值真实测试保留。
+
+
+## Schema0005 P2 UX v2
+
+当前HEAD=0005。新cameras表含稳定UUID id、可重名name、旧编号别名legacy_key、revision、history。media_assets.camera_id、rois.camera_id是服务验证的项目内关系；新增可空列，不重建旧SQLite表创建外键。旧camera文本保留，旧camera ROI scope迁移为camera:UUID，几何/修订不动。项目本身从独立数据库限定Camera所属范围。
+
+frames.handling JSON默认{}：is_excluded、exclusion_reason、excluded_at/by、previous_state、restored_at、revision、history。Annotation.image_tag及AnnotationRevision复用，未处理/正常/异常/待复核/冲突推导，EXCLUDED覆盖；审核状态独立，旧文档不重写。Frame/Annotation/Media主键及来源不删除。
+
+0004→0005使用既有SQLite backup API先备份，只增加表/列及关联映射，不清空/重建。已达目标版本的只读服务访问仍检验完整性/版本，不重复运行Alembic upgrade；实际升级仍受MIGRATION_LOCK与事务保护。回滚/降级拒绝，保留备份供后续人工恢复。
+
+批量预览+提交以revision核验；late failure全事务回滚。冻结发布再次检查handling版本；新候选排除未处理/未知/剔除/冲突，旧dataset manifest、样本和历史导出保持不可变。
