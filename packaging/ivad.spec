@@ -10,4 +10,4 @@ a=Analysis([str(root/'packaging/entry.py')],pathex=[str(root)],binaries=[],datas
  excludes=['torch','torchvision','onnxruntime','ultralytics','pytest','tkinter','PySide6.QtNetwork','PySide6.QtMultimedia','PySide6.QtPdf','PySide6.QtQml','PySide6.QtQuick'],noarchive=False)
 pyz=PYZ(a.pure)
 exe=EXE(pyz,a.scripts,[],exclude_binaries=True,name='IVAD',debug=False,bootloader_ignore_signals=False,strip=False,upx=False,console=False,icon=str(root/'packaging/ivad.ico'),version=str(root/'packaging/version-info.txt'))
-coll=COLLECT(exe,a.binaries,a.datas,strip=False,upx=False,name='IVAD_Platform_v1.0_P2_Beta_Portable')
+coll=COLLECT(exe,a.binaries,a.datas,strip=False,upx=False,name='IVAD_Platform_v1.0_P2_Beta2_Portable')
