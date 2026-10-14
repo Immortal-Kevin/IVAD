@@ -18,6 +18,7 @@ class Database:
     def __init__(self, path: Path, *, create: bool = False, revision: str = SCHEMA_HEAD):
         self.path = Path(path)
         self.lock = threading.RLock()
+        needs_migration = True
         if not create and not self.path.is_file():
             raise AppError('DB_MISSING', '项目数据库不存在，请确认目录完整。')
         if self.path.exists():
@@ -30,6 +31,7 @@ class Database:
                     current = raw.execute('SELECT version_num FROM alembic_version').fetchone()[0]
                 if current not in {'0001', '0002', '0003', '0004', SCHEMA_HEAD}:
                     raise AppError('SCHEMA_UNSUPPORTED', '数据库版本不受支持，请使用兼容版本。')
+                needs_migration = current != revision
                 if current != revision:
                     backup = self.path.with_name(self.path.name + f'.migration-{uuid4().hex}.backup')
                     with sqlite3.connect(uri, uri=True) as src, sqlite3.connect(backup) as dst:
@@ -51,9 +53,10 @@ class Database:
         try:
             cfg = Config()
             cfg.set_main_option('script_location', str(Path(__file__).parent / 'migrations'))
-            with MIGRATION_LOCK, self.engine.begin() as connection:
-                cfg.attributes['connection'] = connection
-                command.upgrade(cfg, revision)
+            if needs_migration:
+                with MIGRATION_LOCK, self.engine.begin() as connection:
+                    cfg.attributes['connection'] = connection
+                    command.upgrade(cfg, revision)
         except Exception as exc:
             self.engine.dispose()
             raise AppError('DB_MIGRATION', '数据库迁移失败，已停止打开；请查看诊断日志及迁移备份。') from exc
