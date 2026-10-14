@@ -47,3 +47,12 @@ YOLO26 与 YOLO11 输出与 NMS 分别适配；原始张量对齐和最终检测
 - 冻结只接受已人工审核，来源组划分优先于精确比例。正常空目标可以是负样本，未知/异常空目标不得默认为正常；SHA256重复去重，近重复只警告，避免自动删除关键异常。
 - 文件和数据库不是分布式事务。可捕获异常回退.partial，保留中断证据；强杀窗口人工核对，绝不自动删除未知用户资源。不存在工业准确率/大规模稳定性承诺。
 - PyAV资料：https://pyav.basswood.io/docs/stable/api/video.html；Qt6.8 QMediaPlayer毫秒position：https://doc.qt.io/qt-6.8/qmediaplayer.html；真实YOLOpolygon规范：https://docs.ultralytics.com/datasets/segment/ 。仅以实际输出与测试宣布兼容。
+
+## P2补充修改决策（2026-10-14）
+
+- 用户仅批准视频管理UI与人工保存片段，本轮不进入P3。
+- 左表保留六列，可选导入信息默认折叠；右区可滚动，海蓝白字未选标签、白底黑字激活/悬停。参数以可见中文辅助说明为主，tooltip为补充。
+- 裁剪选择重新编码而非关键帧粗略流拷贝；区间[start,end)以实际帧PTS截取、首帧归零，输出帧边界与来源记录透明。只保存视频，不含音频；最短100ms且两帧，拒绝片段再裁片段。使用现有PyAV/FFmpeg/libx264，无新增依赖。
+- Schema0004只加媒体kind、parent_id、clip_info，旧媒体默认为ORIGINAL。parent_id为应用层来源关系，服务和一致性检查验证；不为新外键重建SQLite表。
+- 失败/取消清理本次UUID暂存与未提交文件，不登记错误READY；已发布完成的片段不因末尾取消误记为未完成。源录像只读，REFERENCE裁剪产物仍COPY落项目内。
+- DatasetService只增加必要source_group_id关联，避免父子录像进不同来源划分；原真值模块未重写。旧P2报告先完整存history，原artifacts/p2不覆盖。当前84项全部通过，原环境包版本与历史hash不变。

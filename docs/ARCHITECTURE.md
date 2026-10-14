@@ -117,3 +117,7 @@ FileVideoSource基于PyAV15.1.0 wheel的FFmpeg库真实解码。QtMultimedia实�
 AnnotationCanvas场景坐标等于解码图片像素，显示变换不改真值；ROI独立按显示坐标归一化关联视频/camera，标注和ROI修订CAS事务保存。350ms自动保存和项目/退出flush避免静默遗失。数据集只冻结已人工审核图片，保存图片/类别/真值/ROI/片段快照；精确hash去重、来源分组、随机风险确认。
 
 Export adapters输出YOLO detect/真实polygon segment/COCO/native；无法表达的语义保留native旁车，segment遇box整次拒绝。暂存文件校验后唯一目录rename，数据库异常可回退.partial；强杀跨资源窗口不作原子分布式保证，完整恢复后续阶段验收。P3–P6依旧未实施，未经批准不得进入。
+
+## 14. P2补充修改（2026-10-14）
+
+MediaPage保持同一页，改为左右QSplitter：左侧独立录像表，右侧QScrollArea共享起止范围及播放/抽帧/片段标签/保存视频片段四标签。新增p2_clip复用JobService，PyAV/FFmpeg实际PTS解码并H.264重编码，旋转落实到像素，完整解码/hash校验后登记COPY CLIP；源视频只读。媒体kind/parent_id/clip_info由0004添加，不重建旧表。原/片段共享source_group_id，camera优先，防数据集父子来源泄漏。没有P3–P6变更。

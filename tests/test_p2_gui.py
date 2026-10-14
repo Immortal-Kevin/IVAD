@@ -68,7 +68,8 @@ def test_gui_import_play_extract_annotate_freeze_export_reopen(qtbot,services,tm
         qtbot.waitUntil(lambda:ann.revision>0 and not ann.dirty and not ann.saving,timeout=10000)
         assert services.annotations.load(frame['id'],root)['payload']['objects'][0]['source']=='Human Generated'
         selected.append(frame['id'])
-    evidence=services.root/'artifacts/p2/gui';evidence.mkdir(parents=True,exist_ok=True)
+    import os
+    evidence=services.root/os.environ.get('IVAD_P2_GUI_EVIDENCE_DIR','artifacts/p2/gui');evidence.mkdir(parents=True,exist_ok=True)
     window.grab().save(str(evidence/'annotation.png'))
     window.show_page('dataset');dataset=window.p2.dataset
     qtbot.waitUntil(lambda:dataset.candidates.rowCount()==3,timeout=10000)

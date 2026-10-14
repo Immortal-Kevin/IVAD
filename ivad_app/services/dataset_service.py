@@ -41,7 +41,7 @@ class DatasetService:
                 except AppError as exc:issues.append(exc.message+' '+frame_id);continue
                 if not payload['objects'] and payload['image_tag']=='ABNORMAL':warnings.append('异常图片没有目标标注，仅适合原生标签任务：'+frame_id)
                 if not payload['objects'] and payload['image_tag']=='UNKNOWN':warnings.append('未知图片不会作为正常负样本：'+frame_id)
-                samples.append({'frame_id':frame.id,'media_id':frame.media_id,'camera':media.camera,'sha256':frame.sha256,'perceptual_hash':frame.perceptual_hash,'source_image':frame.path,'width':frame.width,'height':frame.height,'pts_us':frame.pts_us,'time_us':frame.time_us,'parameters':frame.parameters,'method':frame.method,'annotation':payload,'annotation_revision':doc.revision,'annotation_status':doc.status,'annotation_source':doc.source})
+                samples.append({'frame_id':frame.id,'media_id':frame.media_id,'camera':media.camera,'source_group_id':media.parent_id or media.id,'sha256':frame.sha256,'perceptual_hash':frame.perceptual_hash,'source_image':frame.path,'width':frame.width,'height':frame.height,'pts_us':frame.pts_us,'time_us':frame.time_us,'parameters':frame.parameters,'method':frame.method,'annotation':payload,'annotation_revision':doc.revision,'annotation_status':doc.status,'annotation_source':doc.source})
                 revisions[frame.id]=doc.revision
             for i,a in enumerate(samples):
                 if any((int(a['perceptual_hash'],16)^int(b['perceptual_hash'],16)).bit_count()<=4 for b in samples[:i]):
@@ -49,7 +49,7 @@ class DatasetService:
             label_rows=[session.get(LabelCategory,label_id) for label_id in sorted(classes)]
             mapping=[{'uuid':r.id,'class_id':index,'name':r.name,'revision':r.revision,'enabled':r.enabled} for index,r in enumerate(label_rows)]
             if not samples:issues.append('没有可冻结的已审核图片。')
-            return {'samples':samples,'classes':mapping,'issues':issues,'warnings':sorted(set(warnings)),'revisions':revisions,'count':len(samples),'objects':sum(len(s['annotation']['objects']) for s in samples),'groups':len({s['camera'] or s['media_id'] for s in samples})}
+            return {'samples':samples,'classes':mapping,'issues':issues,'warnings':sorted(set(warnings)),'revisions':revisions,'count':len(samples),'objects':sum(len(s['annotation']['objects']) for s in samples),'groups':len({s['camera'] or s.get('source_group_id',s['media_id']) for s in samples})}
 
     def freeze(self,context,payload):
         root=payload['root'];name=payload.get('name','').strip();strategy=payload.get('strategy','grouped')
@@ -61,13 +61,13 @@ class DatasetService:
         preview=self.preview(payload['frame_ids'],root)
         if preview['issues']:raise AppError('DATASET_INVALID','冻结检查失败：'+'；'.join(preview['issues'][:4]))
         samples=preview['samples'];warnings=preview['warnings'];seed=int(payload.get('seed',123));rng=random.Random(seed)
-        groups=sorted({(s['camera'] or s['media_id']) if strategy=='grouped' else s['frame_id'] for s in samples});rng.shuffle(groups)
+        groups=sorted({(s['camera'] or s.get('source_group_id',s['media_id'])) if strategy=='grouped' else s['frame_id'] for s in samples});rng.shuffle(groups)
         count=len(groups);ntrain=max(1,round(count*ratios[0]/100)) if ratios[0]>0 else 0;ntrain=min(count,ntrain)
         nval=min(count-ntrain,round(count*ratios[1]/100));assignment={g:'train' if i<ntrain else 'val' if i<ntrain+nval else 'test' for i,g in enumerate(groups)}
         if count>=3 and all(r>0 for r in ratios):
             # 小组数时优先确保三份均非空，并仍然保持来源组不交叉。
             assignment[groups[0]]='train';assignment[groups[-2]]='val';assignment[groups[-1]]='test'
-        for s in samples:s['split']=assignment[(s['camera'] or s['media_id']) if strategy=='grouped' else s['frame_id']]
+        for s in samples:s['split']=assignment[(s['camera'] or s.get('source_group_id',s['media_id'])) if strategy=='grouped' else s['frame_id']]
         if strategy=='random':warnings.append('用户选择随机划分；相邻帧/同录像数据泄漏风险仍存在。')
         splits={split:sum(s['split']==split for s in samples) for split in ['train','val','test']}
         if not splits['val'] or not splits['test']:warnings.append('独立来源组不足，验证/测试可能为空；工业训练前需增加独立来源。')

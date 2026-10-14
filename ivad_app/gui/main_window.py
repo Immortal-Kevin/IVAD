@@ -252,7 +252,7 @@ class MainWindow(QMainWindow):
             self.refresh_busy = False
             if error: return
             jobs, logs, recent = result
-            names={'diagnostic':'非AI诊断','diagnostic_failure':'可控异常测试','p2_import':'视频批量导入','p2_extract':'PTS抽帧','p2_freeze':'数据集冻结','p2_export':'数据集导出'}
+            names={'diagnostic':'非AI诊断','diagnostic_failure':'可控异常测试','p2_import':'视频批量导入','p2_extract':'PTS抽帧','p2_clip':'人工视频片段保存','p2_freeze':'数据集冻结','p2_export':'数据集导出'}
             fill_table(self.pages['jobs'].jobs, [[j['id'], names.get(j['kind'],j['kind']), j['state'], str(j['progress']) + '%', local_time(j['updated_at']), j['error']] for j in jobs])
             self.pages['jobs'].show_detail()
             self.global_tasks.setText(f"任务：运行{sum(j['state']=='RUNNING' for j in jobs)} / 排队{sum(j['state']=='QUEUED' for j in jobs)} / 历史{len(jobs)}")

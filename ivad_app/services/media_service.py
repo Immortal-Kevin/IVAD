@@ -184,6 +184,57 @@ class MediaService:
         with self.store.open(root) as (folder, db, _):
             return self._save_frame(folder, db, media_id, frame, 'manual', {'mode':'manual','format':'PNG','rotation':frame.rotation}, 'manual')
 
+    def save_video_clip(self, context, payload):
+        """Re-encode displayed frames in [start,end), preserving actual VFR PTS."""
+        import av
+        from fractions import Fraction
+        parent=self.get(payload['media_id'],payload['root'])
+        if parent['kind']=='CLIP':raise AppError('CLIP_NESTED','本轮不支持片段再次裁剪，请选择原始录像。')
+        start=int(payload['start_us']);end=int(payload['end_us'])
+        if not 0<=start<end<=parent['video']['duration_us']:raise AppError('CLIP_RANGE','终点必须晚于起点，且范围不能超出视频时长。')
+        if end-start<100000:raise AppError('CLIP_SHORT','片段至少100毫秒，请扩大时间范围。')
+        name=payload.get('name','').strip() or f"{Path(parent['name']).stem}_{start/1e6:.3f}-{end/1e6:.3f}.mp4"
+        if len(name)>200:raise AppError('CLIP_NAME','片段名称不得超过200个字符。')
+        source=Path(parent['accessible_path']);source_hash=file_hash(source,context.check)
+        if source_hash!=parent['sha256']:raise AppError('SOURCE_CHANGED','来源录像哈希变化，停止裁剪。')
+        with self.store.open(payload['root']) as (folder,db,project_id):
+            estimated=max(16*1024*1024,int(parent['size']*(end-start)/parent['video']['duration_us']*4))
+            if shutil.disk_usage(folder).free<estimated:raise AppError('DISK_SPACE','保存片段的磁盘空间不足。')
+            media_id=str(uuid4());directory=folder/'media';directory.mkdir(exist_ok=True)
+            final=directory/(media_id+'.mp4');stage=directory/(media_id+'.mp4.partial')
+            count=0;first=None;last=None;created=utc_now()
+            try:
+                with av.open(str(stage),'w',format='mp4') as output:
+                    stream=None
+                    for frame in FileVideoSource(source,parent['video']).iter_frames(start,end):
+                        context.check()
+                        if frame.time_us>=end:break
+                        if stream is None:
+                            first=frame.time_us;stream=output.add_stream('libx264',rate=Fraction(parent['video']['nominal_fps'] or '25'))
+                            stream.width=frame.image.width;stream.height=frame.image.height
+                            stream.pix_fmt='yuv420p' if stream.width%2==0 and stream.height%2==0 else 'yuv444p';stream.time_base=Fraction(1,1000000);stream.codec_context.time_base=Fraction(1,1000000)
+                            stream.options={'crf':'18','preset':'fast','bf':'0'}
+                        encoded=av.VideoFrame.from_image(frame.image);encoded.pts=frame.time_us-first;encoded.time_base=Fraction(1,1000000)
+                        for packet in stream.encode(encoded):output.mux(packet)
+                        count+=1;last=frame.time_us;context.progress(min(90,(frame.time_us-start)*90/(end-start)))
+                    if count<2:raise AppError('CLIP_SHORT','所选范围不足两帧，无法保存可播放片段。')
+                    for packet in stream.encode():output.mux(packet)
+                context.check();meta=FileVideoSource.probe(stage)
+                verified=0;verified_last=None
+                for decoded in FileVideoSource(stage,meta).iter_frames():context.check();verified+=1;verified_last=decoded.time_us
+                if verified!=count or abs(verified_last-(last-first))>1:raise AppError('CLIP_VERIFY','片段解码帧数或PTS校验失败。')
+                if file_hash(source,context.check)!=source_hash:raise AppError('SOURCE_CHANGED','裁剪期间源文件改变，停止提交。')
+                checksum=file_hash(stage,context.check);context.check();stage.rename(final)
+                info={'requested_start_us':start,'requested_end_us':end,'first_source_time_us':first,'last_source_time_us':last,'created_at':created,'source_sha256':source_hash,'frames':count,'encoding':'libx264 CRF18','audio':'omitted','rotation_applied':parent['video']['rotation'],'note':payload.get('note','')}
+                context.log('片段编码与解码校验通过，正在提交：'+name)
+                with db.transaction() as session:
+                    context.check()
+                    session.add(MediaAsset(id=media_id,project_id=project_id,name=name,original_path=str(source),path=final.relative_to(folder).as_posix(),mode='COPY',sha256=checksum,size=final.stat().st_size,video=meta,camera=parent['camera'],equipment=parent['equipment'],site=parent['site'],state='READY',error='',job_id=context.job_id,imported_at=created,kind='CLIP',parent_id=parent['id'],clip_info=info))
+                return {'media_id':media_id,'name':name,'frames':count,'source_media_id':parent['id']}
+            except Exception:
+                stage.unlink(missing_ok=True);final.unlink(missing_ok=True)
+                raise
+
     def check(self, root=None):
         issues = []
         with self.store.open(root) as (folder, db, _):
@@ -194,6 +245,10 @@ class MediaService:
                 versions = [row_dict(r) for r in session.scalars(select(DatasetVersion))]
                 exports = [row_dict(r) for r in session.scalars(select(ExportRecord))]
             for row in media_rows:
+                if row.get('kind')=='CLIP':
+                    parent=next((r for r in media_rows if r['id']==row['parent_id']),None)
+                    info=row['clip_info']
+                    if not parent or info.get('source_sha256')!=parent['sha256'] or not 0<=info.get('requested_start_us',-1)<info.get('requested_end_us',0)<=parent['video'].get('duration_us',0):issues.append({'id':row['id'],'kind':'clip_provenance_invalid'})
                 if row['state'] != 'READY': issues.append({'id':row['id'],'kind':'incomplete_media','state':row['state']}); continue
                 try:
                     path = self.resolve(folder,row)
