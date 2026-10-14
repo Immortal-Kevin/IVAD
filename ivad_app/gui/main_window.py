@@ -2,7 +2,7 @@ import json, threading
 from datetime import datetime, timezone, timedelta
 from PySide6.QtCore import Qt, QTimer, Signal, Slot
 from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QListWidget,
-    QComboBox, QFrame, QStackedWidget, QSplitter, QTableWidgetItem, QApplication, QMessageBox)
+    QComboBox, QFrame, QStackedWidget, QSplitter, QTableWidgetItem, QApplication, QMessageBox, QFileDialog)
 from ivad_app import __version__
 from ivad_app.gui.pages import (button, Dashboard, ProjectsPage, JobsPage, DevicesPage, LogsPage, SettingsPage, Placeholder)
 from ivad_app.gui.async_runner import AsyncRunner
@@ -96,6 +96,7 @@ class MainWindow(QMainWindow):
         self.pages['devices'].refresh_requested.connect(self.probe_devices)
         self.pages['settings'].save_requested.connect(self.save_settings)
         self.pages['logs'].copy_requested.connect(self.copy_diagnostics)
+        self.pages['logs'].export_requested.connect(self.export_diagnostics)
         self.pages['logs'].clear_filter_requested.connect(lambda: self.show_job_logs(None))
         self.timer = QTimer(self); self.timer.setInterval(600); self.timer.timeout.connect(self.refresh); self.timer.start()
         from ivad_app.gui.p2_controller import P2Controller
@@ -103,7 +104,13 @@ class MainWindow(QMainWindow):
         self.switch_workspace(0); self.load_settings(); self.refresh()
         self.pages['projects'].set_project(self.s.projects.current)
         self.update_project_summary();self.p2.set_project(self.s.projects.current)
-        if auto_probe: QTimer.singleShot(100, self.probe_devices)
+        if self.s.lite:
+            self.notice.setText('P2 Beta · Lite测试模式：视频和人工标注可用；未安装AI Worker，CUDA/训练/推理未启用。可选设备检查只枚举硬件。')
+            self.pages['dashboard'].layout.addWidget(QLabel('受控 Beta 测试版 · P2 Lite · AI Worker 未提供'))
+            self.pages['devices'].refresh_button.setText('检测NVIDIA硬件（不验证AI）')
+            self.pages['settings'].worker.setEnabled(False)
+            self.pages['settings'].worker.setPlaceholderText('P2 Lite 不配置或加载AI Worker')
+        elif auto_probe: QTimer.singleShot(100, self.probe_devices)
 
     def show_error(self, message):
         self.notice.setObjectName('error'); self.notice.setStyleSheet('background:#fff0ed;color:#943b2f;padding:10px;border-radius:6px;')
@@ -267,6 +274,14 @@ class MainWindow(QMainWindow):
         text += '\n'.join(d.name + ' / ' + d.status for d in self.s.devices.snapshot()) + '\n'
         text += json.dumps(self.pages['logs'].rows, ensure_ascii=False, indent=2)
         QApplication.clipboard().setText(redact(text)); self.show_notice('诊断摘要与技术日志已复制，路径与凭据已脱敏。')
+
+    def export_diagnostics(self):
+        from ivad_app.services.diagnostic_export import export_diagnostics
+        answer = QMessageBox.question(self, '检查诊断包内容', '诊断ZIP仅含软件/Windows/运行库信息、已检测GPU状态和近期错误摘要，不含录像、图片或项目数据库，不自动上传。信息已脱敏，请发送前再检查。是否继续选择保存位置？', QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if answer != QMessageBox.StandardButton.Yes: return
+        path, _ = QFileDialog.getSaveFileName(self, '保存诊断ZIP', 'IVAD_P2_诊断.zip', 'ZIP (*.zip)')
+        if path:
+            self.runner.run(lambda: export_diagnostics(self.s, path), lambda result, error: self.show_notice('诊断ZIP已保存，请发送前检查内容。') if not error else None)
 
     def closeEvent(self, event):
         if self.may_close: event.accept(); return

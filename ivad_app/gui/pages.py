@@ -163,10 +163,12 @@ class DevicesPage(Page):
 
 class LogsPage(Page):
     copy_requested = Signal()
+    export_requested = Signal()
     clear_filter_requested = Signal()
     def __init__(self):
         super().__init__('诊断日志', '应用、项目、任务、设备与数据库日志。诊断文本已作路径与凭据脱敏。')
         row = QHBoxLayout(); row.addWidget(button('复制诊断信息', self.copy_requested.emit, True, 'copy_diagnostics'))
+        row.addWidget(button('导出诊断ZIP…', self.export_requested.emit, name='export_diagnostics'))
         row.addWidget(button('显示全部日志', self.clear_filter_requested.emit)); row.addStretch(); self.layout.addLayout(row)
         self.filter_label = QLabel('显示最近150条日志'); self.layout.addWidget(self.filter_label)
         self.logs = table(['时间', '级别', '类别', '摘要']); self.layout.addWidget(self.logs, 1)

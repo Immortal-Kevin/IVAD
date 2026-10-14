@@ -1,6 +1,6 @@
 """硬件枚举、后端可用与历史实测状态分别报告。"""
 import json, subprocess, threading, re
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from pathlib import Path
 from sqlalchemy import select, delete
 from ivad_app.core.contracts import AppError, DeviceInfo, utc_now
@@ -57,8 +57,9 @@ class NvidiaWorker:
         return match
 
 class DeviceService:
-    def __init__(self, db, settings, logs, root: Path):
+    def __init__(self, db, settings, logs, root: Path, *, lite: bool = False):
         self.db, self.settings, self.logs, self.root = db, settings, logs, root
+        self.lite = lite
         self.devices: list[DeviceInfo] = []
         self.lock = threading.RLock()
         self.workers = WorkerRegistry()
@@ -68,11 +69,15 @@ class DeviceService:
         # 耗时子进程不持有状态锁，GUI读取snapshot不等待GPU检查。
         prefs = self.settings.preferences()
         python = Path(prefs['worker_python']) if prefs.get('worker_python') else self.root / '.venv-nvidia/Scripts/python.exe'
-        try:
-            devices = self.workers.create('nvidia_cuda', self.root, python).probe()
-        except AppError as exc:
-            devices = self._hardware_only(exc.message)
-            self.logs.exception('device', exc.message)
+        if self.lite:
+            devices = self._hardware_only('P2 Lite 未提供AI Worker；仅检测硬件，不执行CUDA、训练或推理。')
+            devices = [replace(device, status='Worker Not Installed' if device.hardware_detected else 'NOT TESTED', details=dict(device.details, worker_installed=False, cuda_test_status='NOT TESTED', evidence='仅硬件枚举；不能作为AI实测通过')) for device in devices]
+        else:
+            try:
+                devices = self.workers.create('nvidia_cuda', self.root, python).probe()
+            except AppError as exc:
+                devices = self._hardware_only(exc.message)
+                self.logs.exception('device', exc.message)
         intel_name, intel_detected = 'Intel GPU', False
         try:
             command = "Get-CimInstance Win32_VideoController | Where-Object Name -Match 'Intel' | Select-Object -ExpandProperty Name | ConvertTo-Json -Compress"
@@ -98,7 +103,12 @@ class DeviceService:
             rows = []
             for line in raw.strip().splitlines():
                 uuid, name, driver, total, free, used = [v.strip() for v in line.split(',')]
-                rows.append(DeviceInfo('nvidia:' + uuid, name, 'NVIDIA CUDA / ORT CUDA', True, False, False, 'Error', {'driver': driver, 'total_mib': int(total), 'free_mib': int(free), 'used_mib': int(used), 'error': error, 'checked_at': utc_now()}))
+                capability='NOT TESTED'
+                try:
+                    result=subprocess.run(['nvidia-smi','--id='+uuid,'--query-gpu=compute_cap','--format=csv,noheader'],capture_output=True,text=True,timeout=5,creationflags=CREATE_NO_WINDOW)
+                    if result.returncode==0 and re.fullmatch(r'\d+\.\d+',result.stdout.strip()):capability=result.stdout.strip()
+                except (OSError,subprocess.SubprocessError):pass
+                rows.append(DeviceInfo('nvidia:' + uuid, name, 'NVIDIA CUDA / ORT CUDA', True, False, False, 'Error', {'driver': driver, 'total_mib': int(total), 'free_mib': int(free), 'used_mib': int(used), 'compute_capability':capability,'error': error, 'checked_at': utc_now()}))
             if rows: return rows
         except (OSError, ValueError, subprocess.SubprocessError): pass
         return [DeviceInfo('nvidia:error', 'NVIDIA检查失败', 'NVIDIA CUDA / ORT CUDA', False, False, False, 'Error', {'error': error, 'hardware_status': 'Not Verified', 'checked_at': utc_now()})]
@@ -106,6 +116,8 @@ class DeviceService:
         with self.lock: return list(self.devices)
 
     def require_gpu(self, device_id: str) -> DeviceInfo:
+        if self.lite:
+            raise AppError('LITE_AI_DISABLED', 'P2 Lite 未启用AI Worker，禁止训练、推理和CPU-only fallback。')
         if not device_id:
             preferred = self.settings.preferences().get('preferred_gpu', '')
             device_id = preferred or next((d.id for d in self.snapshot() if d.id.startswith('nvidia:') and d.backend_available), '')

@@ -1,6 +1,6 @@
 import argparse, os, sys, traceback
 from pathlib import Path
-from PySide6.QtCore import QLockFile, QTimer, Qt
+from PySide6.QtCore import QLockFile, QTimer, Qt, QStandardPaths
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import QApplication, QMessageBox
 from ivad_app.core.application import ApplicationServices
@@ -12,10 +12,12 @@ def main():
     parser.add_argument('--data-dir', type=Path)
     parser.add_argument('--smoke-seconds', type=float, default=0)
     args = parser.parse_args()
-    root = Path(__file__).resolve().parent.parent
-    data_dir = args.data_dir or root / 'runtime'
+    root = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parent.parent))
     QGuiApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
     app = QApplication(sys.argv[:1]); app.setApplicationName('IVAD Platform'); app.setOrganizationName('IVAD')
+    if getattr(sys, 'frozen', False):
+        app.setApplicationName('IVAD P2 Beta')
+    data_dir = args.data_dir or (Path(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppLocalDataLocation)) / 'P2Beta' if getattr(sys, 'frozen', False) else root / 'runtime')
     services = None
     try:
         data_dir.mkdir(parents=True, exist_ok=True)
