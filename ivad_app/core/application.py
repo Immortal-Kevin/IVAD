@@ -11,6 +11,7 @@ from ivad_app.storage.project_store import ProjectStore
 from ivad_app.services.media_service import MediaService
 from ivad_app.services.annotation_service import AnnotationService
 from ivad_app.services.dataset_service import DatasetService
+from ivad_app.services.camera_service import CameraService
 
 class ApplicationServices:
     def __init__(self, root: Path, data_dir: Path | None = None, *, step_seconds: float = 0.1, lite: bool | None = None):
@@ -27,6 +28,7 @@ class ApplicationServices:
         self.store = ProjectStore(self.projects)
         self.media = MediaService(self.store, self.logs)
         self.annotations = AnnotationService(self.store, self.media, self.logs)
+        self.cameras = CameraService(self.store,self.logs)
         self.datasets = DatasetService(self.store, self.logs)
         self.jobs.register('p2_import', self.media.import_batch)
         self.jobs.register('p2_extract', self.media.extract)

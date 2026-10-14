@@ -10,6 +10,7 @@ from ivad_app.core.contracts import AppError, utc_now
 from ivad_app.storage.models import MediaAsset, ExtractedFrame, DatasetVersion, ExportRecord
 from ivad_app.storage.project_store import file_hash, safe_path, row_dict
 from ivad_app.video.reader import FileVideoSource
+from ivad_app.services.camera_service import CameraService
 
 def dhash(image):
     array = np.asarray(image.convert('L').resize((9, 8)))
@@ -62,7 +63,8 @@ class MediaService:
                         if duplicate:
                             report['duplicates'].append({'name': source.name, 'id': duplicate.id}); context.log('检测到相同SHA256录像，复用已有资源。'); continue
                     with db.transaction() as session:
-                        session.add(MediaAsset(id=media_id, project_id=project_id, name=source.name, original_path=str(source), path='', mode=mode, sha256=checksum, size=size, video={}, camera=payload.get('camera',''), equipment=payload.get('equipment',''), site=payload.get('site',''), state='IMPORTING', error='', job_id=context.job_id, imported_at=utc_now()))
+                        camera_id=CameraService.legacy(session,payload.get('camera',''))
+                        session.add(MediaAsset(id=media_id, project_id=project_id, name=source.name, original_path=str(source), path='', mode=mode, sha256=checksum, size=size, video={}, camera=payload.get('camera',''),camera_id=camera_id, equipment=payload.get('equipment',''), site=payload.get('site',''), state='IMPORTING', error='', job_id=context.job_id, imported_at=utc_now()))
                     metadata = FileVideoSource.probe(source)
                     if mode == 'COPY':
                         if shutil.disk_usage(folder).free < size + 16 * 1024 * 1024: raise AppError('DISK_SPACE', '项目磁盘空间不足，尚未复制原始录像。')
@@ -232,7 +234,8 @@ class MediaService:
                 context.log('片段编码与解码校验通过，正在提交：'+name)
                 with db.transaction() as session:
                     context.check()
-                    session.add(MediaAsset(id=media_id,project_id=project_id,name=name,original_path=str(source),path=final.relative_to(folder).as_posix(),mode='COPY',sha256=checksum,size=final.stat().st_size,video=meta,camera=parent['camera'],equipment=parent['equipment'],site=parent['site'],state='READY',error='',job_id=context.job_id,imported_at=created,kind='CLIP',parent_id=parent['id'],clip_info=info))
+                    live_parent=session.get(MediaAsset,parent['id'])
+                    session.add(MediaAsset(id=media_id,project_id=project_id,name=name,original_path=str(source),path=final.relative_to(folder).as_posix(),mode='COPY',sha256=checksum,size=final.stat().st_size,video=meta,camera=live_parent.camera,camera_id=live_parent.camera_id,equipment=parent['equipment'],site=parent['site'],state='READY',error='',job_id=context.job_id,imported_at=created,kind='CLIP',parent_id=parent['id'],clip_info=info))
                 return {'media_id':media_id,'name':name,'frames':count,'source_media_id':parent['id']}
             except Exception:
                 stage.unlink(missing_ok=True);final.unlink(missing_ok=True)

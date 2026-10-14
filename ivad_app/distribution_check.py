@@ -54,7 +54,7 @@ def run(directory):
         original=hashlib.sha256((sources/'h264.mp4').read_bytes()).hexdigest()
         QFileDialog.getExistingDirectory=lambda *a,**k:str(directory)
         window.show_page('projects');p=window.pages['projects'];p.name.setText('跨电脑 中文 测试项目');p.site.setText('离线测试');click(p,'新建项目…')
-        wait(lambda:services.projects.current is not None and not window.project_busy);project=services.projects.current.root;record('GUI create project and migrations 0004 on Chinese space path')
+        wait(lambda:services.projects.current is not None and not window.project_busy);project=services.projects.current.root;record('GUI create project and migrations 0005 on Chinese space path')
         window.show_page('media');m=window.p2.media;wait(lambda:not window.p2.refreshing)
         QFileDialog.getOpenFileNames=lambda *a,**k:([str(x) for x in sources.iterdir()], '')
         click(m,'批量导入录像…');wait(lambda:len(m.media_rows)==5 and not window.p2.tracked,60)

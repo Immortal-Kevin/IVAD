@@ -56,8 +56,8 @@ class AnnotationService:
 
     @staticmethod
     def scope(media, camera=False):
-        if camera and not media.camera: raise AppError('ROI_CAMERA','当前视频未配置摄像头编号。ROI 为可选辅助信息，不影响基础标注；如需保存 ROI，请选择关联当前视频。')
-        return 'camera:'+media.camera if camera else 'media:'+media.id
+        if camera and not media.camera_id: raise AppError('ROI_CAMERA','当前视频未关联摄像头。ROI 为可选辅助信息，不影响基础标注；如需保存 ROI，请选择关联当前视频。')
+        return 'camera:'+media.camera_id if camera else 'media:'+media.id
 
     def load(self,frame_id,root=None,camera_roi=False):
         with self.store.open(root) as (_,db,_),db.transaction() as session:
@@ -65,7 +65,7 @@ class AnnotationService:
             if not frame: raise AppError('FRAME_MISSING','候选帧不存在。')
             media=session.get(MediaAsset,frame.media_id)
             # Optional camera ROI must never prevent loading ordinary annotations.
-            effective_camera_roi=bool(camera_roi and media.camera)
+            effective_camera_roi=bool(camera_roi and media.camera_id)
             scope=self.scope(media,effective_camera_roi)
             doc=session.scalar(select(Annotation).where(Annotation.frame_id==frame_id))
             roi=session.scalar(select(RegionOfInterest).where(RegionOfInterest.scope==scope))
@@ -74,7 +74,7 @@ class AnnotationService:
             for obj in objects:
                 if obj['kind']=='roi_box':obj['geometry']=[v*(frame.width if i%2==0 else frame.height) for i,v in enumerate(obj['geometry'])]
                 else:obj['geometry']=[[x*frame.width,y*frame.height] for x,y in obj['geometry']]
-            return {'frame':row_dict(frame),'payload':payload,'revision':doc.revision if doc else 0,'status':doc.status if doc else 'DRAFT','source':'Human Generated','scope':scope,'roi_revision':roi.revision if roi else 0,'roi_objects':objects,'camera_roi':effective_camera_roi,'camera_available':bool(media.camera),'notice':'' if media.camera else '当前视频未配置摄像头编号。ROI 为可选辅助信息，不影响基础标注。'}
+            return {'frame':dict(row_dict(frame),media_id=media.id,camera_id=media.camera_id),'payload':payload,'revision':doc.revision if doc else 0,'status':doc.status if doc else 'DRAFT','source':'Human Generated','scope':scope,'roi_revision':roi.revision if roi else 0,'roi_objects':objects,'camera_roi':effective_camera_roi,'camera_available':bool(media.camera_id),'processing_state':self.processing_state(frame,doc),'notice':'' if media.camera_id else '当前视频未配置摄像头编号。ROI 为可选辅助信息，不影响基础标注。'}
 
     def save(self,frame_id,payload,status,expected_revision,roi_objects=None,expected_roi_revision=0,camera_roi=False,root=None):
         if status not in REVIEW_STATES or payload.get('image_tag') not in IMAGE_TAGS: raise AppError('ANNOTATION_STATE','图片标签或审核状态无效。')
@@ -82,8 +82,13 @@ class AnnotationService:
         with self.store.open(root) as (_,db,_),db.transaction() as session:
             frame=session.get(ExtractedFrame,frame_id)
             if not frame: raise AppError('FRAME_MISSING','候选帧不存在。')
+            if frame.handling.get('is_excluded'):raise AppError('FRAME_EXCLUDED','图片已剔除，请先恢复再修改标注。')
             doc=session.scalar(select(Annotation).where(Annotation.frame_id==frame_id))
             if (doc.revision if doc else 0)!=expected_revision: raise AppError('ANNOTATION_CONFLICT','标注被其他操作修改，已阻止覆盖；请重新载入。')
+            if payload['image_tag']=='NORMAL':
+                if objects or payload.get('image_label_id'):raise AppError('NORMAL_CONFLICT','正常帧不能包含故障目标或整帧故障类别，请明确确认转换。')
+                if doc and (doc.payload.get('objects') or doc.payload.get('image_label_id') or (doc.payload.get('image_tag')=='ABNORMAL' and doc.status in {'REVIEWED','APPROVED'})) and not payload.get('normal_conversion_confirmed'):
+                    raise AppError('NORMAL_CONFIRM_REQUIRED','当前图片已有异常标注，改为正常可能清除相关内容。请明确确认。')
             old_labels={o['id']:o.get('label_id') for o in doc.payload.get('objects',[])} if doc else {}
             for obj in objects:
                 try:UUID(obj['id'])
@@ -98,6 +103,7 @@ class AnnotationService:
                 obj['source']='Human Generated'
             if payload.get('image_label_id') and not session.get(LabelCategory,payload['image_label_id']):raise AppError('LABEL_MISSING','图片故障类别不存在。')
             saved=dict(payload,objects=objects,coordinate_system='image_pixels',width=frame.width,height=frame.height)
+            saved.pop('normal_conversion_confirmed',None)
             if not doc:
                 doc=Annotation(id=str(uuid4()),frame_id=frame_id,payload={},status='DRAFT',revision=0,source='Human Generated',updated_at=utc_now());session.add(doc);session.flush()
             doc.payload=saved;doc.status=status;doc.revision+=1;doc.updated_at=utc_now();doc.source='Human Generated'
@@ -119,12 +125,82 @@ class AnnotationService:
                     if obj['kind']=='roi_box':obj['geometry']=[v/(frame.width if i%2==0 else frame.height) for i,v in enumerate(obj['geometry'])]
                     else:obj['geometry']=[[x/frame.width,y/frame.height] for x,y in obj['geometry']]
                 if not roi:
-                    roi=RegionOfInterest(id=str(uuid4()),scope=scope,media_id=frame.media_id,camera=media.camera,payload={'objects':[],'history':[]},revision=0,updated_at=utc_now());session.add(roi)
+                    roi=RegionOfInterest(id=str(uuid4()),scope=scope,media_id=frame.media_id,camera=media.camera,camera_id=media.camera_id if camera_roi else None,payload={'objects':[],'history':[]},revision=0,updated_at=utc_now());session.add(roi)
                 history=copy.deepcopy(roi.payload.get('history',[]))
                 history.append({'revision':roi.revision+1,'objects':normalized,'source':'Human Generated','updated_at':utc_now()})
                 roi.payload={'objects':normalized,'history':history,'coordinate_system':'normalized_video'};roi.revision+=1;roi.updated_at=utc_now();roi_revision=roi.revision
             result={'revision':doc.revision,'roi_revision':roi_revision,'status':doc.status}
         self.logs.write('annotation','人工标注与ROI已事务保存，保留修改版本。');return result
+
+    @staticmethod
+    def processing_state(frame,doc):
+        if frame.handling.get('is_excluded'):return 'EXCLUDED'
+        if not doc:return 'UNPROCESSED'
+        tag=doc.payload.get('image_tag','UNKNOWN')
+        if tag=='NORMAL' and (doc.payload.get('objects') or doc.payload.get('image_label_id')):return 'CONFLICT'
+        return {'NORMAL':'NORMAL','ABNORMAL':'ABNORMAL','UNKNOWN':'UNCERTAIN'}.get(tag,'CONFLICT')
+
+    def frames_status(self,root=None):
+        with self.store.open(root) as (_,db,_),db.transaction() as session:
+            rows=session.execute(select(ExtractedFrame,Annotation).outerjoin(Annotation,Annotation.frame_id==ExtractedFrame.id)).all()
+            return {f.id:{'processing_state':self.processing_state(f,d),'annotation_revision':d.revision if d else 0,'handling_revision':f.handling.get('revision',0),'review_status':d.status if d else 'DRAFT'} for f,d in rows}
+
+    def batch_preview(self,frame_ids,action,root=None):
+        if action not in {'normal','exclude','restore'}:raise AppError('FRAME_ACTION','帧操作无效。')
+        with self.store.open(root) as (_,db,_),db.transaction() as session:
+            eligible=[];skipped=[];annotated=referenced=0
+            for fid in dict.fromkeys(frame_ids):
+                f=session.get(ExtractedFrame,fid);d=session.scalar(select(Annotation).where(Annotation.frame_id==fid))
+                if not f:skipped.append({'id':fid,'reason':'图片不存在'});continue
+                from ivad_app.storage.models import DatasetSample
+                ref=bool(session.scalar(select(DatasetSample.id).where(DatasetSample.frame_id==fid)))
+                state=self.processing_state(f,d);has_truth=bool(d and (d.payload.get('objects') or d.payload.get('image_label_id') or d.status in {'REVIEWED','APPROVED'}))
+                annotated+=int(has_truth);referenced+=int(ref)
+                reason=None
+                if action=='normal' and (state not in {'UNPROCESSED','NORMAL'} or has_truth):reason='异常/待复核/已审核/冲突/已剔除，禁止批量覆盖'
+                if action=='exclude' and (state=='EXCLUDED' or has_truth or ref):reason='已剔除、已有标注/审核或被冻结数据集引用，需保留'
+                if action=='restore' and state!='EXCLUDED':reason='尚未剔除'
+                if reason:skipped.append({'id':fid,'reason':reason});continue
+                eligible.append({'id':fid,'annotation_revision':d.revision if d else 0,'handling_revision':f.handling.get('revision',0),'previous_state':state})
+            return {'action':action,'selected':len(dict.fromkeys(frame_ids)),'eligible':eligible,'skipped':skipped,'annotated':annotated,'referenced':referenced}
+
+    def batch_apply(self,preview,reason='',root=None,actor='local_operator'):
+        action=preview['action']
+        if action=='exclude' and not reason.strip():raise AppError('EXCLUSION_REASON','请选择或填写剔除原因。')
+        current=self.batch_preview([r['id'] for r in preview['eligible']],action,root)
+        if current['eligible']!=preview['eligible'] or current['skipped']:raise AppError('BATCH_CONFLICT','预览后数据或引用已改变，批次没有写入，请重新检查。')
+        now=utc_now()
+        with self.store.open(root) as (_,db,_),db.transaction() as session:
+            from ivad_app.storage.models import DatasetSample
+            for item in preview['eligible']:
+                f=session.get(ExtractedFrame,item['id']);d=session.scalar(select(Annotation).where(Annotation.frame_id==f.id))
+                if (d.revision if d else 0)!=item['annotation_revision'] or f.handling.get('revision',0)!=item['handling_revision']:raise AppError('BATCH_CONFLICT','图片在批量操作期间被修改，整个批次已回滚。')
+                if action=='exclude' and session.scalar(select(DatasetSample.id).where(DatasetSample.frame_id==f.id)):raise AppError('FRAME_REFERENCED','图片在预览后被数据集引用，整个批次已回滚。')
+                if action=='normal':
+                    if not d:
+                        d=Annotation(id=str(uuid4()),frame_id=f.id,payload={},status='DRAFT',revision=0,source='Human Generated',updated_at=now);session.add(d);session.flush()
+                    payload={'objects':[],'image_tag':'NORMAL','image_label_id':None,'coordinate_system':'image_pixels','width':f.width,'height':f.height,'operator':actor,'operation':'BATCH_NORMAL'}
+                    d.payload=payload;d.revision+=1;d.status='DRAFT';d.updated_at=now
+                    session.add(AnnotationRevision(id=str(uuid4()),annotation_id=d.id,revision=d.revision,payload=payload,status=d.status,source='Human Generated',created_at=now))
+                else:
+                    handling=copy.deepcopy(f.handling);history=list(handling.get('history',[]));history.append({'action':action,'at':now,'by':actor,'reason':reason,'previous_state':item['previous_state']})
+                    handling.update(history=history,revision=item['handling_revision']+1,is_excluded=action=='exclude')
+                    if action=='exclude':handling.update(previous_state=item['previous_state'],exclusion_reason=reason,excluded_at=now,excluded_by=actor)
+                    else:handling['restored_at']=now
+                    f.handling=handling
+        self.logs.write('annotation',f'帧操作 {action}：已处理{len(preview["eligible"])}，跳过{len(preview["skipped"])}，保留历史。')
+        return {'changed':len(preview['eligible']),'skipped':preview['skipped']}
+
+    def revisions(self,frame_id,root=None):
+        with self.store.open(root) as (_,db,_),db.transaction() as session:
+            doc=session.scalar(select(Annotation).where(Annotation.frame_id==frame_id))
+            return [row_dict(r) for r in session.scalars(select(AnnotationRevision).where(AnnotationRevision.annotation_id==doc.id).order_by(AnnotationRevision.revision.desc()))] if doc else []
+
+    def restore_revision(self,frame_id,revision,expected_revision,root=None):
+        rows=self.revisions(frame_id,root);target=next((r for r in rows if r['revision']==revision),None)
+        if not target:raise AppError('REVISION_MISSING','历史标注版本不存在。')
+        payload=copy.deepcopy(target['payload']);payload['operation']='RESTORE_REVISION';payload['restored_revision']=revision
+        return self.save(frame_id,payload,target['status'],expected_revision,root=root)
 
     def clips(self,media_id,root=None):
         with self.store.open(root) as (_,db,_),db.transaction() as session:

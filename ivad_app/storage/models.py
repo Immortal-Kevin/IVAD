@@ -64,6 +64,7 @@ class MediaAsset(Base):
     size: Mapped[int] = mapped_column(Integer)
     video: Mapped[dict] = mapped_column(JSON, default=dict)
     camera: Mapped[str] = mapped_column(String(200), default='')
+    camera_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
     equipment: Mapped[str] = mapped_column(String(200), default='')
     site: Mapped[str] = mapped_column(String(200), default='')
     state: Mapped[str] = mapped_column(String(20))
@@ -89,6 +90,15 @@ class ExtractedFrame(Base):
     parameters_hash: Mapped[str] = mapped_column(String(64))
     job_id: Mapped[str] = mapped_column(String(36))
     created_at: Mapped[str] = mapped_column(String(40))
+    handling: Mapped[dict] = mapped_column(JSON, default=dict)
+
+class Camera(Base):
+    __tablename__ = 'cameras'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    name: Mapped[str] = mapped_column(String(200))
+    legacy_key: Mapped[str | None] = mapped_column(String(200), unique=True, nullable=True)
+    revision: Mapped[int] = mapped_column(Integer, default=1)
+    history: Mapped[list] = mapped_column(JSON, default=list)
 
 class LabelCategory(Base):
     __tablename__ = 'label_categories'
@@ -128,6 +138,7 @@ class RegionOfInterest(Base):
     scope: Mapped[str] = mapped_column(String(250), unique=True)
     media_id: Mapped[str] = mapped_column(ForeignKey('media_assets.id'))
     camera: Mapped[str] = mapped_column(String(200))
+    camera_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
     payload: Mapped[dict] = mapped_column(JSON)
     revision: Mapped[int] = mapped_column(Integer)
     updated_at: Mapped[str] = mapped_column(String(40))

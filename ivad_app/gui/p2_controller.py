@@ -37,7 +37,10 @@ class P2Controller(QObject):
     def refresh(self):
         if not self.root or self.refreshing:return
         root=self.root;self.refreshing=True
-        def collect():return self.s.media.list(root),self.s.media.frames(root),self.s.annotations.labels(root),self.s.datasets.candidates(root),self.s.datasets.versions(root)
+        def collect():
+            frames=self.s.media.frames(root);states=self.s.annotations.frames_status(root)
+            for frame in frames:frame.update(states.get(frame['id'],{}))
+            return self.s.media.list(root),frames,self.s.annotations.labels(root),self.s.datasets.candidates(root),self.s.datasets.versions(root)
         def done(result,error):
             self.refreshing=False
             if root!=self.root:self.refresh();return
