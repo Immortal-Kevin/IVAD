@@ -5,7 +5,7 @@ from fractions import Fraction
 import av
 from PIL import Image,ImageDraw
 from PySide6.QtCore import Qt,QPoint,QPointF
-from PySide6.QtWidgets import QApplication,QPushButton,QFileDialog,QMessageBox
+from PySide6.QtWidgets import QApplication,QPushButton,QFileDialog,QMessageBox,QScrollArea
 from PySide6.QtTest import QTest
 from ivad_app.core.application import ApplicationServices
 from ivad_app.gui.main_window import MainWindow
@@ -25,8 +25,14 @@ def run(directory):
         raise AssertionError('Timed out waiting for GUI result')
     def click(parent,text):
         b=next(b for b in parent.findChildren(QPushButton) if b.text()==text)
+        ancestor=b.parentWidget()
+        while ancestor:
+            if isinstance(ancestor,QScrollArea):ancestor.ensureWidgetVisible(b);QTest.qWait(80);break
+            ancestor=ancestor.parentWidget()
         QTest.mouseClick(b,Qt.MouseButton.LeftButton);app.processEvents()
-    def record(name):result['steps'].append({'operation':name,'status':'PASS'})
+    def record(name):
+        result['steps'].append({'operation':name,'status':'PASS'})
+        (directory/'deployment-progress.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
     try:
         assert result['frozen'],'Deployment check must run from actual EXE'
         root=Path(sys._MEIPASS);services=ApplicationServices(root,directory/'应用数据',lite=True)
@@ -82,15 +88,19 @@ def run(directory):
         window.show_page('dataset');d=window.p2.dataset;wait(lambda:not window.p2.refreshing);d.name.setText('兼容性测试数据集');click(d,'全选已审核图片');click(d,'检查选择');wait(lambda:not window.p2.refreshing)
         click(d,'冻结新版本');wait(lambda:len(d.version_rows)>0 and not window.p2.tracked,60);d.versions.selectRow(0)
         before_jobs=len(services.jobs.history());click(d,'导出选中冻结版本…');wait(lambda:len(services.jobs.history())>before_jobs and any(j['kind']=='p2_export' and j['state']=='SUCCEEDED' for j in services.jobs.history()) and not window.p2.tracked,60)
-        QMessageBox.question=old_question;record('GUI dataset freeze and YOLO export')
+        record('GUI dataset freeze and YOLO export')
         for device in ['cpu','nvidia:any','']:
             try:services.devices.require_gpu(device)
             except AppError:pass
             else:raise AssertionError('Lite accepted an AI device')
         result['loaded_torch']='torch' in sys.modules;assert not result['loaded_torch'] and 'onnxruntime' not in sys.modules;record('Lite denies AI with CPU/GPU selections; no torch or ORT loaded')
-        export_diagnostics(services,directory/'diagnostics.zip')
+        QFileDialog.getSaveFileName=lambda *args,**kwargs:(str(directory/'diagnostics.zip'),'')
+        window.show_page('logs');click(window.pages['logs'],'导出诊断ZIP…')
+        wait(lambda:(directory/'diagnostics.zip').is_file())
+        QMessageBox.question=old_question
         with zipfile.ZipFile(directory/'diagnostics.zip') as z:assert len(z.namelist())==4
-        record('diagnostic ZIP contains allowlisted JSON only')
+        window.grab().save(str(directory/'diagnostics.png'))
+        record('GUI diagnostic ZIP export contains allowlisted JSON only')
         window.close();wait(lambda:window.may_close);services.close();services=ApplicationServices(root,directory/'重新启动 应用数据',lite=True)
         window=MainWindow(services,auto_probe=False);window.show();wait(lambda:not window.refresh_busy);window.open_project(project);wait(lambda:services.projects.current and not window.project_busy);window.show_page('annotation');wait(lambda:window.p2.annotation.frame_id and not window.p2.annotation.loading)
         a=window.p2.annotation;a.media_filter.setCurrentIndex(a.media_filter.findData(clip['id']));wait(lambda:not a.loading and a.frame_id==fid and len(a.canvas.shapes)>=3);record('new GUI window reopens project with persisted annotations and ROI')
