@@ -4,6 +4,7 @@ from tests.test_p2_services import media_project
 from tests.test_p2_media import sample_videos
 from tests.test_gui import make_window,close_window
 from tests.test_p2_gui import click
+import threading
 
 def test_gui_quick_batch_camera_exclude_restore(qtbot,services,media_project,monkeypatch):
     project,media,ids=media_project
@@ -56,4 +57,21 @@ def test_gui_quick_batch_camera_exclude_restore(qtbot,services,media_project,mon
     assert not a.quick_button.isEnabled()
     a.batch_action('restore',True);qtbot.waitUntil(lambda:not a.batch_busy,timeout=10000)
     assert services.annotations.load(fid)['payload']==before
+    close_window(qtbot,w)
+
+def test_refresh_coalesces_label_save_while_collection_running(qtbot,services,media_project,monkeypatch):
+    project,_,_=media_project;w=make_window(qtbot,services);w.p2.set_project(project)
+    qtbot.waitUntil(lambda:not w.p2.refreshing and bool(w.p2.annotation.frame_id) and not w.p2.annotation.loading,timeout=10000)
+    original=services.annotations.labels;old_rows=original();entered=threading.Event();release=threading.Event();calls=[]
+    def delayed(root=None,**kwargs):
+        calls.append(root)
+        if len(calls)==1:
+            entered.set();assert release.wait(5);return old_rows
+        return original(root,**kwargs)
+    monkeypatch.setattr(services.annotations,'labels',delayed)
+    w.p2.refresh();qtbot.waitUntil(entered.is_set,timeout=5000)
+    new=services.annotations.save_label({'name':'刷新并发回归类别'})
+    w.p2.refresh();assert w.p2.refresh_pending
+    release.set();qtbot.waitUntil(lambda:w.p2.annotation.classes.findData(new['id'])>=0,timeout=10000)
+    assert len(calls)>=2
     close_window(qtbot,w)
