@@ -8,6 +8,7 @@ from ivad_app.storage.models import (Dataset, DatasetVersion, DatasetSample, Exp
 from ivad_app.storage.project_store import file_hash, atomic_json, safe_path, row_dict
 from ivad_app.annotations.geometry import validate_geometry
 from ivad_app.datasets.exporters import export_snapshot
+from ivad_app.services.annotation_service import AnnotationService
 
 class DatasetService:
     def __init__(self,store,logs):self.store,self.logs=store,logs
@@ -15,7 +16,7 @@ class DatasetService:
     def candidates(self,root=None):
         with self.store.open(root) as (_,db,_),db.transaction() as session:
             rows=session.execute(select(ExtractedFrame,Annotation).join(Annotation,Annotation.frame_id==ExtractedFrame.id).where(Annotation.status.in_(['REVIEWED','APPROVED']))).all()
-            return [dict(row_dict(frame),review_status=doc.status,image_tag=doc.payload['image_tag'],objects=len(doc.payload['objects']),types=sorted({o['kind'] for o in doc.payload['objects']}),annotation_revision=doc.revision) for frame,doc in rows]
+            return [dict(row_dict(frame),review_status=doc.status,image_tag=doc.payload['image_tag'],objects=len(doc.payload['objects']),types=sorted({o['kind'] for o in doc.payload['objects']}),annotation_revision=doc.revision) for frame,doc in rows if AnnotationService.processing_state(frame,doc) in {'NORMAL','ABNORMAL'}]
 
     def versions(self,root=None):
         with self.store.open(root) as (_,db,_),db.transaction() as session:
@@ -28,6 +29,8 @@ class DatasetService:
             for frame_id in dict.fromkeys(frame_ids):
                 frame=session.get(ExtractedFrame,frame_id);doc=session.scalar(select(Annotation).where(Annotation.frame_id==frame_id))
                 if not frame or not doc or doc.status not in {'REVIEWED','APPROVED'}:issues.append('图片不存在或未人工审核：'+frame_id);continue
+                state=AnnotationService.processing_state(frame,doc)
+                if state not in {'NORMAL','ABNORMAL'}:issues.append('图片未处理、待复核、剔除或存在冲突：'+frame_id);continue
                 path=safe_path(folder,frame.path)
                 if not path.is_file() or file_hash(path)!=frame.sha256:issues.append('图片缺失/哈希不符：'+frame_id);continue
                 if frame.sha256 in seen:warnings.append('同SHA256重复图片已去重：'+frame_id);continue
@@ -41,12 +44,13 @@ class DatasetService:
                 except AppError as exc:issues.append(exc.message+' '+frame_id);continue
                 if not payload['objects'] and payload['image_tag']=='ABNORMAL':warnings.append('异常图片没有目标标注，仅适合原生标签任务：'+frame_id)
                 if not payload['objects'] and payload['image_tag']=='UNKNOWN':warnings.append('未知图片不会作为正常负样本：'+frame_id)
-                samples.append({'frame_id':frame.id,'media_id':frame.media_id,'camera':media.camera,'source_group_id':media.parent_id or media.id,'sha256':frame.sha256,'perceptual_hash':frame.perceptual_hash,'source_image':frame.path,'width':frame.width,'height':frame.height,'pts_us':frame.pts_us,'time_us':frame.time_us,'parameters':frame.parameters,'method':frame.method,'annotation':payload,'annotation_revision':doc.revision,'annotation_status':doc.status,'annotation_source':doc.source})
+                samples.append({'frame_id':frame.id,'media_id':frame.media_id,'camera':media.camera_id or media.camera,'camera_id':media.camera_id,'source_group_id':media.parent_id or media.id,'sha256':frame.sha256,'perceptual_hash':frame.perceptual_hash,'source_image':frame.path,'width':frame.width,'height':frame.height,'pts_us':frame.pts_us,'time_us':frame.time_us,'parameters':frame.parameters,'method':frame.method,'annotation':payload,'annotation_revision':doc.revision,'handling_revision':frame.handling.get('revision',0),'annotation_status':doc.status,'annotation_source':doc.source})
                 revisions[frame.id]=doc.revision
             for i,a in enumerate(samples):
                 if any((int(a['perceptual_hash'],16)^int(b['perceptual_hash'],16)).bit_count()<=4 for b in samples[:i]):
                     warnings.append('存在近重复画面；仅警告，不自动删除潜在关键异常。');break
             label_rows=[session.get(LabelCategory,label_id) for label_id in sorted(classes)]
+            if not label_rows and samples:label_rows=list(session.scalars(select(LabelCategory).where(LabelCategory.enabled==1).order_by(LabelCategory.id)))
             mapping=[{'uuid':r.id,'class_id':index,'name':r.name,'revision':r.revision,'enabled':r.enabled} for index,r in enumerate(label_rows)]
             if not samples:issues.append('没有可冻结的已审核图片。')
             return {'samples':samples,'classes':mapping,'issues':issues,'warnings':sorted(set(warnings)),'revisions':revisions,'count':len(samples),'objects':sum(len(s['annotation']['objects']) for s in samples),'groups':len({s['camera'] or s.get('source_group_id',s['media_id']) for s in samples})}
@@ -95,7 +99,8 @@ class DatasetService:
               with db.transaction() as session:
                 for s in samples:
                     doc=session.scalar(select(Annotation).where(Annotation.frame_id==s['frame_id']))
-                    if not doc or doc.revision!=s['annotation_revision']:raise AppError('SNAPSHOT_CONFLICT','标注在冻结期间发生变化，已阻止不一致版本。')
+                    frame=session.get(ExtractedFrame,s['frame_id'])
+                    if not doc or doc.revision!=s['annotation_revision'] or frame.handling.get('revision',0)!=s['handling_revision'] or AnnotationService.processing_state(frame,doc) not in {'NORMAL','ABNORMAL'}:raise AppError('SNAPSHOT_CONFLICT','标注或剔除状态在冻结期间发生变化，已阻止不一致版本。')
                 if not dataset:session.add(Dataset(id=dataset_id,name=name,created_at=utc_now()));session.flush()
                 if final.exists():raise AppError('VERSION_EXISTS','版本目录已存在，禁止覆盖；请进行一致性检查。')
                 stage.rename(final)

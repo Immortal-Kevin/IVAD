@@ -76,7 +76,7 @@ def test_schema_0003_upgrade_preserves_all_existing_columns(tmp_path):
         before=raw.execute('SELECT * FROM media_assets').fetchone()
     upgraded=Database(dbpath);upgraded.close()
     with sqlite3.connect(dbpath) as raw:
-        after=raw.execute('SELECT * FROM media_assets').fetchone();assert after[:len(before)]==before and after[len(before):]==('ORIGINAL',None,'{}')
+        after=raw.execute('SELECT * FROM media_assets').fetchone();assert after[:len(before)]==before and after[len(before):]==('ORIGINAL',None,'{}',None)
     backup=next(tmp_path.glob('*.backup'))
     with sqlite3.connect(backup) as raw:assert raw.execute('SELECT version_num FROM alembic_version').fetchone()[0]=='0003'
 

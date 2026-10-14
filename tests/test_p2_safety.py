@@ -70,6 +70,9 @@ def test_split_grouping_and_random_consent(services,media_project):
 def test_unlabeled_not_silent_yolo_negative(services,media_project,tmp_path,tag):
     p,_,ids=media_project;reviewed(services,[ids[0]])
     services.annotations.save(ids[1],{'objects':[],'image_tag':tag},'REVIEWED',0)
+    if tag=='UNKNOWN':
+        with pytest.raises(AppError):services.datasets.freeze(Context(),{'root':p.root,'name':'标签','frame_ids':ids[:2]})
+        return
     result=services.datasets.freeze(Context(),{'root':p.root,'name':'标签','frame_ids':ids[:2]})
     with pytest.raises(AppError):services.datasets.export(Context(),{'root':p.root,'version_id':result['version_id'],'format':'yolo_detect','parent':str(tmp_path)})
 
@@ -125,7 +128,7 @@ def test_camera_roi_normalized_across_media(services,tmp_path,sample_videos):
     roi=[{'id':str(uuid4()),'kind':'roi_polygon','geometry':[[0,0],[160,0],[160,90]]}]
     services.annotations.save(frames[0],{'objects':[],'image_tag':'NORMAL'},'DRAFT',0,roi,0,True)
     loaded=services.annotations.load(frames[1],camera_roi=True)
-    assert loaded['scope']=='camera:CAM-01' and loaded['roi_objects'][0]['geometry']==roi[0]['geometry']
+    assert loaded['scope']=='camera:'+services.media.get(imported['imported'][0])['camera_id'] and loaded['roi_objects'][0]['geometry']==roi[0]['geometry']
     assert services.annotations.load(frames[1],camera_roi=False)['roi_objects']==[]
 
 def test_restart_marks_p2_task_interrupted_retains_payload(services,tmp_path):
