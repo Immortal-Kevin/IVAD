@@ -127,7 +127,7 @@ class MediaService(MediaLifecycle):
             from ivad_app.storage.models import Camera
             media={m.id:m for m in session.scalars(select(MediaAsset))};cameras={c.id:c for c in session.scalars(select(Camera))}
             for row in rows:
-                m=media[row['media_id']];c=cameras.get(m.camera_id);row.update(media_name=m.name,media_identifier=(c.details.get('code') or '') if c else '',camera_name=c.name if c else '')
+                m=media[row['media_id']];c=cameras.get(m.camera_id);row.update(camera_id=m.camera_id,worklist_hidden=bool(row['handling'].get('worklist_hidden')),media_name=m.name,media_identifier=(c.details.get('code') or '') if c else '',camera_name=c.name if c else '')
         for row in rows: row['state'] = 'READY' if safe_path(folder, row['path']).is_file() else 'MISSING'
         return rows
 

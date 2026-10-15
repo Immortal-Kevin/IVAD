@@ -13,6 +13,21 @@ from ivad_app.services.annotation_service import AnnotationService
 class DatasetService:
     def __init__(self,store,logs):self.store,self.logs=store,logs
 
+    def camera_samples(self,camera_id=None,*,image_tag=None,fault_id=None,root=None,include_excluded=False):
+        """Persisted camera reference samples; completion does not grant training approval."""
+        with self.store.open(root) as (_,db,_),db.transaction() as session:
+            rows=session.execute(select(ExtractedFrame,Annotation,MediaAsset).join(Annotation,Annotation.frame_id==ExtractedFrame.id).join(MediaAsset,MediaAsset.id==ExtractedFrame.media_id)).all()
+            result=[]
+            for frame,doc,media in rows:
+                if camera_id=='__unlinked__' and media.camera_id:continue
+                if camera_id not in {None,'__unlinked__'} and media.camera_id!=camera_id:continue
+                if not include_excluded and frame.handling.get('is_excluded'):continue
+                if image_tag and doc.payload.get('image_tag')!=image_tag:continue
+                faults={o.get('label_id') for o in doc.payload.get('objects',[])}|{doc.payload.get('image_label_id')}
+                if fault_id and fault_id not in faults:continue
+                result.append(dict(row_dict(frame),camera_id=media.camera_id,source_group_id=media.parent_id or media.id,image_tag=doc.payload.get('image_tag'),fault_ids=sorted(f for f in faults if f),review_status=doc.status,review_stale=frame.handling.get('review_stale',False),completion_state=AnnotationService.completion_state(frame,doc),annotation_revision=doc.revision))
+            return result
+
     def candidates(self,root=None):
         with self.store.open(root) as (_,db,_),db.transaction() as session:
             rows=session.execute(select(ExtractedFrame,Annotation).join(Annotation,Annotation.frame_id==ExtractedFrame.id).where(Annotation.status.in_(['REVIEWED','APPROVED']))).all()

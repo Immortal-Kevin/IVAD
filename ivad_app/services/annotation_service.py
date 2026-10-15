@@ -3,7 +3,7 @@ from uuid import uuid4, UUID
 from sqlalchemy import select
 from ivad_app.core.contracts import AppError, utc_now
 from ivad_app.storage.models import (LabelCategory, Annotation, AnnotationRevision, ExtractedFrame,
-    MediaAsset, RegionOfInterest, VideoClipLabel, DatasetVersion)
+    MediaAsset, RegionOfInterest, VideoClipLabel, DatasetVersion, Camera, SettingRecord)
 from ivad_app.storage.project_store import row_dict
 from ivad_app.annotations.geometry import validate_geometry
 
@@ -45,6 +45,8 @@ class AnnotationService:
 
     def delete_label(self,label_id,root=None):
         with self.store.open(root) as (_,db,_),db.transaction() as session:
+            config=session.get(SettingRecord,'camera_detector_configurations')
+            if config and any(label_id in entry.get('fault_ids',[]) for entry in config.value.get('items',[])):raise AppError('LABEL_REFERENCED','类别被摄像头模型配置引用，不能删除；可禁用。')
             needle='"'+label_id+'"'
             for model,column in [(Annotation,'payload'),(AnnotationRevision,'payload'),(RegionOfInterest,'payload'),(DatasetVersion,'summary')]:
                 if any(needle in json.dumps(getattr(r,column)) for r in session.scalars(select(model))):
@@ -59,22 +61,46 @@ class AnnotationService:
         if camera and not media.camera_id: raise AppError('ROI_CAMERA','当前视频未关联摄像头。ROI 为可选辅助信息，不影响基础标注；如需保存 ROI，请选择关联当前视频。')
         return 'camera:'+media.camera_id if camera else 'media:'+media.id
 
-    def load(self,frame_id,root=None,camera_roi=False):
+    def load(self,frame_id,root=None,camera_roi=None):
         with self.store.open(root) as (_,db,_),db.transaction() as session:
             frame=session.get(ExtractedFrame,frame_id)
             if not frame: raise AppError('FRAME_MISSING','候选帧不存在。')
             media=session.get(MediaAsset,frame.media_id)
-            # Optional camera ROI must never prevent loading ordinary annotations.
-            effective_camera_roi=bool(camera_roi and media.camera_id)
+            valid_camera=bool(media.camera_id and session.get(Camera,media.camera_id))
+            video_roi=session.scalar(select(RegionOfInterest).where(RegionOfInterest.scope=='media:'+media.id))
+            shared_roi=session.scalar(select(RegionOfInterest).where(RegionOfInterest.scope=='camera:'+media.camera_id)) if valid_camera else None
+            notices=[]
+            def usable(roi):
+                if not roi or not roi.payload.get('objects'):return False
+                source=session.get(MediaAsset,roi.media_id)
+                sample=session.scalar(select(ExtractedFrame).where(ExtractedFrame.media_id==roi.media_id))
+                dimensions=roi.payload.get('dimensions') or ([sample.width,sample.height] if sample else None)
+                rotation=roi.payload.get('rotation',source.video.get('rotation',0) if source else 0)
+                try:
+                    if not dimensions or len(dimensions)!=2 or min(dimensions)<=0 or abs(dimensions[0]/dimensions[1]-frame.width/frame.height)>.01 or rotation!=media.video.get('rotation',0):raise ValueError('geometry mismatch')
+                    for obj in roi.payload['objects']:
+                        geometry=([v*(frame.width if i%2==0 else frame.height) for i,v in enumerate(obj['geometry'])] if obj['kind']=='roi_box' else [[x*frame.width,y*frame.height] for x,y in obj['geometry']])
+                        if obj['kind'] not in {'roi_box','roi_polygon'}:raise ValueError('unsupported ROI')
+                        validate_geometry(obj['kind'],geometry,frame.width,frame.height)
+                except (ValueError,TypeError,KeyError,ZeroDivisionError,AppError):
+                    notices.append('ROI 尺寸比例、旋转或区域坐标不匹配，未自动应用；历史配置保留，请检查 ROI 管理。');return False
+                return True
+            video_valid=usable(video_roi);shared_valid=usable(shared_roi)
+            effective_camera_roi=bool(valid_camera and (camera_roi is True or (camera_roi is None and not video_valid)))
             scope=self.scope(media,effective_camera_roi)
+            candidate=shared_roi if effective_camera_roi else video_roi
+            roi=candidate if (shared_valid if effective_camera_roi else video_valid) else None
+            if video_valid and shared_valid and video_roi.payload['objects']!=shared_roi.payload['objects']:
+                notices.append('视频与摄像头 ROI 配置不同，自动优先当前视频，不合并；可用 ROI 管理分别查看和编辑。')
+            if not valid_camera:notices.append('未关联摄像头；请到视频管理关联。视频 ROI 可用，不影响基础标注。')
+            notices.append('ROI 来源：'+('摄像头' if effective_camera_roi else '当前视频')+('（尚未配置有效区域）' if not roi else ''))
             doc=session.scalar(select(Annotation).where(Annotation.frame_id==frame_id))
-            roi=session.scalar(select(RegionOfInterest).where(RegionOfInterest.scope==scope))
             payload=copy.deepcopy(doc.payload) if doc else {'objects':[],'image_tag':'UNKNOWN','image_label_id':None,'coordinate_system':'image_pixels','width':frame.width,'height':frame.height}
             objects=copy.deepcopy(roi.payload.get('objects',[])) if roi else []
             for obj in objects:
                 if obj['kind']=='roi_box':obj['geometry']=[v*(frame.width if i%2==0 else frame.height) for i,v in enumerate(obj['geometry'])]
                 else:obj['geometry']=[[x*frame.width,y*frame.height] for x,y in obj['geometry']]
-            return {'frame':dict(row_dict(frame),media_id=media.id,camera_id=media.camera_id),'payload':payload,'revision':doc.revision if doc else 0,'status':doc.status if doc else 'DRAFT','source':'Human Generated','scope':scope,'roi_revision':roi.revision if roi else 0,'roi_objects':objects,'camera_roi':effective_camera_roi,'camera_available':bool(media.camera_id),'processing_state':self.processing_state(frame,doc),'completion_state':self.completion_state(frame,doc),'notice':'' if media.camera_id else '当前视频未配置摄像头编号。ROI 为可选辅助信息，不影响基础标注。'}
+            return {'frame':dict(row_dict(frame),media_id=media.id,camera_id=media.camera_id),'payload':payload,'revision':doc.revision if doc else 0,'status':doc.status if doc else 'DRAFT','source':'Human Generated','scope':scope,'roi_revision':candidate.revision if candidate else 0,'roi_objects':objects,'camera_roi':effective_camera_roi,'camera_available':valid_camera,'processing_state':self.processing_state(frame,doc),'completion_state':self.completion_state(frame,doc),'notice':'\n'.join(notices)}
 
     def save(self,frame_id,payload,status,expected_revision,roi_objects=None,expected_roi_revision=0,camera_roi=False,root=None,completion_state=None):
         if (status is not None and status not in REVIEW_STATES) or payload.get('image_tag') not in IMAGE_TAGS: raise AppError('ANNOTATION_STATE','图片标签或审核状态无效。')
@@ -88,6 +114,7 @@ class AnnotationService:
             if (doc.revision if doc else 0)!=expected_revision: raise AppError('ANNOTATION_CONFLICT','标注被其他操作修改，已阻止覆盖；请重新载入。')
             preserve_review=status is None
             status=(doc.status if doc else 'DRAFT') if preserve_review else status
+            if objects and payload['image_tag']=='UNKNOWN':payload=dict(payload,image_tag='ABNORMAL')
             truth_changed=not doc or any(doc.payload.get(k)!=payload.get(k) for k in ['objects','image_tag','image_label_id'])
             if payload['image_tag']=='NORMAL':
                 if objects or payload.get('image_label_id'):raise AppError('NORMAL_CONFLICT','正常帧不能包含故障目标或整帧故障类别，请明确确认转换。')
@@ -112,7 +139,7 @@ class AnnotationService:
                 doc=Annotation(id=str(uuid4()),frame_id=frame_id,payload={},status='DRAFT',revision=0,source='Human Generated',updated_at=utc_now());session.add(doc);session.flush()
             doc.payload=saved;doc.status=status;doc.revision+=1;doc.updated_at=utc_now();doc.source='Human Generated'
             handling=copy.deepcopy(frame.handling)
-            handling['completion_state']=completion_state or ('LABELED' if payload['image_tag'] in {'NORMAL','ABNORMAL'} else 'UNLABELED')
+            handling['completion_state']=completion_state or ('LABELED' if payload['image_tag']=='NORMAL' or (payload['image_tag']=='ABNORMAL' and (objects or payload.get('image_label_id'))) else 'UNLABELED')
             handling['review_stale']=bool(handling.get('review_stale') or truth_changed) if preserve_review else False
             handling['revision']=handling.get('revision',0)+1;handling['completion_updated_at']=utc_now();frame.handling=handling
             session.add(AnnotationRevision(id=str(uuid4()),annotation_id=doc.id,revision=doc.revision,payload=saved,status=status,source='Human Generated',created_at=utc_now()))
@@ -136,9 +163,11 @@ class AnnotationService:
                     roi=RegionOfInterest(id=str(uuid4()),scope=scope,media_id=frame.media_id,camera=media.camera,camera_id=media.camera_id if camera_roi else None,payload={'objects':[],'history':[]},revision=0,updated_at=utc_now());session.add(roi)
                 history=copy.deepcopy(roi.payload.get('history',[]))
                 history.append({'revision':roi.revision+1,'objects':normalized,'source':'Human Generated','updated_at':utc_now()})
-                roi.payload={'objects':normalized,'history':history,'coordinate_system':'normalized_video'};roi.revision+=1;roi.updated_at=utc_now();roi_revision=roi.revision
+                roi.payload={'objects':normalized,'history':history,'coordinate_system':'normalized_video','dimensions':[frame.width,frame.height],'rotation':media.video.get('rotation',0)};roi.revision+=1;roi.updated_at=utc_now();roi_revision=roi.revision
             result={'revision':doc.revision,'roi_revision':roi_revision,'status':doc.status,'completion_state':self.completion_state(frame,doc)}
-        self.logs.write('annotation','人工标注与ROI已事务保存，保留修改版本。');return result
+        try:self.logs.write('annotation','人工标注与ROI已事务保存，保留修改版本。')
+        except Exception:result['warning']='数据已提交，但诊断日志写入失败，请检查磁盘。'
+        return result
 
     @staticmethod
     def processing_state(frame,doc):
@@ -151,7 +180,8 @@ class AnnotationService:
     @classmethod
     def completion_state(cls,frame,doc):
         if cls.processing_state(frame,doc) not in {'NORMAL','ABNORMAL'}:return 'UNLABELED'
-        return frame.handling.get('completion_state','LABELED')
+        if doc.payload.get('image_tag')=='ABNORMAL' and not (doc.payload.get('objects') or doc.payload.get('image_label_id')):return 'UNLABELED'
+        return 'LABELED'
 
     def review_frames(self,expected,status,root=None):
         if status not in REVIEW_STATES:raise AppError('REVIEW_STATE','审核状态无效。')
@@ -168,10 +198,10 @@ class AnnotationService:
     def frames_status(self,root=None):
         with self.store.open(root) as (_,db,_),db.transaction() as session:
             rows=session.execute(select(ExtractedFrame,Annotation).outerjoin(Annotation,Annotation.frame_id==ExtractedFrame.id)).all()
-            return {f.id:{'processing_state':self.processing_state(f,d),'completion_state':self.completion_state(f,d),'review_stale':f.handling.get('review_stale',False),'annotation_revision':d.revision if d else 0,'handling_revision':f.handling.get('revision',0),'review_status':d.status if d else 'DRAFT'} for f,d in rows}
+            return {f.id:{'processing_state':self.processing_state(f,d),'completion_state':self.completion_state(f,d),'review_stale':f.handling.get('review_stale',False),'annotation_revision':d.revision if d else 0,'handling_revision':f.handling.get('revision',0),'worklist_hidden':bool(f.handling.get('worklist_hidden')),'review_status':d.status if d else 'DRAFT'} for f,d in rows}
 
     def batch_preview(self,frame_ids,action,root=None):
-        if action not in {'normal','exclude','restore'}:raise AppError('FRAME_ACTION','帧操作无效。')
+        if action not in {'normal','exclude','restore','remove','return'}:raise AppError('FRAME_ACTION','帧操作无效。')
         with self.store.open(root) as (_,db,_),db.transaction() as session:
             eligible=[];skipped=[];annotated=referenced=0
             for fid in dict.fromkeys(frame_ids):
@@ -180,13 +210,15 @@ class AnnotationService:
                 from ivad_app.storage.models import DatasetSample
                 ref=bool(session.scalar(select(DatasetSample.id).where(DatasetSample.frame_id==fid)))
                 state=self.processing_state(f,d);has_truth=bool(d and (d.payload.get('objects') or d.payload.get('image_label_id') or d.status in {'REVIEWED','APPROVED'}))
-                annotated+=int(has_truth);referenced+=int(ref)
+                annotated+=int(bool(d and d.revision));referenced+=int(ref)
                 reason=None
                 if action=='normal' and (state not in {'UNPROCESSED','NORMAL'} or has_truth):reason='异常/待复核/已审核/冲突/已剔除，禁止批量覆盖'
-                if action=='exclude' and (state=='EXCLUDED' or has_truth or ref):reason='已剔除、已有标注/审核或被冻结数据集引用，需保留'
+                if action=='exclude' and state=='EXCLUDED':reason='已经剔除，无需重复操作'
+                if action=='remove' and f.handling.get('worklist_hidden'):reason='已从当前批次移除'
+                if action=='return' and not f.handling.get('worklist_hidden'):reason='仍在当前批次'
                 if action=='restore' and state!='EXCLUDED':reason='尚未剔除'
                 if reason:skipped.append({'id':fid,'reason':reason});continue
-                eligible.append({'id':fid,'annotation_revision':d.revision if d else 0,'handling_revision':f.handling.get('revision',0),'previous_state':state})
+                eligible.append({'id':fid,'annotation_revision':d.revision if d else 0,'handling_revision':f.handling.get('revision',0),'previous_state':state,'camera_id':session.get(MediaAsset,f.media_id).camera_id})
             return {'action':action,'selected':len(dict.fromkeys(frame_ids)),'eligible':eligible,'skipped':skipped,'annotated':annotated,'referenced':referenced}
 
     def batch_apply(self,preview,reason='',root=None,actor='local_operator'):
@@ -195,12 +227,12 @@ class AnnotationService:
         current=self.batch_preview([r['id'] for r in preview['eligible']],action,root)
         if current['eligible']!=preview['eligible'] or current['skipped']:raise AppError('BATCH_CONFLICT','预览后数据或引用已改变，批次没有写入，请重新检查。')
         now=utc_now()
-        with self.store.open(root) as (_,db,_),db.transaction() as session:
+        with self.store.open(root) as (_,db,_),db.transaction(camera_write=True) as session:
             from ivad_app.storage.models import DatasetSample
             for item in preview['eligible']:
                 f=session.get(ExtractedFrame,item['id']);d=session.scalar(select(Annotation).where(Annotation.frame_id==f.id))
                 if (d.revision if d else 0)!=item['annotation_revision'] or f.handling.get('revision',0)!=item['handling_revision']:raise AppError('BATCH_CONFLICT','图片在批量操作期间被修改，整个批次已回滚。')
-                if action=='exclude' and session.scalar(select(DatasetSample.id).where(DatasetSample.frame_id==f.id)):raise AppError('FRAME_REFERENCED','图片在预览后被数据集引用，整个批次已回滚。')
+                if session.get(MediaAsset,f.media_id).camera_id!=item['camera_id']:raise AppError('BATCH_CONFLICT','图片所属摄像头已改变，批次已回滚。')
                 if action=='normal':
                     if not d:
                         d=Annotation(id=str(uuid4()),frame_id=f.id,payload={},status='DRAFT',revision=0,source='Human Generated',updated_at=now);session.add(d);session.flush()
@@ -210,12 +242,16 @@ class AnnotationService:
                     session.add(AnnotationRevision(id=str(uuid4()),annotation_id=d.id,revision=d.revision,payload=payload,status=d.status,source='Human Generated',created_at=now))
                 else:
                     handling=copy.deepcopy(f.handling);history=list(handling.get('history',[]));history.append({'action':action,'at':now,'by':actor,'reason':reason,'previous_state':item['previous_state']})
-                    handling.update(history=history,revision=item['handling_revision']+1,is_excluded=action=='exclude')
+                    handling.update(history=history,revision=item['handling_revision']+1)
+                    if action in {'exclude','restore'}:handling['is_excluded']=action=='exclude'
+                    else:handling['worklist_hidden']=action=='remove'
                     if action=='exclude':handling.update(previous_state=item['previous_state'],exclusion_reason=reason,excluded_at=now,excluded_by=actor)
-                    else:handling['restored_at']=now
+                    elif action=='restore':handling['restored_at']=now
                     f.handling=handling
-        self.logs.write('annotation',f'帧操作 {action}：已处理{len(preview["eligible"])}，跳过{len(preview["skipped"])}，保留历史。')
-        return {'changed':len(preview['eligible']),'skipped':preview['skipped']}
+        warning=''
+        try:self.logs.write('annotation',f'帧操作 {action}：已处理{len(preview["eligible"])}，跳过{len(preview["skipped"])}，保留历史。')
+        except Exception:warning='操作已提交，但诊断日志写入失败，请检查磁盘；不能视为已回滚。'
+        return {'changed':len(preview['eligible']),'skipped':preview['skipped'],'failed':0,'warning':warning}
 
     def revisions(self,frame_id,root=None):
         with self.store.open(root) as (_,db,_),db.transaction() as session:
