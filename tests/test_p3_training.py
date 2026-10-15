@@ -66,8 +66,10 @@ def test_registry_gates_hash_and_atomic_rollback(services,tmp_path):
 def test_schema0005_to0006_append_only(tmp_path):
     path=tmp_path/'old.sqlite';db=Database(path,create=True,revision='0005');db.close()
     with sqlite3.connect(path) as raw:before=raw.execute("select name,sql from sqlite_master where type='table' and name!='alembic_version' order by name").fetchall()
-    db=Database(path);assert db.integrity_check()=='ok';db.close()
+    db=Database(path,revision='0006');db.close()
     with sqlite3.connect(path) as raw:
+        assert raw.execute('pragma integrity_check').fetchone()[0]=='ok'
+        assert raw.execute('select version_num from alembic_version').fetchone()[0]=='0006'
         after=dict(raw.execute("select name,sql from sqlite_master where type='table'").fetchall());assert all(after[n]==sql for n,sql in before)
     assert list(tmp_path.glob('*.backup'))
 

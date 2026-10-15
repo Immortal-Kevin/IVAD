@@ -65,9 +65,11 @@ def test_gui_import_play_extract_annotate_freeze_export_reopen(qtbot,services,tm
             qtbot.mouseClick(ann.canvas.viewport(),Qt.MouseButton.LeftButton,pos=ann.canvas.mapFromScene(QPointF(x,y)))
         qtbot.keyClick(ann.canvas,Qt.Key.Key_Return)
         assert len(ann.canvas.shapes)==1
-        ann.review.setCurrentText('APPROVED');ann.image_tag.setCurrentIndex(2)
+        ann.image_tag.setCurrentIndex(2)
         qtbot.waitUntil(lambda:ann.revision>0 and not ann.dirty and not ann.saving,timeout=10000)
         assert services.annotations.load(frame['id'],root)['payload']['objects'][0]['source']=='Human Generated'
+        from tests.hotfix_helpers import review_gui
+        review_gui(qtbot,window,frame['id'],'APPROVED',monkeypatch)
         selected.append(frame['id'])
     import os
     evidence=services.root/os.environ.get('IVAD_P2_GUI_EVIDENCE_DIR',f'artifacts/test-runs/{time.time_ns()}/gui');evidence.mkdir(parents=True,exist_ok=True)

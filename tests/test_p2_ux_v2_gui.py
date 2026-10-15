@@ -41,15 +41,21 @@ def test_gui_quick_batch_camera_exclude_restore(qtbot,services,media_project,mon
     qtbot.waitUntil(lambda:not a.batch_busy,timeout=10000)
     assert services.annotations.load(second)['payload']['objects']
     assert services.annotations.load(third)['payload']['image_tag']=='UNKNOWN'
-    monkeypatch.setattr(QInputDialog,'getText',lambda *args,**kwargs:('1204-1202给煤机摄像头',True))
-    click(qtbot,a,'camera_create');qtbot.waitUntil(lambda:a.camera_choice.currentData() is not None,timeout=10000)
+    w.show_page('projects');panel=w.p2.hotfix.cameras;w.p2.hotfix.tabs.setCurrentIndex(1);panel.new();panel.fields['name'].setText('1204-1202给煤机摄像头')
+    click(qtbot,panel,'project_camera_save');qtbot.waitUntil(lambda:bool(services.cameras.list()),timeout=10000)
+    camera=services.cameras.list()[0]['id'];mid=a.media_id;w.show_page('media');media=w.p2.media
+    qtbot.waitUntil(lambda:media.camera_choice.findData(camera)>=0,timeout=10000)
+    media.table.selectRow(next(i for i,r in enumerate(media.media_rows) if r['id']==mid))
+    qtbot.waitUntil(lambda:bool(media.selected_media) and media.selected_media['id']==mid,timeout=10000)
+    media.camera_choice.setCurrentIndex(media.camera_choice.findData(camera))
     qtbot.waitUntil(lambda:not a.loading and not w.p2.refreshing,timeout=10000)
-    camera=a.camera_choice.currentData();w.p2.refresh()
+    w.p2.refresh()
     qtbot.waitUntil(lambda:not w.p2.refreshing and not a.loading,timeout=10000);qtbot.wait(80)
-    assert a.camera_choice.currentData()==camera
-    click(qtbot,a,'camera_associate')
+    assert media.camera_choice.currentData()==camera
+    click(qtbot,media,'media_camera_save')
     qtbot.waitUntil(lambda:a.camera_id==camera and not a.loading,timeout=10000)
     assert services.media.get(a.media_id)['camera_id']==camera
+    w.show_page('annotation')
     # A normal DRAFT frame is soft-excluded; the saved document survives.
     a.navigate(1);qtbot.waitUntil(lambda:a.frame_id!=third and not a.loading,timeout=10000)
     fid=a.frame_id;before=services.annotations.load(fid)['payload']
