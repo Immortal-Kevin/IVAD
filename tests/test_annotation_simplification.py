@@ -17,7 +17,7 @@ def test_continuous_defaults_normal_camera_switch_multiclass_and_exclude(qtbot,s
     l1=services.annotations.save_label({'name':'压滤板破裂'})['id'];l2=next(r['id'] for r in services.annotations.labels() if r['name']=='落料口堵煤')
     w=make_window(qtbot,services);w.show_page('annotation');a=w.p2.annotation;w.confirm_discard=lambda:True
     monkeypatch.setattr(QMessageBox,'question',lambda *a,**k:QMessageBox.StandardButton.Yes);monkeypatch.setattr(QInputDialog,'getItem',lambda *a,**k:('严重模糊',True))
-    def wait():qtbot.waitUntil(lambda:bool(a.frame_id) and not a.loading and not a.saving and not a.dirty and not w.p2.refreshing and not a.batch_busy,timeout=10000)
+    def wait():qtbot.waitUntil(lambda:bool(a.frame_id) and not a.loading and not a.saving and not a.dirty and not w.p2.refreshing and not a.batch_busy and not a.shortcut_busy,timeout=10000)
     def rect(start,end):
         a.tool.setCurrentIndex(1);qtbot.mousePress(a.canvas.viewport(),Qt.MouseButton.LeftButton,pos=a.canvas.mapFromScene(QPointF(*start)));qtbot.mouseRelease(a.canvas.viewport(),Qt.MouseButton.LeftButton,pos=a.canvas.mapFromScene(QPointF(*end)));a.debounce.stop()
     def advance(name,old):click(qtbot,a,name);qtbot.waitUntil(lambda:a.frame_id!=old and not a.loading and not a.saving,timeout=10000);wait()
