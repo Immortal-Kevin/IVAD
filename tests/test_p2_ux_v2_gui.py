@@ -16,7 +16,7 @@ def test_gui_quick_batch_camera_exclude_restore(qtbot,services,media_project,mon
     click(qtbot,a,'annotation_quick_save');qtbot.waitUntil(lambda:a.frame_id!=first and not a.loading,timeout=10000)
     assert services.annotations.load(first)['payload']['objects']==[]
     assert services.annotations.load(first)['status']=='DRAFT'
-    second=a.frame_id;a.image_tag.setCurrentIndex(2);a.tool.setCurrentIndex(1)
+    second=a.frame_id;a.classes.setCurrentIndex(1);a.image_tag.setCurrentIndex(2);a.tool.setCurrentIndex(1)
     qtbot.mousePress(a.canvas.viewport(),Qt.MouseButton.LeftButton,pos=a.canvas.mapFromScene(QPointF(20,20)))
     qtbot.mouseRelease(a.canvas.viewport(),Qt.MouseButton.LeftButton,pos=a.canvas.mapFromScene(QPointF(90,90)))
     click(qtbot,a,'annotation_quick_save');qtbot.waitUntil(lambda:a.frame_id!=second and not a.loading,timeout=10000)
