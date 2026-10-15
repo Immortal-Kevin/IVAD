@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 from PySide6.QtWidgets import QMessageBox
 from tests.test_gui import make_window,close_window
 from tests.test_p2_gui import click
@@ -39,7 +40,7 @@ def test_gui_create_from_selected_refresh_guard_and_restart(qtbot,services,tmp_p
         monkeypatch.setattr(QMessageBox,'question',lambda *a,**k:QMessageBox.StandardButton.Discard)
         panel.table.selectRow(next(i for i,r in enumerate(panel.rows) if r['id']==b['id']))
         assert panel.mode=='EDIT' and panel.record['id']==b['id']
-        evidence=Path('artifacts/camera-integrity-v2-20261015');evidence.mkdir(exist_ok=True,parents=True)
+        evidence=Path(os.environ.get('IVAD_CAMERA_EVIDENCE',str(tmp_path/'camera-gui-evidence')));evidence.mkdir(exist_ok=True,parents=True)
         w.resize(1920,1080);qtbot.wait(100);assert w.grab().save(str(evidence/'two-cameras-edit.png'))
         click(qtbot,panel,'project_camera_new');qtbot.wait(50);assert w.grab().save(str(evidence/'create-mode.png'))
         ids={r['id'] for r in services.cameras.list()}

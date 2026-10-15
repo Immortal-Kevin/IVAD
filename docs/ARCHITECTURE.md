@@ -126,3 +126,14 @@ MediaPage保持同一页，改为左右QSplitter：左侧独立录像表，右�
 ## 2026-10-15 v3实施更新
 
 P3实施：原JobService注册p3_train/p3_validate，原ApplicationServices组合TrainingService/ModelService，同一MainWindow替换训练/仓库占位页。GUI .venv-p1经JSON请求/进度/取消文件调用.venv-nvidia独立进程，无网络服务器。CUDA UUID加Windows进程字节锁，AI前向守卫和ORT节点profile防CPU fallback。DatasetService快照复用并复制训练工作区；ModelAdapter协议区分能力，Registry CAS事务切换生产指针，不改权重。0006仅新增training_runs/model_versions，迁移前备份。P4–P6仍规划，打包冻结。
+
+
+## 2026-10-15 P2 Annotation & Camera Dataset Hotfix
+
+复用 Project/Camera/Media/Frame/Annotation/DatasetVersion/ModelVersion，Schema 0008 不变，无 Migration。Frame 的摄像头身份经 MediaAsset.camera_id 继承，不靠文件名；独立摄像头正常参考样本与异常故障查询见 DatasetService.camera_samples。跨摄像头训练仍可由用户明确选样并使用既有来源分组策略，不硬编码单机单模型或单故障单模型。
+
+Frame.handling.is_excluded 是可恢复的无效帧状态，保留真值和冻结历史；worklist_hidden 是项目默认工作列表成员状态，两者独立。批量操作仅处理当前可见勾选，跨摄像头需显式入口和再次确认；事务内校验修订与来源。完成状态由有效持久化内容产生，审核与 P3 准入规则独立。
+
+ROI 自动优先视频有效配置，其次有效摄像头配置；按比例、旋转及区域合法性校验，历史配置不覆盖、不合并。管理入口可明确编辑两种配置，无摄像头仍可基本标注。
+
+项目 SettingRecord.camera_detector_configurations 预留配置元数据：独立配置 UUID + Camera UUID + ModelVersion UUID + 多个 LabelCategory UUID + 可选 ROI scope。ModelService 提供配置与查询接口；可共享/专用模型、同摄像头多个模型、同模型多个故障。记录默认禁用，仅预留，不执行推理或报警；被配置引用的类别只能禁用，不能物理删除。旧 Model Registry 与训练记录不改。PACKAGING_FREEZE = TRUE。
