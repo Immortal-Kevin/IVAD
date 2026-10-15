@@ -47,13 +47,13 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout(outer); layout.setContentsMargins(16, 14, 16, 12)
         header = QHBoxLayout()
         brand = QLabel('IVAD Platform'); brand.setObjectName('brand'); header.addWidget(brand)
-        header.addWidget(QLabel(f'{__version__}  /  视频与人工标注')); header.addStretch()
+        header.addWidget(QLabel(f'{__version__}  /  数据与GPU训练')); header.addStretch()
         self.project_label = QLabel('当前项目：未打开'); self.project_label.setMinimumWidth(200); self.project_label.setMaximumWidth(280)
         header.addWidget(self.project_label)
         self.workspace = QComboBox(); self.workspace.setObjectName('workspace_mode')
         self.workspace.addItems([tr('开发模式'), tr('生产监控模式')]); self.workspace.currentIndexChanged.connect(self.switch_workspace)
         header.addWidget(self.workspace); layout.addLayout(header)
-        self.notice = QLabel('P2 · GPU检查尚未执行。后续功能显示 Not Implemented。')
+        self.notice = QLabel('P3源码模式 · GPU检查尚未执行；P4–P6未实现，打包冻结。')
         self.notice.setObjectName('notice'); self.notice.setWordWrap(True); layout.addWidget(self.notice)
         splitter = QSplitter(); layout.addWidget(splitter, 1)
         sidebar = QFrame(); sidebar.setObjectName('sidebar'); sidebar.setMinimumWidth(180); sidebar.setMaximumWidth(260)
@@ -61,7 +61,7 @@ class MainWindow(QMainWindow):
         self.nav = QListWidget(); self.nav.setMinimumWidth(170); self.nav.setObjectName('navigation'); self.nav.currentRowChanged.connect(self.navigate); side.addWidget(self.nav, 1)
         for title, key in [('任务中心', 'jobs'), ('设备与后端', 'devices'), ('诊断日志', 'logs')]:
             side.addWidget(button(title, lambda _=False, key=key: self.show_page(key)))
-        side.addWidget(QLabel('仅 P2\n本地运行 · 不启动网络服务'))
+        side.addWidget(QLabel('P3源码模式 · 打包冻结\n本地运行 · 不启动网络服务'))
         splitter.addWidget(sidebar)
         self.stack = QStackedWidget(); self.stack.setMinimumWidth(610); splitter.addWidget(self.stack)
         self.pages = {'dashboard': Dashboard(), 'projects': ProjectsPage(), 'jobs': JobsPage(), 'devices': DevicesPage(), 'logs': LogsPage(), 'settings': SettingsPage()}
@@ -83,10 +83,10 @@ class MainWindow(QMainWindow):
         self.context_panel=right
         props = QVBoxLayout(right); props.addWidget(QLabel('当前上下文'))
         self.properties = QLabel('未打开项目\n\n后端：尚未检查'); self.properties.setWordWrap(True); self.properties.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        props.addWidget(self.properties); props.addStretch(); props.addWidget(QLabel('阶段：P2\n运行模式：本地\nIntel：未验证'))
+        props.addWidget(self.properties); props.addStretch(); props.addWidget(QLabel('阶段：P3\n运行模式：本地\nIntel：未验证'))
         splitter.addWidget(right); splitter.setSizes([220, 980, 200]); splitter.setChildrenCollapsible(False)
         self.global_tasks = QLabel('任务队列：读取中'); self.statusBar().addPermanentWidget(self.global_tasks)
-        self.statusBar().showMessage('就绪 · P2')
+        self.statusBar().showMessage('就绪 · P3源码模式（打包冻结）')
         p = self.pages['projects']
         p.create_requested.connect(self.create_project); p.open_requested.connect(self.open_project)
         p.save_requested.connect(self.save_project); p.close_requested.connect(self.close_project); p.check_requested.connect(self.check_project)
@@ -101,6 +101,9 @@ class MainWindow(QMainWindow):
         self.timer = QTimer(self); self.timer.setInterval(600); self.timer.timeout.connect(self.refresh); self.timer.start()
         from ivad_app.gui.p2_controller import P2Controller
         self.p2=P2Controller(self)
+        from ivad_app.gui.training_page import TrainingPage,ModelsPage
+        for key,page in [('training',TrainingPage(self)),('models',ModelsPage(self))]:
+            old=self.pages[key];self.stack.removeWidget(old);old.deleteLater();self.pages[key]=page;self.stack.addWidget(page)
         self.switch_workspace(0); self.load_settings(); self.refresh()
         self.pages['projects'].set_project(self.s.projects.current)
         self.update_project_summary();self.p2.set_project(self.s.projects.current)
@@ -132,7 +135,7 @@ class MainWindow(QMainWindow):
         if 0 <= row < len(self.navigation): self.show_page(self.navigation[row][1])
 
     def show_page(self, key):
-        self.context_panel.setVisible(key not in {'media','annotation','dataset'})
+        self.context_panel.setVisible(key not in {'media','annotation','dataset','training','models'})
         self.nav.blockSignals(True)
         self.nav.setCurrentRow(next((i for i, (_, value) in enumerate(self.navigation) if value == key), -1))
         self.nav.blockSignals(False)
@@ -180,6 +183,8 @@ class MainWindow(QMainWindow):
         self.project_operation(self.s.projects.check, '项目目录UUID、数据库Schema和完整性检查通过。')
 
     def update_project_summary(self):
+        for key in ['training','models']:
+            if hasattr(self.pages[key],'set_root'):self.pages[key].set_root(self.s.projects.current.root if self.s.projects.current else None)
         p = self.s.projects.current
         name = p.name if p else '未打开'
         self.project_label.setText(self.project_label.fontMetrics().elidedText('当前项目：' + name, Qt.TextElideMode.ElideRight, 270))

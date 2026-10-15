@@ -1,4 +1,4 @@
-"""统一P1/P2非AI后台队列；资源互斥接口用于以后GPU调度。"""
+"""复用P1串行任务队列：P2媒体任务与P3隔离GPU任务。"""
 import queue, threading, traceback
 import json
 from contextlib import contextmanager
@@ -38,7 +38,7 @@ class JobService:
         self.thread.start()
 
     def register(self, kind: str, handler):
-        if not kind.startswith('p2_'): raise AppError('JOB_UNSUPPORTED', '本阶段只允许注册P2非AI任务。')
+        if not kind.startswith('p2_') and kind not in {'p3_train','p3_validate'}: raise AppError('JOB_UNSUPPORTED', '不支持的业务任务类型。')
         self.handlers[kind] = handler
 
     def submit(self, kind: str = 'diagnostic', project_id: str | None = None, payload: dict | None = None) -> str:
@@ -50,7 +50,7 @@ class JobService:
             with self.db.transaction() as session:
                 session.add(JobRecord(id=job_id, project_id=project_id, kind=kind, state='QUEUED', progress=0, created_at=now, updated_at=now, error='', payload=json.loads(json.dumps(payload or {})), result={}))
             self.events[job_id] = threading.Event()
-            self.logs.write('job', '非AI任务已排队：' + kind, job_id=job_id)
+            self.logs.write('job', '后台任务已排队：' + kind, job_id=job_id)
             self.queue.put(job_id)
             return job_id
 
@@ -73,7 +73,7 @@ class JobService:
                     self._change(job_id, 'CANCELLED'); continue
                 self._change(job_id, 'RUNNING')
                 row = self.get(job_id)
-                self.logs.write('job', '非AI任务开始：' + row['kind'], job_id=job_id)
+                self.logs.write('job', '后台任务开始：' + row['kind'], job_id=job_id)
                 result = {}
                 if row['kind'] in self.handlers:
                     result = self.handlers[row['kind']](JobContext(self, job_id, event), row['payload']) or {}
@@ -88,7 +88,7 @@ class JobService:
                 published_clip=row['kind']=='p2_clip' and bool(result.get('media_id'))
                 state = 'SUCCEEDED' if published_clip else ('CANCELLED' if event.is_set() else 'SUCCEEDED')
                 with self.lock: self._change(job_id, state, progress=100 if state=='SUCCEEDED' else None)
-                self.logs.write('job', '任务已取消。' if state == 'CANCELLED' else '非AI任务完成。', job_id=job_id)
+                self.logs.write('job', '任务已取消。' if state == 'CANCELLED' else '后台任务完成。', job_id=job_id)
             except AppError as exc:
                 self._change(job_id, 'CANCELLED' if exc.code == 'JOB_CANCELLED' else 'FAILED', error=exc.message)
                 self.logs.exception('job', exc.message, job_id)
