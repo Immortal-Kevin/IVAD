@@ -1,3 +1,6 @@
+from pathlib import Path
+from PySide6.QtCore import QDir
+QDir.addSearchPath('ivad_icons',str(Path(__file__).parent/'icons'))
 STYLE = '''
 QWidget { font-family: "Microsoft YaHei UI", "Segoe UI"; font-size: 13px; color: #203047; }
 QMainWindow { background: #f2f5fa; }
@@ -33,6 +36,12 @@ QTableWidget::indicator:checked { background: #2563a8; }
 QTableWidget { background: white; border: 1px solid #dde4ee; gridline-color: #edf1f6; }
 QListWidget { background: white; border: 1px solid #dde4ee; }
 QListWidget::item:selected { background: #d6e8ff; color: #203047; }
+QListWidget#annotation_frames::item { min-height:28px; padding:3px 1px; }
+QListWidget::indicator, QCheckBox::indicator, QTableWidget::indicator { width:20px; height:20px; border:2px solid #3c5575; background:#ffffff; border-radius:3px; }
+QListWidget::indicator:hover, QCheckBox::indicator:hover, QTableWidget::indicator:hover { border:2px solid #155a9e; background:#e4f0ff; }
+QListWidget::indicator:checked, QCheckBox::indicator:checked, QTableWidget::indicator:checked { image:url(ivad_icons:checked.svg); border:2px solid #16538e; background:#2166aa; }
+QListWidget::indicator:disabled, QCheckBox::indicator:disabled, QTableWidget::indicator:disabled { border:2px solid #8d9aaa; background:#e7ebf0; }
+QListWidget::indicator:checked:disabled, QCheckBox::indicator:checked:disabled, QTableWidget::indicator:checked:disabled { image:url(ivad_icons:checked.svg); background:#8396aa; }
 QHeaderView::section { background: #eaf0f7; border: none; padding: 8px; font-weight: 600; }
 QLabel#notice { background: #e7effb; color: #234f84; padding: 10px; border-radius: 6px; }
 QLabel#error { background: #fff0ed; color: #943b2f; padding: 10px; border-radius: 6px; }
