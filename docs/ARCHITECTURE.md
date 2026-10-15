@@ -121,3 +121,8 @@ Export adapters输出YOLO detect/真实polygon segment/COCO/native；无法表�
 ## 14. P2补充修改（2026-10-14）
 
 MediaPage保持同一页，改为左右QSplitter：左侧独立录像表，右侧QScrollArea共享起止范围及播放/抽帧/片段标签/保存视频片段四标签。新增p2_clip复用JobService，PyAV/FFmpeg实际PTS解码并H.264重编码，旋转落实到像素，完整解码/hash校验后登记COPY CLIP；源视频只读。媒体kind/parent_id/clip_info由0004添加，不重建旧表。原/片段共享source_group_id，camera优先，防数据集父子来源泄漏。没有P3–P6变更。
+
+
+## 2026-10-15 v3实施更新
+
+P3实施：原JobService注册p3_train/p3_validate，原ApplicationServices组合TrainingService/ModelService，同一MainWindow替换训练/仓库占位页。GUI .venv-p1经JSON请求/进度/取消文件调用.venv-nvidia独立进程，无网络服务器。CUDA UUID加Windows进程字节锁，AI前向守卫和ORT节点profile防CPU fallback。DatasetService快照复用并复制训练工作区；ModelAdapter协议区分能力，Registry CAS事务切换生产指针，不改权重。0006仅新增training_runs/model_versions，迁移前备份。P4–P6仍规划，打包冻结。
