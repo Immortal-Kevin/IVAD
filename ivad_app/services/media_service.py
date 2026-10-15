@@ -11,13 +11,14 @@ from ivad_app.storage.models import MediaAsset, ExtractedFrame, DatasetVersion, 
 from ivad_app.storage.project_store import file_hash, safe_path, row_dict
 from ivad_app.video.reader import FileVideoSource
 from ivad_app.services.camera_service import CameraService
+from ivad_app.services.media_lifecycle import MediaLifecycle
 
 def dhash(image):
     array = np.asarray(image.convert('L').resize((9, 8)))
     bits = array[:, 1:] > array[:, :-1]
     return f'{int("".join("1" if bit else "0" for bit in bits.ravel()), 2):016x}'
 
-class MediaService:
+class MediaService(MediaLifecycle):
     def __init__(self, store, logs): self.store, self.logs = store, logs
 
     @staticmethod
@@ -26,10 +27,12 @@ class MediaService:
         if not path.is_file(): raise AppError('MEDIA_MISSING', '视频Missing；请重新定位引用或恢复项目副本。')
         return path
 
-    def list(self, root=None) -> list[dict]:
+    def list(self, root=None,include_inactive=False) -> list[dict]:
         with self.store.open(root) as (folder, db, _), db.transaction() as session:
-            rows = [row_dict(row) for row in session.scalars(select(MediaAsset).order_by(MediaAsset.imported_at))]
+            rows = [row_dict(row) for row in session.scalars(select(MediaAsset).order_by(MediaAsset.imported_at)) if include_inactive or not row.lifecycle.get('hidden')]
         for row in rows:
+            if row['lifecycle'].get('removed'):row['state']='REMOVED';continue
+            if row['lifecycle'].get('hidden'):row['state']='DISABLED';continue
             if row['state'] == 'READY':
                 try: row['accessible_path'] = str(self.resolve(folder, row))
                 except AppError: row['state'] = 'MISSING'
@@ -59,11 +62,15 @@ class MediaService:
                     size = source.stat().st_size
                     checksum = file_hash(source, context.check)
                     with db.transaction() as session:
-                        duplicate = session.scalar(select(MediaAsset).where(MediaAsset.sha256 == checksum, MediaAsset.state == 'READY'))
+                        duplicate = next((m for m in session.scalars(select(MediaAsset).where(MediaAsset.sha256 == checksum, MediaAsset.state == 'READY')) if m.lifecycle.get('copy_cleanup') not in {'DELETED','QUARANTINED'}),None)
                         if duplicate:
                             report['duplicates'].append({'name': source.name, 'id': duplicate.id}); context.log('检测到相同SHA256录像，复用已有资源。'); continue
                     with db.transaction() as session:
-                        camera_id=CameraService.legacy(session,payload.get('camera',''))
+                        camera_id=payload.get('camera_id') or CameraService.legacy(session,payload.get('camera',''))
+                        if camera_id:
+                            from ivad_app.storage.models import Camera
+                            camera=session.get(Camera,camera_id)
+                            if not camera or not camera.details.get('enabled',True):raise AppError('CAMERA_DISABLED','请选择当前项目已启用的摄像头。')
                         session.add(MediaAsset(id=media_id, project_id=project_id, name=source.name, original_path=str(source), path='', mode=mode, sha256=checksum, size=size, video={}, camera=payload.get('camera',''),camera_id=camera_id, equipment=payload.get('equipment',''), site=payload.get('site',''), state='IMPORTING', error='', job_id=context.job_id, imported_at=utc_now()))
                     metadata = FileVideoSource.probe(source)
                     if mode == 'COPY':
@@ -117,6 +124,10 @@ class MediaService:
     def frames(self, root=None) -> list[dict]:
         with self.store.open(root) as (folder, db, _), db.transaction() as session:
             rows = [row_dict(row) for row in session.scalars(select(ExtractedFrame).order_by(ExtractedFrame.created_at))]
+            from ivad_app.storage.models import Camera
+            media={m.id:m for m in session.scalars(select(MediaAsset))};cameras={c.id:c for c in session.scalars(select(Camera))}
+            for row in rows:
+                m=media[row['media_id']];c=cameras.get(m.camera_id);row.update(media_name=m.name,media_identifier=(c.details.get('code') or '') if c else '',camera_name=c.name if c else '')
         for row in rows: row['state'] = 'READY' if safe_path(folder, row['path']).is_file() else 'MISSING'
         return rows
 
@@ -251,6 +262,7 @@ class MediaService:
                 versions = [row_dict(r) for r in session.scalars(select(DatasetVersion))]
                 exports = [row_dict(r) for r in session.scalars(select(ExportRecord))]
             for row in media_rows:
+                if row.get('lifecycle',{}).get('removed') and row['lifecycle'].get('copy_cleanup')=='DELETED':continue
                 if row.get('kind')=='CLIP':
                     parent=next((r for r in media_rows if r['id']==row['parent_id']),None)
                     info=row['clip_info']

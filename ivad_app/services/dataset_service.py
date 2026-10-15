@@ -16,7 +16,7 @@ class DatasetService:
     def candidates(self,root=None):
         with self.store.open(root) as (_,db,_),db.transaction() as session:
             rows=session.execute(select(ExtractedFrame,Annotation).join(Annotation,Annotation.frame_id==ExtractedFrame.id).where(Annotation.status.in_(['REVIEWED','APPROVED']))).all()
-            return [dict(row_dict(frame),review_status=doc.status,image_tag=doc.payload['image_tag'],objects=len(doc.payload['objects']),types=sorted({o['kind'] for o in doc.payload['objects']}),annotation_revision=doc.revision) for frame,doc in rows if AnnotationService.processing_state(frame,doc) in {'NORMAL','ABNORMAL'}]
+            return [dict(row_dict(frame),review_status=doc.status,image_tag=doc.payload['image_tag'],objects=len(doc.payload['objects']),types=sorted({o['kind'] for o in doc.payload['objects']}),annotation_revision=doc.revision) for frame,doc in rows if AnnotationService.completion_state(frame,doc)=='LABELED' and not frame.handling.get('review_stale')]
 
     def versions(self,root=None):
         with self.store.open(root) as (_,db,_),db.transaction() as session:
@@ -30,6 +30,7 @@ class DatasetService:
                 frame=session.get(ExtractedFrame,frame_id);doc=session.scalar(select(Annotation).where(Annotation.frame_id==frame_id))
                 if not frame or not doc or doc.status not in {'REVIEWED','APPROVED'}:issues.append('图片不存在或未人工审核：'+frame_id);continue
                 state=AnnotationService.processing_state(frame,doc)
+                if frame.handling.get('review_stale') or AnnotationService.completion_state(frame,doc)!='LABELED':issues.append('标注未完成或内容已修改，需独立人工审核：'+frame_id);continue
                 if state not in {'NORMAL','ABNORMAL'}:issues.append('图片未处理、待复核、剔除或存在冲突：'+frame_id);continue
                 path=safe_path(folder,frame.path)
                 if not path.is_file() or file_hash(path)!=frame.sha256:issues.append('图片缺失/哈希不符：'+frame_id);continue

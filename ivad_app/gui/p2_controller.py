@@ -25,11 +25,14 @@ class P2Controller(QObject):
         self.media.labels_requested.connect(self.labels);self.annotation.labels_requested.connect(self.labels);self.annotation.saved.connect(self.refresh)
         self.dataset.preview_requested.connect(self.preview);self.dataset.freeze_requested.connect(lambda p:self.submit('p2_freeze',p));self.dataset.export_requested.connect(lambda p:self.submit('p2_export',p))
         self.timer=QTimer(self);self.timer.setInterval(700);self.timer.timeout.connect(self.watch_jobs);self.timer.start()
+        from ivad_app.gui.p2_hotfix_controller import P2HotfixController
+        self.hotfix=P2HotfixController(self)
 
     def set_project(self,project):
+        self.hotfix.set_project(project)
         root=project.root if project else None
         if root!=self.root:
-            self.root=root;self.media.player.stop();self.media.media_id=None;self.media.table.setRowCount(0);self.media.media_rows=[];self.annotation.set_project(root)
+            self.root=root;self.media.player.stop();self.media.media_id=None;self.media.selected_media=None;self.media.camera_dirty=False;self.media.table.setRowCount(0);self.media.media_rows=[];self.annotation.set_project(root)
             self.dataset.candidates.setRowCount(0);self.dataset.versions.setRowCount(0)
         for page in [self.media,self.annotation,self.dataset]:page.setEnabled(bool(root))
         if root:self.refresh()
@@ -41,7 +44,7 @@ class P2Controller(QObject):
         def collect():
             frames=self.s.media.frames(root);states=self.s.annotations.frames_status(root)
             for frame in frames:frame.update(states.get(frame['id'],{}))
-            return self.s.media.list(root),frames,self.s.annotations.labels(root),self.s.datasets.candidates(root),self.s.datasets.versions(root)
+            return self.s.media.list(root,include_inactive=self.media.show_inactive.isChecked()),frames,self.s.annotations.labels(root),self.s.datasets.candidates(root),self.s.datasets.versions(root)
         def done(result,error):
             self.refreshing=False
             if root!=self.root:self.refresh();return
@@ -51,12 +54,15 @@ class P2Controller(QObject):
             media,frames,labels,candidates,versions=result;selected=self.media.media_id
             self.media.media_rows=media
             put_table(self.media.table,[[('CLIP · ' if r.get('kind')=='CLIP' else '')+r['name'],r['mode'],r['state'],f"{r['video'].get('duration_us',0)/1000000:.3f}s",r['video'].get('codec',''),f"{r['video'].get('display_width','')}×{r['video'].get('display_height','')}"] for r in media])
+            if not selected:
+                self.media.table.blockSignals(True);self.media.table.clearSelection();self.media.table.setCurrentCell(-1,-1);self.media.table.blockSignals(False)
             if selected:
                 self.media.table.blockSignals(True)
                 for i,row in enumerate(media):
                     if row['id']==selected:self.media.table.selectRow(i)
                 self.media.table.blockSignals(False)
             self.annotation.set_data(frames,labels)
+            self.hotfix.update_data(media,frames)
             old_clip=self.media.clip_label.currentData();self.media.clip_label.clear();self.media.clip_label.addItem('无故障类别',None)
             for label in labels:self.media.clip_label.addItem(label['name'],label['id'])
             self.media.clip_label.setCurrentIndex(max(0,self.media.clip_label.findData(old_clip)))

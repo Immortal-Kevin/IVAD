@@ -40,3 +40,8 @@ frames.handling JSON默认{}：is_excluded、exclusion_reason、excluded_at/by�
 ## 2026-10-15 v3实施更新
 
 Schema0006（P3）：新增training_runs/model_versions两表，均id UUID、details JSON、revision CAS。训练记录保留operation、state、项目内path、dataset version、参数/初始hash/GPU/job/指标/错误；模型记录保存实验/候选/生产、权重hash/ONNX/类映射/验证/历史。无永久删除API、原表不重建；旧0005升级前备份，旧表SQL一致测试通过。生产切换同项目事务，历史模型降为候选，旧工件与冻结集不变。原用户项目本轮未升级；旧Beta2不能打开0006。
+
+
+## P2 Hotfix during P3（2026-10-15）
+
+Schema0007（P2 Hotfix during P3）：仅追加cameras.details JSON（code/location/equipment/enabled，旧{}按启用兼容）和media_assets.lifecycle JSON（hidden/removed/revision/history/copy_cleanup及隔离路径）。帧完成状态复用frames.handling.completion_state与completion_updated_at，UNLABELED/LABELED；缺失时按实际标注内容推导，EXCLUDED/UNKNOWN/CONFLICT不视为有效完成。GUI普通保存不改变旧Annotation.status；真值改变时handling.review_stale要求新数据集人工复审。数据集独立审核经CAS/事务追加审核修订，不自动批准。0006→0007前备份、不重建旧表；用户备份和P3副本所有旧列逐行相同。P3训练/模型及冻结快照不重写。

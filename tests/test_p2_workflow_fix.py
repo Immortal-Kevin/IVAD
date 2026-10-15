@@ -65,29 +65,32 @@ def test_mpeg_never_uses_unreliable_seek(sample_videos,monkeypatch):
     selected=list(FileVideoSource(sample_videos/'sample.mp4',meta).iter_frames(200000,600000))
     assert selected and selected[0].time_us==200000
 
-def test_normal_navigation_roi_independence_and_reopen(qtbot,services,media_project,tmp_path):
+def test_normal_navigation_roi_independence_and_reopen(qtbot,services,media_project,tmp_path,monkeypatch):
     project,media,frames=media_project
     w=make_window(qtbot,services);w.p2.set_project(project);w.show_page('annotation');a=w.p2.annotation
     qtbot.waitUntil(lambda:a.frame_id is not None and not a.loading,timeout=10000)
     # Reproduce stale camera scope, including forced programmatic selection.
     a.roi_scope.setCurrentIndex(1)
     qtbot.waitUntil(lambda:not a.loading and a.roi_scope.currentIndex()==0,timeout=10000)
-    first=a.frame_id;a.image_tag.setCurrentIndex(1);a.review.setCurrentText('REVIEWED')
+    first=a.frame_id;a.image_tag.setCurrentIndex(1)
     a.navigate(1)
     qtbot.waitUntil(lambda:a.frame_id!=first and not a.loading,timeout=10000)
     assert services.annotations.load(first)['payload']['objects']==[]
     assert services.annotations.load(first)['payload']['image_tag']=='NORMAL'
+    from tests.hotfix_helpers import review_gui
+    review_gui(qtbot,w,first,'REVIEWED',monkeypatch)
     second=a.frame_id;a.tool.setCurrentIndex(1)
     qtbot.mousePress(a.canvas.viewport(),Qt.MouseButton.LeftButton,pos=a.canvas.mapFromScene(QPointF(20,20)))
     qtbot.mouseRelease(a.canvas.viewport(),Qt.MouseButton.LeftButton,pos=a.canvas.mapFromScene(QPointF(90,90)))
     assert len(a.canvas.shapes)==1
     a.canvas.undo();assert a.canvas.shapes==[]
     a.canvas.redo();assert len(a.canvas.shapes)==1
-    a.image_tag.setCurrentIndex(2);a.review.setCurrentText('REVIEWED');wait_saved(qtbot,a)
+    a.image_tag.setCurrentIndex(2);wait_saved(qtbot,a)
     target=copy.deepcopy(services.annotations.load(second)['payload']['objects'])
     a.canvas.add('roi_box',[0,0,100,100]);wait_saved(qtbot,a)
     loaded=services.annotations.load(second)
     assert loaded['payload']['objects']==target and len(loaded['roi_objects'])==1
+    review_gui(qtbot,w,second,'REVIEWED',monkeypatch)
     a.navigate(-1);qtbot.waitUntil(lambda:a.frame_id==first and not a.loading,timeout=10000)
     assert a.image_tag.currentData()=='NORMAL'
     assert not [o for o in a.canvas.shapes if not o['kind'].startswith('roi_')]

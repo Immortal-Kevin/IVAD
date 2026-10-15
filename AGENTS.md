@@ -3,6 +3,7 @@
 用户明确批准P2，当前仅执行P2。未经用户再次明确批准，禁止进入P3–P6。
 2026-10-15用户Development Directive v3优先：P2最终验收PASS后已授权自动进入P3，P2若有阻断立即停止；P3结束停止，P4–P6未授权。PACKAGING_FREEZE = TRUE：禁止构建/更新EXE、Portable、Setup和分发，既有包原状保留，解除冻结须用户明确批准。
 2026-10-15执行结果：P2最终及P3源码工程验收PASS，Schema0006，当前已停止等待用户审阅。P4–P6仍未授权；不恢复打包，不将实验/软件夹具当作工业生产批准。详见reports/P3_ACCEPTANCE.md、docs/CURRENT_TASK.md。
+2026-10-15后续P2 Hotfix已PASS：源码P3-Dev.2/Schema0007，既有P3兼容且业务源码/训练工件保留。P3此前已完成，返工后不重启P3，停止待审；旧P2/P3验收报告不覆盖。PACKAGING_FREEZE仍为TRUE，P4–P6未授权。报告reports/P2_HOTFIX_DURING_P3.md。
 遵守 SRS、ARCHITECTURE、CODEX_MASTER_PROMPT 和 P0_IMPLEMENTATION_PROMPT。
 项目专属 venv；禁止修改其他 AI 环境、全局 Python、驱动或系统配置。
 AI 必须 GPU 执行，失败即记录，不自动降级 CPU。报告保留真实原始证据。

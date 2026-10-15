@@ -74,10 +74,11 @@ class AnnotationService:
             for obj in objects:
                 if obj['kind']=='roi_box':obj['geometry']=[v*(frame.width if i%2==0 else frame.height) for i,v in enumerate(obj['geometry'])]
                 else:obj['geometry']=[[x*frame.width,y*frame.height] for x,y in obj['geometry']]
-            return {'frame':dict(row_dict(frame),media_id=media.id,camera_id=media.camera_id),'payload':payload,'revision':doc.revision if doc else 0,'status':doc.status if doc else 'DRAFT','source':'Human Generated','scope':scope,'roi_revision':roi.revision if roi else 0,'roi_objects':objects,'camera_roi':effective_camera_roi,'camera_available':bool(media.camera_id),'processing_state':self.processing_state(frame,doc),'notice':'' if media.camera_id else '当前视频未配置摄像头编号。ROI 为可选辅助信息，不影响基础标注。'}
+            return {'frame':dict(row_dict(frame),media_id=media.id,camera_id=media.camera_id),'payload':payload,'revision':doc.revision if doc else 0,'status':doc.status if doc else 'DRAFT','source':'Human Generated','scope':scope,'roi_revision':roi.revision if roi else 0,'roi_objects':objects,'camera_roi':effective_camera_roi,'camera_available':bool(media.camera_id),'processing_state':self.processing_state(frame,doc),'completion_state':self.completion_state(frame,doc),'notice':'' if media.camera_id else '当前视频未配置摄像头编号。ROI 为可选辅助信息，不影响基础标注。'}
 
-    def save(self,frame_id,payload,status,expected_revision,roi_objects=None,expected_roi_revision=0,camera_roi=False,root=None):
-        if status not in REVIEW_STATES or payload.get('image_tag') not in IMAGE_TAGS: raise AppError('ANNOTATION_STATE','图片标签或审核状态无效。')
+    def save(self,frame_id,payload,status,expected_revision,roi_objects=None,expected_roi_revision=0,camera_roi=False,root=None,completion_state=None):
+        if (status is not None and status not in REVIEW_STATES) or payload.get('image_tag') not in IMAGE_TAGS: raise AppError('ANNOTATION_STATE','图片标签或审核状态无效。')
+        if completion_state not in {None,'UNLABELED','LABELED'}:raise AppError('COMPLETION_STATE','标注完成状态无效。')
         objects=copy.deepcopy(payload.get('objects',[])); seen=set()
         with self.store.open(root) as (_,db,_),db.transaction() as session:
             frame=session.get(ExtractedFrame,frame_id)
@@ -85,6 +86,9 @@ class AnnotationService:
             if frame.handling.get('is_excluded'):raise AppError('FRAME_EXCLUDED','图片已剔除，请先恢复再修改标注。')
             doc=session.scalar(select(Annotation).where(Annotation.frame_id==frame_id))
             if (doc.revision if doc else 0)!=expected_revision: raise AppError('ANNOTATION_CONFLICT','标注被其他操作修改，已阻止覆盖；请重新载入。')
+            preserve_review=status is None
+            status=(doc.status if doc else 'DRAFT') if preserve_review else status
+            truth_changed=not doc or any(doc.payload.get(k)!=payload.get(k) for k in ['objects','image_tag','image_label_id'])
             if payload['image_tag']=='NORMAL':
                 if objects or payload.get('image_label_id'):raise AppError('NORMAL_CONFLICT','正常帧不能包含故障目标或整帧故障类别，请明确确认转换。')
                 if doc and (doc.payload.get('objects') or doc.payload.get('image_label_id') or (doc.payload.get('image_tag')=='ABNORMAL' and doc.status in {'REVIEWED','APPROVED'})) and not payload.get('normal_conversion_confirmed'):
@@ -107,6 +111,10 @@ class AnnotationService:
             if not doc:
                 doc=Annotation(id=str(uuid4()),frame_id=frame_id,payload={},status='DRAFT',revision=0,source='Human Generated',updated_at=utc_now());session.add(doc);session.flush()
             doc.payload=saved;doc.status=status;doc.revision+=1;doc.updated_at=utc_now();doc.source='Human Generated'
+            handling=copy.deepcopy(frame.handling)
+            handling['completion_state']=completion_state or ('LABELED' if payload['image_tag'] in {'NORMAL','ABNORMAL'} else 'UNLABELED')
+            handling['review_stale']=bool(handling.get('review_stale') or truth_changed) if preserve_review else False
+            handling['revision']=handling.get('revision',0)+1;handling['completion_updated_at']=utc_now();frame.handling=handling
             session.add(AnnotationRevision(id=str(uuid4()),annotation_id=doc.id,revision=doc.revision,payload=saved,status=status,source='Human Generated',created_at=utc_now()))
             roi_revision=expected_roi_revision
             if roi_objects is not None:
@@ -129,7 +137,7 @@ class AnnotationService:
                 history=copy.deepcopy(roi.payload.get('history',[]))
                 history.append({'revision':roi.revision+1,'objects':normalized,'source':'Human Generated','updated_at':utc_now()})
                 roi.payload={'objects':normalized,'history':history,'coordinate_system':'normalized_video'};roi.revision+=1;roi.updated_at=utc_now();roi_revision=roi.revision
-            result={'revision':doc.revision,'roi_revision':roi_revision,'status':doc.status}
+            result={'revision':doc.revision,'roi_revision':roi_revision,'status':doc.status,'completion_state':self.completion_state(frame,doc)}
         self.logs.write('annotation','人工标注与ROI已事务保存，保留修改版本。');return result
 
     @staticmethod
@@ -140,10 +148,27 @@ class AnnotationService:
         if tag=='NORMAL' and (doc.payload.get('objects') or doc.payload.get('image_label_id')):return 'CONFLICT'
         return {'NORMAL':'NORMAL','ABNORMAL':'ABNORMAL','UNKNOWN':'UNCERTAIN'}.get(tag,'CONFLICT')
 
+    @classmethod
+    def completion_state(cls,frame,doc):
+        if cls.processing_state(frame,doc) not in {'NORMAL','ABNORMAL'}:return 'UNLABELED'
+        return frame.handling.get('completion_state','LABELED')
+
+    def review_frames(self,expected,status,root=None):
+        if status not in REVIEW_STATES:raise AppError('REVIEW_STATE','审核状态无效。')
+        with self.store.open(root) as (_,db,_),db.transaction() as session:
+            for fid,revision in expected.items():
+                frame=session.get(ExtractedFrame,fid);doc=session.scalar(select(Annotation).where(Annotation.frame_id==fid))
+                if not frame or not doc or doc.revision!=revision:raise AppError('REVIEW_CONFLICT','标注已改变，审核批次未提交。')
+                if frame.handling.get('is_excluded') or (status in {'REVIEWED','APPROVED'} and self.completion_state(frame,doc)!='LABELED'):raise AppError('REVIEW_INCOMPLETE','只能人工审核有效且已完成的标注，剔除/未知/冲突不能放行。')
+                doc.status=status;doc.revision+=1;doc.updated_at=utc_now()
+                session.add(AnnotationRevision(id=str(uuid4()),annotation_id=doc.id,revision=doc.revision,payload=copy.deepcopy(doc.payload),status=status,source=doc.source,created_at=utc_now()))
+                handling=copy.deepcopy(frame.handling);handling.update(review_stale=False,reviewed_at=utc_now(),revision=handling.get('revision',0)+1);frame.handling=handling
+        return len(expected)
+
     def frames_status(self,root=None):
         with self.store.open(root) as (_,db,_),db.transaction() as session:
             rows=session.execute(select(ExtractedFrame,Annotation).outerjoin(Annotation,Annotation.frame_id==ExtractedFrame.id)).all()
-            return {f.id:{'processing_state':self.processing_state(f,d),'annotation_revision':d.revision if d else 0,'handling_revision':f.handling.get('revision',0),'review_status':d.status if d else 'DRAFT'} for f,d in rows}
+            return {f.id:{'processing_state':self.processing_state(f,d),'completion_state':self.completion_state(f,d),'review_stale':f.handling.get('review_stale',False),'annotation_revision':d.revision if d else 0,'handling_revision':f.handling.get('revision',0),'review_status':d.status if d else 'DRAFT'} for f,d in rows}
 
     def batch_preview(self,frame_ids,action,root=None):
         if action not in {'normal','exclude','restore'}:raise AppError('FRAME_ACTION','帧操作无效。')
@@ -181,6 +206,7 @@ class AnnotationService:
                         d=Annotation(id=str(uuid4()),frame_id=f.id,payload={},status='DRAFT',revision=0,source='Human Generated',updated_at=now);session.add(d);session.flush()
                     payload={'objects':[],'image_tag':'NORMAL','image_label_id':None,'coordinate_system':'image_pixels','width':f.width,'height':f.height,'operator':actor,'operation':'BATCH_NORMAL'}
                     d.payload=payload;d.revision+=1;d.status='DRAFT';d.updated_at=now
+                    handling=copy.deepcopy(f.handling);handling.update(completion_state='LABELED',review_stale=True,revision=handling.get('revision',0)+1);f.handling=handling
                     session.add(AnnotationRevision(id=str(uuid4()),annotation_id=d.id,revision=d.revision,payload=payload,status=d.status,source='Human Generated',created_at=now))
                 else:
                     handling=copy.deepcopy(f.handling);history=list(handling.get('history',[]));history.append({'action':action,'at':now,'by':actor,'reason':reason,'previous_state':item['previous_state']})

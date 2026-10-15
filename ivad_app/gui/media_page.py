@@ -16,6 +16,7 @@ class MediaPage(Page):
     check_requested=Signal()
     cancel_requested=Signal()
     labels_requested=Signal()
+    camera_association_requested=Signal(str,object,object)
     def __init__(self):
         super().__init__('视频管理与抽帧','左侧管理录像，右侧操作选中录像；变化筛选不等于工业异常判断。')
         self.media_id=None;self.media_rows=[];self.clip_rows=[];self.selected_clip=None;self.selected_media=None
@@ -23,7 +24,7 @@ class MediaPage(Page):
         left=QWidget();left.setMinimumWidth(300);ll=QVBoxLayout(left);ll.setContentsMargins(0,0,0,0)
         self.mode=QComboBox();self.mode.addItem('复制到项目（默认）','COPY');self.mode.addItem('外部引用','REFERENCE')
         ll.addWidget(self.mode);ll.addWidget(button('批量导入录像…',self.choose_import,True,'import_media'))
-        self.camera=QLineEdit();self.camera.setPlaceholderText('摄像头编号（可选）');self.site=QLineEdit();self.site.setPlaceholderText('厂区（可选）');self.equipment=QLineEdit();self.equipment.setPlaceholderText('设备（可选）')
+        self.camera=QComboBox();self.camera.addItem('导入默认摄像头：未关联',None);self.site=QLineEdit();self.site.setPlaceholderText('厂区（可选）');self.equipment=QLineEdit();self.equipment.setPlaceholderText('设备（可选）')
         self.import_metadata=QWidget();meta_layout=QVBoxLayout(self.import_metadata);meta_layout.setContentsMargins(0,0,0,0)
         for widget in [self.camera,self.site,self.equipment]:meta_layout.addWidget(widget)
         self.import_metadata.hide();ll.addWidget(button('导入信息（可选，展开/收起）',lambda:self.import_metadata.setVisible(not self.import_metadata.isVisible())));ll.addWidget(self.import_metadata)
@@ -36,6 +37,9 @@ class MediaPage(Page):
         self.splitter.addWidget(left)
         self.operations_scroll=QScrollArea();self.operations_scroll.setWidgetResizable(True)
         right=QWidget();right.setObjectName('media_operations');right.setStyleSheet('QWidget#media_operations { background:#f2f5fa; }');right.setMinimumWidth(480);rr=QVBoxLayout(right);rr.setContentsMargins(5,0,5,0);self.operations_scroll.setWidget(right);self.splitter.addWidget(self.operations_scroll)
+        self.camera_rows=[];self.camera_dirty=False;self.camera_choice=QComboBox();self.camera_choice.setObjectName('media_camera');self.camera_choice.addItem('未关联摄像头',None)
+        self.camera_label=QLabel('未关联摄像头；不阻断基础操作');self.camera_label.setWordWrap(True);rr.addWidget(self.camera_label);rr.addWidget(self.camera_choice)
+        rr.addWidget(button('保存摄像头关联',self.save_camera,name='media_camera_save'));self.camera_choice.currentIndexChanged.connect(lambda:setattr(self,'camera_dirty',True))
         rr.addWidget(QLabel('统一时间范围：用于抽帧、片段标签及保存视频片段（相对录像起点）。'))
         self.start=QDoubleSpinBox();self.end=QDoubleSpinBox()
         for w in [self.start,self.end]:w.setDecimals(3);w.setRange(0,10000000);w.setSuffix(' 秒')
@@ -93,16 +97,31 @@ class MediaPage(Page):
         self.clip_file_requested.emit({'media_id':self.media_id,'start_us':start,'end_us':end,'name':self.clip_name.text(),'note':self.clip_note.text()})
     def choose_import(self):
         files,_=QFileDialog.getOpenFileNames(self,'批量选择监控录像','','录像 (*.mp4 *.avi *.mov *.mkv);;所有文件 (*)')
-        if files:self.import_requested.emit({'paths':files,'mode':self.mode.currentData(),'camera':self.camera.text().strip(),'site':self.site.text().strip(),'equipment':self.equipment.text().strip()})
+        if files:self.import_requested.emit({'paths':files,'mode':self.mode.currentData(),'camera_id':self.camera.currentData(),'site':self.site.text().strip(),'equipment':self.equipment.text().strip()})
     def select_media(self):
         row=self.table.currentRow()
         if 0<=row<len(self.media_rows):self.media_id=self.media_rows[row]['id'];self.load_requested.emit(self.media_id)
     def load_media(self,row):
-        self.media_id=row['id'];self.selected_media=row;meta=row['video']
+        if not self.selected_media or self.selected_media['id']!=row['id']:self.camera_dirty=False
+        self.media_id=row['id'];self.selected_media=row;meta=row['video'];self.set_cameras(self.camera_rows)
         self.start.setMaximum(meta['duration_us']/1000000);self.end.setMaximum(meta['duration_us']/1000000)
         self.start.setValue(0);self.end.setValue(meta['duration_us']/1000000);self.player.load(row['accessible_path'],meta)
         self.info.setText(f"{row['name']} · {meta['codec']} · 标称帧率{meta['nominal_fps']} · PTS时间基{meta['time_base']} · 旋转{meta['rotation']}° · 真实拍摄时间未知")
         self.new_clip()
+    def set_cameras(self,rows):
+        self.camera_rows=rows
+        for combo,selected in [(self.camera,self.camera.currentData()),(self.camera_choice,self.camera_choice.currentData() if self.camera_dirty else (self.selected_media or {}).get('camera_id'))]:
+            combo.blockSignals(True);combo.clear();combo.addItem('未关联摄像头',None)
+            for row in rows:
+                if row['details'].get('enabled',True):combo.addItem((row['details'].get('code','')+' · ' if row['details'].get('code') else '')+row['name']+' · '+row['id'][:8],row['id'])
+                elif combo is self.camera_choice and row['id']==selected:
+                    combo.addItem(row['name']+'（停用，保留当前关联）',row['id']);combo.model().item(combo.count()-1).setEnabled(False)
+            combo.setCurrentIndex(max(0,combo.findData(selected)));combo.blockSignals(False)
+        current=next((r for r in rows if r['id']==(self.selected_media or {}).get('camera_id')),None)
+        self.camera_label.setText('当前摄像头：'+current['name'] if current else '未关联摄像头；不阻断抽帧及标注。')
+    def save_camera(self):
+        if self.selected_media and self.selected_media['id']==self.media_id and self.camera_dirty:self.camera_association_requested.emit(self.media_id,self.camera_choice.currentData(),self.selected_media.get('camera_id'))
+        else:self.info.setText('请选择录像及新的摄像头关联。摄像头在项目管理中创建。')
     def extract(self):
         if not self.media_id:self.info.setText('请选择已完整导入的录像。');return
         if self.sampling.currentData()=='ai':self.info.setText('AI辅助抽帧Not Available；P5实现，不使用CPU伪装AI推理。');return
