@@ -6,7 +6,7 @@ from tests.test_p2_services import media_project
 from tests.test_p2_media import sample_videos
 
 def test_project_camera_media_source_completion_and_independent_review(qtbot,services,media_project,monkeypatch):
-    from tests.hotfix_helpers import review_gui
+    from tests.hotfix_helpers import review_fixture
     project,mids,ids=media_project;w=make_window(qtbot,services);w.p2.set_project(project);w.show_page('projects');h=w.p2.hotfix;panel=h.cameras
     qtbot.waitUntil(lambda:not h.camera_busy,timeout=10000);h.tabs.setCurrentIndex(1);panel.new();panel.fields['name'].setText('1204-1202给煤机摄像头');panel.fields['code'].setText('1204-1202');panel.fields['location'].setText('TEST FIXTURE')
     click(qtbot,panel,'project_camera_save');qtbot.waitUntil(lambda:len(services.cameras.list())==1 and not h.camera_busy and panel.isEnabled(),timeout=10000);cam=services.cameras.list()[0]
@@ -22,7 +22,7 @@ def test_project_camera_media_source_completion_and_independent_review(qtbot,ser
     assert [a.review.itemText(i) for i in range(a.review.count())]==['未标注','已标注']
     a.image_tag.setCurrentIndex(1);a.auto_next.setChecked(False);click(qtbot,a,'annotation_quick_save');qtbot.waitUntil(lambda:not a.dirty and not a.saving,timeout=10000)
     assert services.annotations.load(fid)['completion_state']=='LABELED' and services.annotations.load(fid)['status']=='DRAFT'
-    review_gui(qtbot,w,fid,'REVIEWED',monkeypatch);assert services.annotations.load(fid)['status']=='REVIEWED'
+    review_fixture(qtbot,w,fid,'REVIEWED',monkeypatch);assert services.annotations.load(fid)['status']=='REVIEWED'
     # Already-reviewed content changes preserve the raw review result but require renewed review for new freezes.
     a.image_tag.setCurrentIndex(2);click(qtbot,a,'annotation_quick_save');qtbot.waitUntil(lambda:not a.saving and not a.dirty,timeout=10000)
     assert services.annotations.load(fid)['status']=='REVIEWED' and fid not in {f['id'] for f in services.datasets.candidates()}

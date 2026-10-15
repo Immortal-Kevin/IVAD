@@ -45,3 +45,10 @@ Schema0006（P3）：新增training_runs/model_versions两表，均id UUID、det
 ## P2 Hotfix during P3（2026-10-15）
 
 Schema0007（P2 Hotfix during P3）：仅追加cameras.details JSON（code/location/equipment/enabled，旧{}按启用兼容）和media_assets.lifecycle JSON（hidden/removed/revision/history/copy_cleanup及隔离路径）。帧完成状态复用frames.handling.completion_state与completion_updated_at，UNLABELED/LABELED；缺失时按实际标注内容推导，EXCLUDED/UNKNOWN/CONFLICT不视为有效完成。GUI普通保存不改变旧Annotation.status；真值改变时handling.review_stale要求新数据集人工复审。数据集独立审核经CAS/事务追加审核修订，不自动批准。0006→0007前备份、不重建旧表；用户备份和P3副本所有旧列逐行相同。P3训练/模型及冻结快照不重写。
+
+
+## P3 Dataset Management Hotfix（2026-10-15）
+
+Schema仍0008，无新增表、列或migration；Camera/Media/Frame/Annotation/DatasetVersion UUID不变。数据集草稿和候选排除为GUI会话状态，不占用全局handling状态。全局无效帧继续复用is_excluded及历史。
+
+新实验冻结manifest在现有format_version=1增加可选admission对象：policy=human-auto-v1、scope=EXPERIMENT_ONLY、validation_level=AUTO_CHECKED_HUMAN、independent_review=false、split_status、allow_limited、allow_multi_camera、camera_ids、source_groups、expected_counts、actual_counts、near_duplicate_cross_split。样本增加validation_level、media_parent_id、media_lifecycle；annotation_status原值完整保留。DatasetVersion.summary JSON附带admission，模型details登记dataset_admission。旧manifest没有此字段时按原审核政策解析；不会原地重写旧文件或改变旧hash。
