@@ -21,7 +21,7 @@ class CameraService:
     def _snapshot(session):
         cameras={c.id:copy.deepcopy(row_dict(c)) for c in session.scalars(select(Camera))}
         # Capture actual persisted references/content, independent of GUI caches.
-        tables=['projects','media_assets','frames','rois','annotations','annotation_revisions',
+        tables=['projects','settings','media_assets','frames','rois','annotations','annotation_revisions',
                 'datasets','dataset_versions','dataset_samples','training_runs','model_versions','clip_labels','exports']
         references={t:session.execute(text('SELECT * FROM '+t+' ORDER BY rowid')).fetchall() for t in tables}
         return cameras,references

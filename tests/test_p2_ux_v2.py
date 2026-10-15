@@ -53,7 +53,7 @@ def test_exclusion_recovery_protection_and_new_snapshot(services,media_project,t
     save(services,ids[0],status='REVIEWED')
     old=services.datasets.freeze(Context(),{'root':p.root,'name':'旧冻结','frame_ids':[ids[0]]})
     folder,snapshot=services.datasets.snapshot(old['version_id']);before=(folder/'manifest.json').read_bytes()
-    preview=s.batch_preview(ids[:3],'exclude');assert len(preview['skipped'])==1
+    preview=s.batch_preview(ids[:3],'exclude');assert len(preview['skipped'])==0 and preview['referenced']==1
     paths={fid:services.media.frame_image(fid)[0]['path'] for fid in ids[:3]}
     s.batch_apply(preview,'测试：严重模糊')
     assert s.frames_status()[ids[1]]['processing_state']=='EXCLUDED'

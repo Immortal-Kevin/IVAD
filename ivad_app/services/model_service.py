@@ -4,7 +4,7 @@ from pathlib import Path
 from uuid import uuid4
 from sqlalchemy import select
 from ivad_app.core.contracts import AppError,utc_now
-from ivad_app.storage.models import ModelVersion
+from ivad_app.storage.models import ModelVersion,Camera,LabelCategory,SettingRecord,RegionOfInterest,MediaAsset
 from ivad_app.storage.project_store import safe_path,file_hash
 from ivad_app.storage.project_store import atomic_json
 
@@ -13,6 +13,28 @@ class ModelService:
     def versions(self,root=None):
         with self.store.open(root) as (_,db,_),db.transaction() as s:
             return [dict(id=r.id,revision=r.revision,**r.details) for r in s.scalars(select(ModelVersion))]
+    def camera_configurations(self,camera_id=None,root=None):
+        with self.store.open(root) as (_,db,_),db.transaction() as session:
+            row=session.get(SettingRecord,'camera_detector_configurations')
+            records=copy.deepcopy(row.value.get('items',[])) if row else []
+            return [r for r in records if camera_id is None or r['camera_id']==camera_id]
+    def configure_camera(self,camera_id,model_version_id,fault_ids,root=None,*,roi_scope=None):
+        """Configuration metadata only. No inference, scheduling or production release."""
+        with self.store.open(root) as (_,db,_),db.transaction(camera_write=True) as session:
+            if not session.get(Camera,camera_id):raise AppError('CAMERA_MISSING','当前项目摄像头不存在。')
+            if not session.get(ModelVersion,model_version_id):raise AppError('MODEL_MISSING','当前项目模型版本不存在。')
+            faults=sorted(set(fault_ids))
+            if any(not session.get(LabelCategory,f) for f in faults):raise AppError('LABEL_MISSING','故障类型不存在。')
+            if roi_scope:
+                roi=session.scalar(select(RegionOfInterest).where(RegionOfInterest.scope==roi_scope))
+                source=session.get(MediaAsset,roi.media_id) if roi else None
+                if not roi or not (roi_scope=='camera:'+camera_id or (source and source.camera_id==camera_id and roi_scope=='media:'+source.id)):raise AppError('ROI_CAMERA','ROI不属于当前摄像头。')
+            row=session.get(SettingRecord,'camera_detector_configurations')
+            if not row:row=SettingRecord(key='camera_detector_configurations',value={'items':[]});session.add(row)
+            items=copy.deepcopy(row.value.get('items',[]))
+            record={'id':str(uuid4()),'camera_id':camera_id,'model_version_id':model_version_id,'fault_ids':faults,'roi_scope':roi_scope,'created_at':utc_now(),'enabled':False,'purpose':'configuration_only'}
+            items.append(record);row.value={'items':items}
+            return record
     def register(self,path,details,root=None,*,trusted=False):
         source=Path(path)
         if not trusted:raise AppError('MODEL_TRUST','仅导入可信权重；PT文件可能执行代码，请明确确认来源可信。')

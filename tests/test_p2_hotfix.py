@@ -17,7 +17,7 @@ def test_completion_and_review_are_independent(services,media_project):
     assert s.load(ids[0])['status']=='DRAFT' and s.load(ids[0])['completion_state']=='LABELED'
     assert not services.datasets.candidates()
     s.review_frames({ids[0]:1},'REVIEWED');assert len(services.datasets.candidates())==1
-    loaded=s.load(ids[0]);s.save(ids[0],dict(loaded['payload'],image_tag='ABNORMAL'),None,loaded['revision'])
+    loaded=s.load(ids[0]);s.save(ids[0],dict(loaded['payload'],image_tag='ABNORMAL',image_label_id=s.labels()[0]['id']),None,loaded['revision'])
     assert s.load(ids[0])['status']=='REVIEWED' and s.frames_status()[ids[0]]['review_stale']
     assert not services.datasets.candidates()
     s.review_frames({ids[0]:3},'REVIEWED');assert len(services.datasets.candidates())==1

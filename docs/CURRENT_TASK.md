@@ -1,7 +1,7 @@
 # 当前任务
 
-2026-10-15 Camera Registry Persistence & Integrity Hotfix v2 已完成代码修复及针对性回归，80 个不同测试用例通过。源码沿用 1.0.0-P3-Dev.2，新项目/迁移目标 Schema 0008。
+2026-10-15 P2 Annotation & Camera Dataset Hotfix：软件功能及针对性回归完成。Schema 0008，无 Migration。主回归99项通过，新增提交后诊断故障、ROI旋转/坐标保护等专项后共103个不同用例通过；DPI专项2项重复验证通过。详见 reports/P2_HOTFIX_REGRESSION.md 及四份专题报告。
 
-真实项目仅只读调查与一致性备份，仍为 Schema 0007；数据库 history 确认同一 Camera UUID 曾被 EDIT 为不同摄像头。没有恢复、重建或覆盖真实摄像头，恢复方案需用户单独批准。详见 reports/P2_CAMERA_REGISTRY_PERSISTENCE_HOTFIX.md。
+真实项目本轮只读快照为3摄像头/251帧/22标注，原库哈希保持。不根据此前旧快照回退用户后续摄像头改动，不自动按文件名补关联。所有状态/标注写入测试均隔离。历史截图保护存在已披露例外：旧回归固定路径覆盖上轮两张摄像头测试截图，已修正输出目录，不能宣称历史证据全量不变。
 
-P3 既有功能兼容回归通过；P3 此前已完成，不重复训练或开发已完成模块。暂停真实项目写入，等待审阅。PACKAGING_FREEZE = TRUE，未进入 P4–P6，不制作或更新分发包。
+P3此前已完成，本轮兼容回归通过，无已知未完成任务需要重启；保留成果并停止待审。PACKAGING_FREEZE = TRUE，不进入 P4–P6，不更新 EXE/Portable/安装包，不重制 Word/PDF。
