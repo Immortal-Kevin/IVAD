@@ -35,3 +35,8 @@ frames.handling JSON默认{}：is_excluded、exclusion_reason、excluded_at/by�
 0004→0005使用既有SQLite backup API先备份，只增加表/列及关联映射，不清空/重建。已达目标版本的只读服务访问仍检验完整性/版本，不重复运行Alembic upgrade；实际升级仍受MIGRATION_LOCK与事务保护。回滚/降级拒绝，保留备份供后续人工恢复。
 
 批量预览+提交以revision核验；late failure全事务回滚。冻结发布再次检查handling版本；新候选排除未处理/未知/剔除/冲突，旧dataset manifest、样本和历史导出保持不可变。
+
+
+## 2026-10-15 v3实施更新
+
+Schema0006（P3）：新增training_runs/model_versions两表，均id UUID、details JSON、revision CAS。训练记录保留operation、state、项目内path、dataset version、参数/初始hash/GPU/job/指标/错误；模型记录保存实验/候选/生产、权重hash/ONNX/类映射/验证/历史。无永久删除API、原表不重建；旧0005升级前备份，旧表SQL一致测试通过。生产切换同项目事务，历史模型降为候选，旧工件与冻结集不变。原用户项目本轮未升级；旧Beta2不能打开0006。

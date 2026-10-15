@@ -2,6 +2,7 @@ STYLE = '''
 QWidget { font-family: "Microsoft YaHei UI", "Segoe UI"; font-size: 13px; color: #203047; }
 QMainWindow { background: #f2f5fa; }
 QDialog, QMessageBox { background: #f2f5fa; color: #203047; }
+QWidget#p3Training, QWidget#p3Models, QWidget#p3TrainingBody, QScrollArea#p3TrainingScroll { background: #f2f5fa; color: #203047; }
 QFrame#sidebar { background: #13243a; border-radius: 10px; }
 QFrame#sidebar QLabel { color: #dce6f5; }
 QListWidget#navigation { background: transparent; color: #dce6f5; border: none; outline: none; }

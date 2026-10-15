@@ -193,3 +193,15 @@ class ExportRecord(Base):
     path: Mapped[str] = mapped_column(Text)
     sha256: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[str] = mapped_column(String(40))
+
+class TrainingRun(Base):
+    __tablename__='training_runs'
+    id: Mapped[str] = mapped_column(String(36),primary_key=True)
+    details: Mapped[dict] = mapped_column(JSON)
+    revision: Mapped[int] = mapped_column(Integer)
+
+class ModelVersion(Base):
+    __tablename__='model_versions'
+    id: Mapped[str] = mapped_column(String(36),primary_key=True)
+    details: Mapped[dict] = mapped_column(JSON)
+    revision: Mapped[int] = mapped_column(Integer)

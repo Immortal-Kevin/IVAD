@@ -59,3 +59,8 @@ YOLO26 与 YOLO11 输出与 NMS 分别适配；原始张量对齐和最终检测
 
 
 2026-10-15 Development Directive v3：PACKAGING_FREEZE = TRUE。暂停所有EXE/Portable/Setup构建、签名与分发，旧包保留。P2最终验收PASS后已获准自动进入P3，若P2阻断则停止；P3完成后停止，P4–P6未授权。只维护源码和现有隔离环境，不重制Word/PDF。
+
+
+## 2026-10-15 v3实施更新
+
+2026-10-15 P3：P2最终101+真实副本回归PASS后按v3条件授权启动。采用固定既有CUDA/GUI环境，无新依赖；GUI不导入torch。候选指标默认.5/.5/.5/.25可显式设置，记录门槛；生产需GUI确认，测试夹具门槛0不当作工业批准。恢复沿用原参数、同数据版本、完整epoch检查点，另建输出目录；正常背景空标签，未知/未审核/剔除/冲突及异常无框拒绝Detection。PACKAGING_FREEZE = TRUE；不进入P4–P6。

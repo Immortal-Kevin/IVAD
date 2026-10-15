@@ -12,6 +12,8 @@ from ivad_app.services.media_service import MediaService
 from ivad_app.services.annotation_service import AnnotationService
 from ivad_app.services.dataset_service import DatasetService
 from ivad_app.services.camera_service import CameraService
+from ivad_app.services.model_service import ModelService
+from ivad_app.services.training_service import TrainingService
 
 class ApplicationServices:
     def __init__(self, root: Path, data_dir: Path | None = None, *, step_seconds: float = 0.1, lite: bool | None = None):
@@ -30,12 +32,16 @@ class ApplicationServices:
         self.annotations = AnnotationService(self.store, self.media, self.logs)
         self.cameras = CameraService(self.store,self.logs)
         self.datasets = DatasetService(self.store, self.logs)
+        self.models = ModelService(self.store,self.logs)
+        self.training = TrainingService(self.store,self.datasets,self.models,self.devices,self.logs,self.root,self.settings)
         self.jobs.register('p2_import', self.media.import_batch)
         self.jobs.register('p2_extract', self.media.extract)
         self.jobs.register('p2_clip', self.media.save_video_clip)
         self.jobs.register('p2_freeze', self.datasets.freeze)
         self.jobs.register('p2_export', self.datasets.export)
-        self.logs.write('application', 'IVAD P2启动，P3–P6尚未实现。')
+        if not self.lite:
+            self.jobs.register('p3_train', self.training.train);self.jobs.register('p3_validate',self.training.validate)
+        self.logs.write('application', 'IVAD源码模式P3训练基础设施；P4–P6尚未实现。' if not self.lite else 'Lite不启用AI Worker。')
         self.closed = False
 
     def close(self):

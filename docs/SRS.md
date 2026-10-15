@@ -124,3 +124,8 @@ IVAD 是一体式工业视觉异常检测平台。全部日常操作经**同一 
 - Ultralytics OpenVINO integration: https://docs.ultralytics.com/integrations/openvino
 - Ultralytics YOLO26: https://docs.ultralytics.com/models/yolo26
 - Ultralytics licensing: https://docs.ultralytics.com/
+
+
+## 2026-10-15 v3实施更新
+
+2026-10-15实施状态：v3授权P2最终PASS后进入P3。FR-030–038在YOLO26n/YOLO11n Detection与RTX5070Ti范围实现源码GUI训练/独立验证/注册审批/回滚，验收见P3_ACCEPTANCE.md；工业准确率/跨机/Intel未验收。PACKAGING_FREEZE = TRUE，P4–P6未授权。
