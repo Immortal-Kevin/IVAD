@@ -77,8 +77,8 @@ def test_normal_navigation_roi_independence_and_reopen(qtbot,services,media_proj
     qtbot.waitUntil(lambda:a.frame_id!=first and not a.loading,timeout=10000)
     assert services.annotations.load(first)['payload']['objects']==[]
     assert services.annotations.load(first)['payload']['image_tag']=='NORMAL'
-    from tests.hotfix_helpers import review_gui
-    review_gui(qtbot,w,first,'REVIEWED',monkeypatch)
+    from tests.hotfix_helpers import review_fixture
+    review_fixture(qtbot,w,first,'REVIEWED',monkeypatch)
     second=a.frame_id;a.classes.setCurrentIndex(1);a.tool.setCurrentIndex(1)
     qtbot.mousePress(a.canvas.viewport(),Qt.MouseButton.LeftButton,pos=a.canvas.mapFromScene(QPointF(20,20)))
     qtbot.mouseRelease(a.canvas.viewport(),Qt.MouseButton.LeftButton,pos=a.canvas.mapFromScene(QPointF(90,90)))
@@ -90,7 +90,7 @@ def test_normal_navigation_roi_independence_and_reopen(qtbot,services,media_proj
     a.canvas.add('roi_box',[0,0,100,100]);wait_saved(qtbot,a)
     loaded=services.annotations.load(second)
     assert loaded['payload']['objects']==target and len(loaded['roi_objects'])==1
-    review_gui(qtbot,w,second,'REVIEWED',monkeypatch)
+    review_fixture(qtbot,w,second,'REVIEWED',monkeypatch)
     a.navigate(-1);qtbot.waitUntil(lambda:a.frame_id==first and not a.loading,timeout=10000)
     assert a.image_tag.currentData()=='NORMAL'
     assert not [o for o in a.canvas.shapes if not o['kind'].startswith('roi_')]

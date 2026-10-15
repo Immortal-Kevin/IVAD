@@ -23,7 +23,7 @@ class P2Controller(QObject):
         self.media.load_requested.connect(self.load_media);self.media.relocate_requested.connect(self.relocate);self.media.clip_requested.connect(self.save_clip);self.media.clip_delete_requested.connect(self.delete_clip)
         self.media.check_requested.connect(self.check);self.media.cancel_requested.connect(self.cancel_tasks)
         self.media.labels_requested.connect(self.labels);self.annotation.labels_requested.connect(self.labels);self.annotation.saved.connect(self.refresh)
-        self.dataset.preview_requested.connect(self.preview);self.dataset.freeze_requested.connect(lambda p:self.submit('p2_freeze',p));self.dataset.export_requested.connect(lambda p:self.submit('p2_export',p))
+        self.dataset.version_check_requested.connect(self.check_dataset_version);self.dataset.split_requested.connect(self.split_preview);self.dataset.batch_requested.connect(self.dataset_batch);self.dataset.preview_requested.connect(self.preview);self.dataset.freeze_requested.connect(lambda p:self.submit('p2_freeze',p));self.dataset.export_requested.connect(lambda p:self.submit('p2_export',p))
         self.timer=QTimer(self);self.timer.setInterval(700);self.timer.timeout.connect(self.watch_jobs);self.timer.start()
         from ivad_app.gui.p2_hotfix_controller import P2HotfixController
         self.hotfix=P2HotfixController(self)
@@ -33,7 +33,7 @@ class P2Controller(QObject):
         root=project.root if project else None
         if root!=self.root:
             self.root=root;self.media.player.stop();self.media.media_id=None;self.media.selected_media=None;self.media.camera_dirty=False;self.media.table.setRowCount(0);self.media.media_rows=[];self.annotation.set_project(root)
-            self.dataset.candidates.setRowCount(0);self.dataset.versions.setRowCount(0)
+            self.dataset.set_project(root);self.dataset.candidates.setRowCount(0);self.dataset.versions.setRowCount(0)
         for page in [self.media,self.annotation,self.dataset]:page.setEnabled(bool(root))
         if root:self.refresh()
 
@@ -44,14 +44,14 @@ class P2Controller(QObject):
         def collect():
             frames=self.s.media.frames(root);states=self.s.annotations.frames_status(root)
             for frame in frames:frame.update(states.get(frame['id'],{}))
-            return self.s.media.list(root,include_inactive=self.media.show_inactive.isChecked()),frames,self.s.annotations.labels(root),self.s.datasets.candidates(root),self.s.datasets.versions(root)
+            return self.s.media.list(root,include_inactive=self.media.show_inactive.isChecked()),frames,self.s.annotations.labels(root),self.s.datasets.screening(root),self.s.datasets.versions(root),self.s.cameras.list(root)
         def done(result,error):
             self.refreshing=False
             if root!=self.root:self.refresh();return
             if error:
                 if self.refresh_pending:QTimer.singleShot(0,self.refresh)
                 return
-            media,frames,labels,candidates,versions=result;selected=self.media.media_id
+            media,frames,labels,candidates,versions,cameras=result;selected=self.media.media_id
             self.media.media_rows=media
             put_table(self.media.table,[[('CLIP · ' if r.get('kind')=='CLIP' else '')+r['name'],r['mode'],r['state'],f"{r['video'].get('duration_us',0)/1000000:.3f}s",r['video'].get('codec',''),f"{r['video'].get('display_width','')}×{r['video'].get('display_height','')}"] for r in media])
             if not selected:
@@ -66,17 +66,7 @@ class P2Controller(QObject):
             old_clip=self.media.clip_label.currentData();self.media.clip_label.clear();self.media.clip_label.addItem('无故障类别',None)
             for label in labels:self.media.clip_label.addItem(label['name'],label['id'])
             self.media.clip_label.setCurrentIndex(max(0,self.media.clip_label.findData(old_clip)))
-            selected_frames=set(self.dataset.selected_frames());self.dataset.candidate_rows=candidates;self.dataset.candidates.setRowCount(len(candidates))
-            for i,row in enumerate(candidates):
-                item=QTableWidgetItem('');item.setFlags(Qt.ItemFlag.ItemIsEnabled|Qt.ItemFlag.ItemIsUserCheckable);item.setCheckState(Qt.CheckState.Checked if row['id'] in selected_frames else Qt.CheckState.Unchecked);self.dataset.candidates.setItem(i,0,item)
-                for j,value in enumerate([row['id'],row['media_id'][:8],f"{row['time_us']/1000000:.3f}",str(row['objects'])+'/'+','.join(row['types']),row['review_status']+'/'+row['image_tag']],1):item=QTableWidgetItem(value);item.setToolTip(value);self.dataset.candidates.setItem(i,j,item)
-            self.dataset.version_rows=versions
-            put_table(self.dataset.versions,[[r['name'],r['number'],r['summary']['images'],r['summary']['objects'],str(r['summary']['splits']),r['id']] for r in versions])
-            existing=self.dataset.existing.currentData();self.dataset.existing.blockSignals(True);self.dataset.existing.clear();self.dataset.existing.addItem('新数据集',None)
-            seen=set()
-            for version in versions:
-                if version['dataset_id'] not in seen:self.dataset.existing.addItem(version['name'],version['dataset_id']);seen.add(version['dataset_id'])
-            self.dataset.existing.setCurrentIndex(max(0,self.dataset.existing.findData(existing)));self.dataset.existing.blockSignals(False)
+            self.dataset.set_data(candidates,cameras,labels,versions,self.annotation.camera_id)
             if self.refresh_pending:QTimer.singleShot(0,self.refresh)
         self.runner.run(collect,done)
 
@@ -159,7 +149,42 @@ class P2Controller(QObject):
         root=self.root
         def done(result,error):
             if not error:self.dataset.summary.setText(f"检查：{result['count']}图片/{result['objects']}目标/{result['groups']}独立组\n"+'；'.join(result['issues']+result['warnings']))
-        self.runner.run(lambda:self.s.datasets.preview(ids,root),done)
+        self.runner.run(lambda:self.s.datasets.preview(ids,root,admission='experimental'),done)
+    def check_dataset_version(self,version_id):
+        root=self.root
+        def done(result,error):
+            if root!=self.root:return
+            import json
+            self.dataset.detail.setPlainText(error or json.dumps(result,ensure_ascii=False,indent=2));self.dataset.summary.setText(error or '冻结版本检查：'+result['status']+'；来源记录见详情。此检查不代替训练准入或工业审核。')
+        self.runner.run(lambda:self.s.datasets.check_version(version_id,root),done)
+    def split_preview(self,payload):
+        root=self.root
+        def done(result,error):
+            if root!=self.root:return
+            if error:self.dataset.split_detail.setPlainText(error);return
+            import json
+            self.dataset.split_detail.setPlainText(json.dumps({k:result[k] for k in ['split_status','count','objects','classes','expected_counts','split_counts','source_groups','split_groups','cross_source_groups','near_duplicate_cross_split','issues','warnings']},ensure_ascii=False,indent=2))
+        self.runner.run(lambda:self.s.datasets.split_preview(payload['frame_ids'],root,**{k:payload[k] for k in ['strategy','ratios','seed','allow_leakage','admission']}),done)
+    def dataset_batch(self,action,ids):
+        root=self.root
+        if not ids:self.dataset.batch_info.setText('成功0，跳过0，失败0：请先勾选当前筛选图片。');return
+        from PySide6.QtWidgets import QMessageBox
+        if QMessageBox.question(self.dataset,'确认全局帧状态修改',f'将对所选{len(ids)}张执行'+('剔除' if action=='exclude' else '恢复')+'。历史标注、冻结快照和原文件保留。确认？',QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No,QMessageBox.StandardButton.No)!=QMessageBox.StandardButton.Yes:return
+        self.dataset.setEnabled(False)
+        def operation():
+            counts={'success':0,'skipped':0,'failed':0};errors=[]
+            for fid in ids:
+                try:
+                    preview=self.s.annotations.batch_preview([fid],action,root)
+                    result=self.s.annotations.batch_apply(preview,'数据集管理人工'+action,root=root);counts['success']+=result['changed'];counts['skipped']+=len(result['skipped'])
+                except Exception as exc:counts['failed']+=1;errors.append(str(exc))
+            return counts,errors
+        def done(result,error):
+            self.dataset.setEnabled(bool(self.root))
+            if root!=self.root:return
+            if error:self.dataset.batch_info.setText(f'成功0，跳过0，失败{len(ids)}：'+error);return
+            c,errors=result;self.dataset.batch_info.setText(f"成功{c['success']}，跳过{c['skipped']}，失败{c['failed']}。"+'；'.join(errors[:2]));self.refresh()
+        self.runner.run(operation,done)
     def check(self):
         root=self.root
         def done(result,error):

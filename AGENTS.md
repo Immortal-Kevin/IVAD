@@ -20,3 +20,5 @@ P2复用P1 GUI/数据库/日志/队列；普通解码/人工标注CPU允许，AI
 2026-10-15 Annotation Workflow Simplification功能PASS：69项最终整组/高DPI4项通过；一次混合GUI测试原生访问冲突未定位，串行复验未复现，必须保留报告限制。Schema0008不变，P3不重启，打包冻结，后续截图仅本轮独立目录。详见reports/P2_ANNOTATION_WORKFLOW_SIMPLIFICATION.md。
 
 2026-10-15 顶部标注快捷按钮Hotfix PASS：58项回归/200%专项4项通过，162项保护哈希0变化。Schema0008不变；P3此前已完成，不重启，打包冻结，停止待审。历史Qt原生访问冲突限制保留。报告reports/P2_TOP_TOOLBAR_SHORTCUT_HOTFIX.md。
+
+2026-10-15 用户批准P3 Dataset UX Hotfix已完成：68项回归及200% GUI1项通过，Schema0008不变。新GUI用显式human-auto-v1实验政策，不改原审核/旧冻结政策；真实8525来源1组200帧划分LIMITED。163项选取保护哈希0变化。P3原成果完成，停止待审，打包冻结，P4–P6未授权。报告reports/P3_DATASET_UI_HOTFIX.md及对应VALIDATION/SPLIT结果。

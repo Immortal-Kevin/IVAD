@@ -32,10 +32,12 @@ class TrainingService:
     def preflight(self,version_id,root=None):
         folder,snap=self.datasets.snapshot(version_id,root);seen=set();groups={};counts={'train':0,'val':0,'test':0};classes=snap['classes']
         if not classes or [r['class_id'] for r in classes]!=list(range(len(classes))):raise AppError('TRAIN_CLASSES','类别映射为空或不连续。')
+        policy=snap.get('admission',{});experimental=policy.get('policy')=='human-auto-v1' and policy.get('scope')=='EXPERIMENT_ONLY'
+        if experimental and (policy.get('validation_level')!='AUTO_CHECKED_HUMAN' or policy.get('independent_review') is not False or policy.get('split_status') not in {'PASS','LIMITED'} or (policy.get('split_status')=='LIMITED' and not policy.get('allow_limited'))):raise AppError('TRAIN_ADMISSION','实验版本准入证据或风险确认无效。')
         with self.store.open(root) as (_,db,_),db.transaction() as s:
             for sample in snap['samples']:
                 state=sample['annotation']['image_tag'];objects=sample['annotation']['objects'];live=s.get(ExtractedFrame,sample['frame_id'])
-                if not live or live.handling.get('is_excluded') or sample['annotation_status'] not in {'REVIEWED','APPROVED'} or state not in {'NORMAL','ABNORMAL'} or (state=='NORMAL' and (objects or sample['annotation'].get('image_label_id'))) or (state=='ABNORMAL' and not objects):raise AppError('TRAIN_ANNOTATION','未知/剔除/未审核/冲突/异常无框样本不能用于目标检测训练。')
+                if not live or live.handling.get('is_excluded') or not ((sample.get('validation_level')=='AUTO_CHECKED_HUMAN' and sample.get('annotation_source')=='Human Generated' and sample['annotation_status']!='REJECTED') if experimental else sample['annotation_status'] in {'REVIEWED','APPROVED'}) or state not in {'NORMAL','ABNORMAL'} or (state=='NORMAL' and (objects or sample['annotation'].get('image_label_id'))) or (state=='ABNORMAL' and not objects):raise AppError('TRAIN_ANNOTATION','未知/剔除/未审核/冲突/异常无框样本不能用于目标检测训练。')
                 for obj in objects:
                     if obj['kind'] not in {'box','polygon'} or obj['label_id'] not in {r['uuid'] for r in classes}:raise AppError('TRAIN_CLASSES','目标类型或类别映射无效，ROI不作为检测目标。')
                     validate_geometry(obj['kind'],obj['geometry'],sample['width'],sample['height'])
@@ -47,8 +49,9 @@ class TrainingService:
                 if sample['sha256'] in seen:raise AppError('TRAIN_LEAKAGE','重复图片，拒绝跨集合泄漏。')
                 seen.add(sample['sha256']);split=sample['split']
                 if split not in counts:raise AppError('TRAIN_SPLIT','不支持的数据划分。')
-                counts[split]+=1;group=sample.get('camera_id') or sample.get('camera') or sample.get('source_group_id') or sample['media_id']
-                if group in groups and groups[group]!=split:raise AppError('TRAIN_LEAKAGE','同摄像头或源录像跨集合，拒绝数据泄漏。')
+                counts[split]+=1
+                group=(sample.get('source_group_id') or sample['media_id']) if experimental and snap['strategy']=='source' else (sample.get('camera_id') or sample.get('camera') or sample.get('source_group_id') or sample['media_id'])
+                if group in groups and groups[group]!=split and not (experimental and snap['strategy']=='random' and policy.get('allow_limited')):raise AppError('TRAIN_LEAKAGE','同摄像头或源录像跨集合，拒绝数据泄漏。')
                 groups[group]=split
         if not counts['train'] or not counts['val']:raise AppError('TRAIN_SPLIT','训练与验证集均须非空，请增加独立摄像头/录像组重新冻结。')
         return folder,snap,counts
@@ -115,7 +118,7 @@ class TrainingService:
             if result.get('onnx'):result['onnx']['path']=Path(result['onnx']['path']).relative_to(folder).as_posix()
             if operation=='validate':
                 mid=payload['initial_model_id'];self.models.record_validation(mid,result,payload['version_id'],root)
-            else:mid=self.models.register(work/'run/weights/best.pt',dict(model=name,task='detect',run_id=rid,dataset_version=payload['version_id'],class_map=snapshot['classes'],input_size=parameters['imgsz'],preprocess='Ultralytics RGB / 255, CHW, letterbox; FP32 ONNX',postprocess='raw non-end2end + NMS; conf=.25, iou=.45',metrics=result['metrics'],validation_passed=True,gpu_evidence=result['evidence'],onnx=result.get('onnx'),license='Ultralytics AGPL-3.0 / Enterprise; commercial deployment NOT APPROVED',source='local CUDA training; industrial accuracy NOT TESTED'),root,trusted=True)
+            else:mid=self.models.register(work/'run/weights/best.pt',dict(model=name,task='detect',run_id=rid,dataset_version=payload['version_id'],class_map=snapshot['classes'],input_size=parameters['imgsz'],preprocess='Ultralytics RGB / 255, CHW, letterbox; FP32 ONNX',postprocess='raw non-end2end + NMS; conf=.25, iou=.45',metrics=result['metrics'],validation_passed=True,gpu_evidence=result['evidence'],onnx=result.get('onnx'),license='Ultralytics AGPL-3.0 / Enterprise; commercial deployment NOT APPROVED',dataset_admission=snapshot.get('admission',{'policy':'reviewed-legacy'}),source='local CUDA training; industrial accuracy NOT TESTED'),root,trusted=True)
             data.update(state='SUCCEEDED',result=result,model_id=mid,completed_at=utc_now());self._put(rid,data,root);context.progress(100)
             return {'run_id':rid,'model_id':mid,'path':str(work),'metrics':result['metrics']}
         except Exception as exc:

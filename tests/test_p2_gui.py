@@ -68,19 +68,19 @@ def test_gui_import_play_extract_annotate_freeze_export_reopen(qtbot,services,tm
         ann.image_tag.setCurrentIndex(2)
         qtbot.waitUntil(lambda:ann.revision>0 and not ann.dirty and not ann.saving,timeout=10000)
         assert services.annotations.load(frame['id'],root)['payload']['objects'][0]['source']=='Human Generated'
-        from tests.hotfix_helpers import review_gui
-        review_gui(qtbot,window,frame['id'],'APPROVED',monkeypatch)
+        from tests.hotfix_helpers import review_fixture
+        review_fixture(qtbot,window,frame['id'],'APPROVED',monkeypatch)
         selected.append(frame['id'])
     import os
     evidence=services.root/os.environ.get('IVAD_P2_GUI_EVIDENCE_DIR',f'artifacts/test-runs/{time.time_ns()}/gui');evidence.mkdir(parents=True,exist_ok=True)
     window.grab().save(str(evidence/'annotation.png'))
-    window.show_page('dataset');dataset=window.p2.dataset
+    window.show_page('dataset');dataset=window.p2.dataset;dataset.completion.setCurrentIndex(dataset.completion.findData('LABELED'))
     qtbot.waitUntil(lambda:dataset.candidates.rowCount()==3,timeout=10000)
     cell=dataset.candidates.visualItemRect(dataset.candidates.item(0,0))
     from PySide6.QtCore import QPoint
     qtbot.mouseClick(dataset.candidates.viewport(),Qt.MouseButton.LeftButton,pos=QPoint(cell.left()+10,cell.center().y()))
     assert dataset.candidates.item(0,0).checkState()==Qt.CheckState.Checked
-    dataset.select_all();dataset.name.setText('GUI完整分割数据集');click(qtbot,dataset,'freeze_dataset')
+    dataset.camera.setCurrentIndex(dataset.camera.findData('__all__'));dataset.select_all();dataset.allow_multi.setChecked(True);dataset.allow_limited.setChecked(True);dataset.add_selected();dataset.tabs.setCurrentIndex(3);dataset.name.setText('GUI完整分割数据集');click(qtbot,dataset,'freeze_dataset')
     qtbot.waitUntil(lambda:dataset.versions.rowCount()==1,timeout=20000)
     assert all(v>0 for v in dataset.version_rows[0]['summary']['splits'].values())
     dataset.versions.selectRow(0);dataset.format.setCurrentIndex(1)
