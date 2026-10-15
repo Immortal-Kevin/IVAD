@@ -1,6 +1,6 @@
 import json
 from PySide6.QtCore import Qt,Signal
-from PySide6.QtWidgets import (QHBoxLayout,QVBoxLayout,QWidget,QLineEdit,QComboBox,QSpinBox,QCheckBox,QLabel,QFileDialog,QMessageBox,QTableWidgetItem,QPlainTextEdit,QTabWidget,QGridLayout,QHeaderView,QScrollArea)
+from PySide6.QtWidgets import (QHBoxLayout,QVBoxLayout,QWidget,QLineEdit,QComboBox,QSpinBox,QCheckBox,QLabel,QFileDialog,QMessageBox,QTableWidgetItem,QPlainTextEdit,QTabWidget,QGridLayout,QHeaderView,QScrollArea,QSizePolicy)
 from ivad_app.gui.pages import Page,button,table
 
 class DatasetPage(Page):
@@ -13,23 +13,27 @@ class DatasetPage(Page):
     def __init__(self):
         super().__init__('数据集管理','已保存人工真值通过自动校验后可创建实验数据集；自动检查不等于独立人工审核或生产批准。')
         self.all_rows=[];self.candidate_rows=[];self.version_rows=[];self.omitted={};self.root=None;self.updating=False
-        filters=QGridLayout();self.layout.addLayout(filters)
+        self.filters_widget=QWidget();self.filters_widget.setObjectName('dataset_filters');self.filters=QGridLayout(self.filters_widget);self.filters.setContentsMargins(0,0,0,0);self.filters.setVerticalSpacing(4);self.filters.setHorizontalSpacing(12);self.filter_cells=[];self.layout.addWidget(self.filters_widget)
         self.camera=QComboBox();self.fault=QComboBox();self.tag=QComboBox();self.source=QComboBox();self.completion=QComboBox();self.exclusion=QComboBox()
         for text,value in [('正常/异常/未知：全部',None),('正常','NORMAL'),('异常','ABNORMAL'),('未知','UNKNOWN')]:self.tag.addItem(text,value)
         for text,value in [('标注完成：全部',None),('已标注','LABELED'),('未标注','UNLABELED')]:self.completion.addItem(text,value)
         for text,value in [('仅有效图片','active'),('仅已剔除图片','excluded'),('全部图片','all')]:self.exclusion.addItem(text,value)
         for i,(text,widget) in enumerate([('所属摄像头',self.camera),('故障类型',self.fault),('处理结果',self.tag),('来源视频/片段',self.source),('标注完成',self.completion),('剔除状态',self.exclusion)]):
-            filters.addWidget(QLabel(text),i//3*2,i%3);filters.addWidget(widget,i//3*2+1,i%3);widget.currentIndexChanged.connect(self.filter_rows)
+            cell=QWidget();line=QHBoxLayout(cell);line.setContentsMargins(0,0,0,0);line.setSpacing(4);line.addWidget(QLabel(text));widget.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Fixed);widget.setMinimumContentsLength(6);widget.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon);line.addWidget(widget,1);self.filter_cells.append(cell);self.filters.addWidget(cell,i//3,i%3);widget.currentIndexChanged.connect(self.filter_rows)
         self.tabs=QTabWidget();self.tabs.setObjectName('dataset_tabs');self.tabs.setStyleSheet('QTabBar::tab { background:#176a94; color:white; padding:8px 9px; border:1px solid #b9d4e3; } QTabBar::tab:hover, QTabBar::tab:selected { background:white; color:#111111; } QTabWidget::pane { border:1px solid #b9d4e3; background:#f2f5fa; }');self.layout.addWidget(self.tabs,1)
         layouts=[]
         for text in ['图片列表与筛查','新建数据集','训练集划分设置','数据集版本']:
             body=QWidget();body.setObjectName('dataset_tab_body');body.setStyleSheet('QWidget#dataset_tab_body { background:#f2f5fa; }');layout=QVBoxLayout(body);scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setWidget(body);self.tabs.addTab(scroll,text);layouts.append(layout)
-        screening,creation,splitting,versions=layouts
+        screening,creation,splitting,versions=layouts;screening.setSpacing(5)
         self.candidates=table(['选择','摄像头','抽帧时间（秒）','来源视频','处理结果','故障类型','标注数量']);self.candidates.setObjectName('dataset_candidates');self.candidates.setMinimumHeight(220);self.candidates.setSortingEnabled(True);self.candidates.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive);self.candidates.horizontalHeader().setStretchLastSection(True)
         for i,width in enumerate([55,150,130,240,100,220,90]):self.candidates.setColumnWidth(i,width)
-        self.candidates.itemChanged.connect(self.update_counts);screening.addWidget(self.candidates,1)
+        self.candidates.itemChanged.connect(self.update_counts);selection=QHBoxLayout();selection.setSpacing(5);screening.addLayout(selection)
+        help_text='在这里勾选需要训练的图片，然后前往“新建数据集”Tab，点击“添加所选图片”，即可加入数据集草稿。勾选不等于已加入草稿。'
+        for text,fn,name in [('全选当前结果',self.select_all,'dataset_select_all'),('全选正常',lambda:self.select_kind('NORMAL'),'dataset_select_normal'),('全选异常',lambda:self.select_kind('ABNORMAL'),'dataset_select_abnormal'),('取消选择',self.clear_selection,'dataset_clear_selection')]:
+            control=button(text,fn,name=name);control.setToolTip(help_text);selection.addWidget(control)
+        self.selection_info=QLabel();self.selected_count=self.selection_info;self.selection_info.setToolTip(help_text);selection.addWidget(self.selection_info);screening.addWidget(self.candidates,1)
         row=QHBoxLayout();screening.addLayout(row)
-        for text,fn,name in [('全选当前筛选结果',self.select_all,'dataset_select_all'),('取消选择',self.clear_selection,'dataset_clear_selection'),('从候选列表排除',self.omit_selected,'dataset_omit'),('恢复候选排除',self.restore_omitted,'dataset_restore_omitted')]:row.addWidget(button(text,fn,name=name))
+        for text,fn,name in [('从候选列表排除',self.omit_selected,'dataset_omit'),('恢复候选排除',self.restore_omitted,'dataset_restore_omitted')]:row.addWidget(button(text,fn,name=name))
         row=QHBoxLayout();screening.addLayout(row)
         row.addWidget(button('标记所选为无效帧',lambda:self.batch_requested.emit('exclude',self.selected_frames()),name='dataset_exclude'))
         row.addWidget(button('恢复已剔除图片',lambda:self.batch_requested.emit('restore',self.selected_frames()),name='dataset_restore'))
@@ -37,7 +41,7 @@ class DatasetPage(Page):
         row=QHBoxLayout();self.name=QLineEdit();self.name.setObjectName('dataset_name');self.name.setPlaceholderText('例如 8525_压滤板破裂_Detection_v1，由操作员确认')
         self.existing=QComboBox();self.existing.addItem('创建新数据集',None);self.existing.currentIndexChanged.connect(self.choose_existing)
         row.addWidget(self.name,2);row.addWidget(self.existing,1);creation.addLayout(row)
-        self.counts=QLabel();self.counts.setWordWrap(True);creation.addWidget(self.counts)
+        self.counts=QLabel();self.counts.setWordWrap(True);creation.addWidget(self.counts);self.action_info=QLabel();self.action_info.setWordWrap(True);creation.addWidget(self.action_info)
         self.allow_multi=QCheckBox('明确允许多个摄像头/未关联来源建立共享实验数据集');creation.addWidget(self.allow_multi)
         self.draft_info=QLabel('先在图片列表勾选，然后添加到当前数据集草稿。切换筛选会清空勾选，已添加成员独立保留。');self.draft_info.setWordWrap(True);creation.addWidget(self.draft_info)
         row=QHBoxLayout();creation.addLayout(row);row.addWidget(button('添加所选图片',self.add_selected,True,'dataset_add_selected'));row.addWidget(button('移除草稿中所选图片',self.remove_selected));row.addWidget(button('清空当前草稿',self.clear_draft))
@@ -61,11 +65,11 @@ class DatasetPage(Page):
         for text,value in [('YOLO Detection','yolo_detect'),('YOLO Segmentation','yolo_segment'),('COCO JSON','coco'),('IVAD Native（完整）','ivad_native')]:self.format.addItem(text,value)
         row.addWidget(self.format);row.addWidget(button('导出选中冻结版本…',self.export,True,'export_dataset'));versions.addLayout(row)
         self.detail=QPlainTextEdit();self.detail.setReadOnly(True);self.detail.setMaximumHeight(160);versions.addWidget(self.detail)
-        self.summary=QLabel('请打开项目，选择摄像头并检查已保存人工标注。');self.summary.setWordWrap(True);self.layout.addWidget(self.summary)
+        self.summary=QLabel();self.summary.setWordWrap(True);self.layout.addWidget(self.summary);self.data_error_text='';self.update_counts()
     def key(self):return self.existing.currentData() or '__new__'
     def draft_frames(self):return list(self.drafts.get(self.key(),[]))
     def set_project(self,root):
-        if root!=self.root:self.root=root;self.all_rows=[];self.candidate_rows=[];self.drafts={};self.omitted={};self.camera.clear();self.filter_rows()
+        if root!=self.root:self.data_error_text='';self.root=root;self.all_rows=[];self.candidate_rows=[];self.drafts={};self.omitted={};self.camera.clear();self.filter_rows()
     def set_data(self,rows,cameras,labels,versions,preferred_camera=None):
         self.updating=True;self.all_rows=rows
         for combo,items,default in [(self.camera,[('全部摄像头','__all__')]+[(c['name'],c['id']) for c in cameras]+[('未关联摄像头','__unlinked__')],preferred_camera or next((c['id'] for c in cameras if any(r['camera_id']==c['id'] and r['eligible'] for r in rows)),cameras[0]['id'] if cameras else '__unlinked__')),(self.fault,[('全部故障类型',None)]+[(l['name'],l['id']) for l in labels],None),(self.source,[('全部来源',None)]+list(dict.fromkeys((r['media_name'],r['media_id']) for r in rows)),None)]:
@@ -78,34 +82,52 @@ class DatasetPage(Page):
         self.existing.setCurrentIndex(max(0,self.existing.findData(old)));self.version_rows=versions;self.versions.setRowCount(len(versions))
         for i,v in enumerate(versions):
             for j,value in enumerate([v['name'],v['number'],v['summary']['images'],v['summary']['objects'],str(v['summary']['splits']),v['id']]):self.versions.setItem(i,j,QTableWidgetItem(str(value)))
-        self.updating=False;self.filter_rows()
-    def filter_rows(self):
+        self.updating=False;self.data_error_text='';self.filter_rows(preserve_selection=True)
+    def resizeEvent(self,event):
+        super().resizeEvent(event)
+        if not hasattr(self,'filters'):return
+        columns=3 if self.width()>=740 else 2
+        for i,cell in enumerate(self.filter_cells):self.filters.addWidget(cell,i//columns,i%columns)
+    def data_error(self,message):
+        self.data_error_text=message;self.update_counts()
+    def filter_rows(self,*_,preserve_selection=False):
         if self.updating:return
+        selected=set(self.selected_frames()) if preserve_selection else set()
         cam=self.camera.currentData();fault=self.fault.currentData();tag=self.tag.currentData();source=self.source.currentData();completion=self.completion.currentData();mode=self.exclusion.currentData();hidden=self.omitted.get(self.key(),set())
         rows=[r for r in self.all_rows if (cam=='__all__' or r['camera_id']==cam or (cam=='__unlinked__' and not r['camera_id'])) and (not fault or fault in r['fault_ids']) and (not tag or r['image_tag']==tag) and (not source or r['media_id']==source) and (not completion or r['completion_state']==completion) and (mode=='all' or (r['excluded'] if mode=='excluded' else not r['excluded'])) and r['id'] not in hidden]
         self.candidates.setSortingEnabled(False);self.candidates.blockSignals(True);self.candidates.setRowCount(len(rows));self.candidate_rows=rows
         for i,r in enumerate(rows):
-            values=['',r['camera_name'],r['pts_us']/1000000,r['media_name'],{'NORMAL':'正常','ABNORMAL':'异常','UNKNOWN':'未知'}.get(r['image_tag'],'冲突'),r['fault_text'],r['objects']]
+            values=['',r['camera_name'],r.get('media_relative_seconds'),r['media_name'],{'NORMAL':'正常','ABNORMAL':'异常','UNKNOWN':'未知'}.get(r['image_tag'],'冲突'),r['fault_text'],r['objects']]
             for j,value in enumerate(values):
-                item=QTableWidgetItem();item.setData(Qt.ItemDataRole.DisplayRole,value);item.setData(Qt.ItemDataRole.UserRole,r['id']);item.setToolTip(f"UUID：{r['id']}\nSHA256：{r['sha256']}\n项目内路径：{r['path']}\n来源：{r['media_name']} / {r['media_id']}\n源路径：{r['source_path']}\n摄像头UUID：{r['camera_id']}\n原视频UUID：{r['source_group_id']}\n审核：{r['review_status']}；完成：{r['completion_state']}\n自动检查：{r['issue'] or '通过（非独立审核）'}")
-                if j==0:item.setFlags(Qt.ItemFlag.ItemIsEnabled|Qt.ItemFlag.ItemIsUserCheckable);item.setCheckState(Qt.CheckState.Unchecked)
+                item=QTableWidgetItem();item.setData(Qt.ItemDataRole.DisplayRole,value);item.setData(Qt.ItemDataRole.UserRole,r['id']);item.setToolTip(f"UUID：{r['id']}\nSHA256：{r['sha256']}\n项目内路径：{r['path']}\n来源：{r['media_name']} / {r['media_id']}\n源路径：{r['source_path']}\n摄像头UUID：{r['camera_id']}\n原视频UUID：{r['source_group_id']}\n媒体相对：{r.get('media_relative_seconds')} 秒；原视频相对：{r.get('source_relative_seconds')} 秒\n原始PTS：{r['pts_us']} µs；time_base：{r.get('time_base')}\n时间核查：{'；'.join(r.get('timestamp_issues',[])) or '一致'}\n审核：{r['review_status']}；完成：{r['completion_state']}\n自动检查：{r['issue'] or '通过（非独立审核）'}")
+                if j==0:item.setFlags(Qt.ItemFlag.ItemIsEnabled|Qt.ItemFlag.ItemIsUserCheckable);item.setCheckState(Qt.CheckState.Checked if r['id'] in selected else Qt.CheckState.Unchecked)
                 self.candidates.setItem(i,j,item)
         self.candidates.blockSignals(False);self.candidates.setSortingEnabled(True);self.update_counts()
     def selected_frames(self):return [self.candidates.item(i,0).data(Qt.ItemDataRole.UserRole) for i in range(self.candidates.rowCount()) if self.candidates.item(i,0).checkState()==Qt.CheckState.Checked]
-    def select_all(self):
-        for i in range(self.candidates.rowCount()):self.candidates.item(i,0).setCheckState(Qt.CheckState.Checked)
+    def select_all(self):self.select_kind()
+    def select_kind(self,kind=None):
+        by={r['id']:r for r in self.candidate_rows};self.candidates.blockSignals(True)
+        for i in range(self.candidates.rowCount()):
+            item=self.candidates.item(i,0);r=by[item.data(Qt.ItemDataRole.UserRole)];item.setCheckState(Qt.CheckState.Checked if r['eligible'] and not r['excluded'] and (not kind or r['image_tag']==kind) else Qt.CheckState.Unchecked)
+        self.candidates.blockSignals(False);self.update_counts()
     def clear_selection(self):
+        self.candidates.blockSignals(True)
         for i in range(self.candidates.rowCount()):self.candidates.item(i,0).setCheckState(Qt.CheckState.Unchecked)
+        self.candidates.blockSignals(False);self.update_counts()
     def update_counts(self,*_):
         rows=self.candidate_rows;selected=set(self.selected_frames());draft=set(self.draft_frames());all_by={r['id']:r for r in self.all_rows}
-        self.counts.setText(f"当前筛选{len(rows)}张；可训练候选{sum(r['eligible'] for r in rows)}；已勾选{len(selected)}；正常{sum(r['image_tag']=='NORMAL' for r in rows)}；异常{sum(r['image_tag']=='ABNORMAL' for r in rows)}；无效/冲突{sum(not r['eligible'] for r in rows)}；草稿{len(draft)}张")
-        self.draft_detail.setPlainText('\n'.join(f"{all_by[f]['camera_name']} · {all_by[f]['media_name']} · {all_by[f]['pts_us']/1e6:.3f}s · {all_by[f]['fault_text']}" if f in all_by else f+'（来源不可用）' for f in self.draft_frames()))
+        self.counts.setText(f"当前待添加{len(selected)}张；当前筛选{len(rows)}张；可训练候选{sum(r['eligible'] for r in rows)}；已勾选{len(selected)}；正常{sum(r['image_tag']=='NORMAL' for r in rows)}；异常{sum(r['image_tag']=='ABNORMAL' for r in rows)}；无效/冲突{sum(not r['eligible'] for r in rows)}；草稿{len(draft)}张")
+        self.draft_detail.setPlainText('\n'.join(f"{all_by[f]['camera_name']} · {all_by[f]['media_name']} · {all_by[f]['media_relative_seconds']:.3f}s · {all_by[f]['fault_text']}" if f in all_by else f+'（来源不可用）' for f in self.draft_frames()))
+        selected_rows=[r for r in rows if r['id'] in selected];normal=sum(r['image_tag']=='NORMAL' for r in selected_rows);abnormal=sum(r['image_tag']=='ABNORMAL' for r in selected_rows)
+        self.selection_info.setText(f"候选{sum(r['eligible'] for r in rows)}张；已选择{len(selected)}张\n正常已勾选{normal}张；异常已勾选{abnormal}张")
+        self.selection_info.setToolTip('在这里勾选需要训练的图片，然后前往“新建数据集”Tab，点击“添加所选图片”，即可加入数据集草稿。\n当前范围：'+self.camera.currentText()+' / '+self.source.currentText())
+        self.summary.setText(self.data_error_text or ('请先前往项目管理打开或创建项目。' if not self.root else '当前筛选条件下没有可用图片，请调整摄像头或筛选条件。' if not rows else f'当前显示 {len(rows)} 张图片，已勾选 {len(selected)} 张；可将所选图片添加到新建数据集草稿。'))
     def add_selected(self):
         ids=self.selected_frames();by={r['id']:r for r in self.all_rows};valid=[f for f in ids if by[f]['eligible']];cams={by[f]['camera_id'] for f in self.draft_frames()+valid if f in by}
-        if len(cams)>1 and not self.allow_multi.isChecked():self.summary.setText('BLOCKED：多个摄像头/未关联来源，请明确勾选共享实验数据集。');return
-        new=[f for f in valid if f not in self.draft_frames()];self.drafts[self.key()]=self.draft_frames()+new;self.summary.setText(f'添加：成功{len(new)}，跳过{len(ids)-len(new)}，失败0。无效/重复样本不能重复加入。');self.update_counts()
+        if len(cams)>1 and not self.allow_multi.isChecked():self.action_info.setText('BLOCKED：多个摄像头/未关联来源，请明确勾选共享实验数据集。');return
+        new=[f for f in valid if f not in self.draft_frames()];duplicates=len(valid)-len(new);invalid=len(ids)-len(valid);self.drafts[self.key()]=self.draft_frames()+new;self.action_info.setText(f'添加：成功{len(new)}，重复跳过{duplicates}，失败{invalid}（不合格）。勾选不等于已加入草稿，已有成员不会重复添加。');self.update_counts()
     def remove_selected(self):
-        ids=set(self.selected_frames());before=self.draft_frames();self.drafts[self.key()]=[f for f in before if f not in ids];self.summary.setText(f'草稿移除：成功{len(ids & set(before))}，跳过{len(ids-set(before))}，失败0。');self.update_counts()
+        ids=set(self.selected_frames());before=self.draft_frames();self.drafts[self.key()]=[f for f in before if f not in ids];self.action_info.setText(f'草稿移除：成功{len(ids & set(before))}，跳过{len(ids-set(before))}，失败0。');self.update_counts()
     def clear_draft(self):self.drafts[self.key()]=[];self.update_counts()
     def omit_selected(self):
         ids=set(self.selected_frames());self.omitted.setdefault(self.key(),set()).update(ids);self.drafts[self.key()]=[f for f in self.draft_frames() if f not in ids];self.batch_info.setText(f'仅本草稿候选排除：成功{len(ids)}，跳过0，失败0；全局状态/原文件不变。');self.filter_rows()
@@ -117,18 +139,18 @@ class DatasetPage(Page):
         self.filter_rows()
     def payload(self):return {'name':self.name.text(),'dataset_id':self.existing.currentData(),'frame_ids':self.draft_frames(),'strategy':self.strategy.currentData(),'allow_leakage':self.allow_random.isChecked(),'allow_limited':self.allow_limited.isChecked(),'allow_multi_camera':self.allow_multi.isChecked(),'ratios':[s.value() for s in self.ratios],'seed':self.seed.value(),'admission':'experimental'}
     def freeze(self):
-        if not self.draft_frames():self.summary.setText('请在图片列表勾选并添加到数据集草稿。');return
+        if not self.draft_frames():self.action_info.setText('请在图片列表勾选并添加到数据集草稿。');return
         if QMessageBox.question(self,'确认冻结不可变实验版本','将严格检查并复制当前草稿。保留历史审核原值，不冒充独立审核。历史版本不会覆盖。确认冻结？',QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No)!=QMessageBox.StandardButton.Yes:return
         self.freeze_requested.emit(self.payload())
     def check_version(self):
         row=self.versions.currentRow()
-        if not 0<=row<len(self.version_rows):self.summary.setText('请先选择冻结版本。');return
+        if not 0<=row<len(self.version_rows):self.action_info.setText('请先选择冻结版本。');return
         self.version_check_requested.emit(self.version_rows[row]['id'])
     def show_version(self):
         row=self.versions.currentRow()
         if 0<=row<len(self.version_rows):self.detail.setPlainText(json.dumps(self.version_rows[row]['summary'],ensure_ascii=False,indent=2))
     def export(self):
         row=self.versions.currentRow()
-        if not 0<=row<len(self.version_rows):self.summary.setText('请先选择冻结版本。');return
+        if not 0<=row<len(self.version_rows):self.action_info.setText('请先选择冻结版本。');return
         path=QFileDialog.getExistingDirectory(self,'选择导出父目录（新建独立目录，不覆盖）')
         if path:self.export_requested.emit({'version_id':self.version_rows[row]['id'],'format':self.format.currentData(),'parent':path})

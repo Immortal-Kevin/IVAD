@@ -1,5 +1,6 @@
 """视频导入、引用、PTS抽帧与完整性检查；源文件只读。"""
 from __future__ import annotations
+from ivad_app.video.timestamps import frame_times
 import hashlib, json, shutil, os
 from pathlib import Path
 from uuid import uuid4
@@ -127,7 +128,7 @@ class MediaService(MediaLifecycle):
             from ivad_app.storage.models import Camera
             media={m.id:m for m in session.scalars(select(MediaAsset))};cameras={c.id:c for c in session.scalars(select(Camera))}
             for row in rows:
-                m=media[row['media_id']];c=cameras.get(m.camera_id);row.update(camera_id=m.camera_id,worklist_hidden=bool(row['handling'].get('worklist_hidden')),media_name=m.name,media_identifier=(c.details.get('code') or '') if c else '',camera_name=c.name if c else '')
+                m=media[row['media_id']];row.update(frame_times(row,row_dict(m),{k:row_dict(v) for k,v in media.items()}));c=cameras.get(m.camera_id);row.update(camera_id=m.camera_id,worklist_hidden=bool(row['handling'].get('worklist_hidden')),media_name=m.name,media_identifier=(c.details.get('code') or '') if c else '',camera_name=c.name if c else '')
         for row in rows: row['state'] = 'READY' if safe_path(folder, row['path']).is_file() else 'MISSING'
         return rows
 
@@ -135,7 +136,7 @@ class MediaService(MediaLifecycle):
         with self.store.open(root) as (folder, db, _), db.transaction() as session:
             frame = session.get(ExtractedFrame, frame_id)
             if not frame: raise AppError('FRAME_MISSING', '候选帧记录不存在。')
-            value = row_dict(frame)
+            value = row_dict(frame);media_map={m.id:row_dict(m) for m in session.scalars(select(MediaAsset))};value.update(frame_times(value,media_map[frame.media_id],media_map))
         path = safe_path(folder, value['path'])
         if not path.is_file() or file_hash(path) != value['sha256']: raise AppError('FRAME_INVALID', '候选图片缺失或校验不匹配。')
         with Image.open(path) as image: return value, image.convert('RGB').copy()

@@ -153,7 +153,7 @@ class AnnotationPage(Page):
             state=row.get('processing_state','UNPROCESSED');flt=self.state_filter.currentData()
             if (flt=='ACTIVE' and state=='EXCLUDED') or (flt not in {'ACTIVE','ALL'} and flt!=state):continue
             source=row.get('media_identifier') or row.get('media_name','来源录像');source=source if len(source)<=30 else source[:27]+'…'
-            self.frames.addItem(f"{row['time_us']/1000000:.3f}s · {source}"+(' Missing' if row['state']=='MISSING' else ''));self.frames.item(self.frames.count()-1).setData(Qt.ItemDataRole.UserRole,row['id'])
+            self.frames.addItem(f"{row.get('media_relative_us',row['time_us'])/1000000:.3f}s · {source}"+(' Missing' if row['state']=='MISSING' else ''));self.frames.item(self.frames.count()-1).setData(Qt.ItemDataRole.UserRole,row['id'])
             item=self.frames.item(self.frames.count()-1);item.setFlags(item.flags()|Qt.ItemFlag.ItemIsUserCheckable);item.setCheckState(Qt.CheckState.Checked if row['id'] in self.checked_ids else Qt.CheckState.Unchecked)
             names={'UNPROCESSED':('○','未处理','#7c8794'),'NORMAL':('✓','已确认正常','#1a874b'),'ABNORMAL':('!','已标注异常','#c63737'),'UNCERTAIN':('?','无法判断/待复核','#a67b00'),'EXCLUDED':('×','已剔除（文件保留）','#7c8794'),'CONFLICT':('!','数据冲突','#c63737')}
             symbol,title,color=names[state];pix=QPixmap(22,22);pix.fill(Qt.GlobalColor.transparent);painter=QPainter(pix);painter.setPen(QColor(color));font=painter.font();font.setPixelSize(20);painter.setFont(font);painter.drawText(pix.rect(),Qt.AlignmentFlag.AlignCenter,symbol);painter.end();item.setIcon(QIcon(pix));item.setToolTip(title+'；'+('已标注' if row.get('completion_state')=='LABELED' else '未标注')+'\n来源：'+row.get('media_name','')+'\n摄像头：'+row.get('camera_name','未关联')+'\n帧UUID：'+row['id'])
@@ -185,7 +185,7 @@ class AnnotationPage(Page):
         root=self.root;camera_roi=roi_override;self.loading=True;self.load_serial+=1;serial=self.load_serial;self.canvas.setEnabled(False);self.sync_top_shortcuts()
         for widget in [self.review,self.image_tag,self.image_label,self.classes,self.roi_scope]:widget.setEnabled(False)
         def operation():
-            frame,image=self.s.media.frame_image(frame_id,root);data=self.s.annotations.load(frame_id,root,camera_roi);return image,data
+            frame,image=self.s.media.frame_image(frame_id,root);data=self.s.annotations.load(frame_id,root,camera_roi);data['frame'].update(frame);return image,data
         def done(result,error):
             if serial!=self.load_serial or root!=self.root:return
             self.loading=False
@@ -202,7 +202,7 @@ class AnnotationPage(Page):
             self.canvas.set_image(qimage(image));self.canvas.set_shapes(data['payload']['objects']+data['roi_objects']);self.canvas.label_id=self.classes.currentData()
             for widget,value in [(self.review,data['completion_state']),(self.image_tag,data['payload']['image_tag']),(self.image_label,data['payload'].get('image_label_id'))]:widget.blockSignals(True);widget.setCurrentIndex(max(0,widget.findData(value)));widget.blockSignals(False)
             self.choose_working_label(data['payload']['objects']);self.reason.setText(data['payload'].get('uncertain_reason',''));self.update_mode();self.load_cameras()
-            self.dirty=False;self.update_objects();self.restore_selection();self.info.setText(f"PTS {data['frame']['pts_us']} µs · {image.width}×{image.height} · 标注修订 {self.revision} · Human Generated\n"+data['notice']);self.finish_top_shortcut()
+            self.dirty=False;self.update_objects();self.restore_selection();self.info.setText(f"媒体相对 {data['frame']['media_relative_seconds']:.3f} 秒 · 原始PTS {data['frame']['pts_us']} µs · {image.width}×{image.height} · 标注修订 {self.revision} · Human Generated\n"+data['notice']);self.finish_top_shortcut()
         self.runner.run(operation,done)
 
     def restore_selection(self):
