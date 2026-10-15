@@ -51,7 +51,7 @@ def _verify(qtbot,services,tmp_path,w):
     evidence=Path(os.environ.get('IVAD_TAB_EVIDENCE','artifacts/p2-project-camera-tabs-20261015'))
     evidence.mkdir(parents=True,exist_ok=True);qtbot.wait(100)
     suffix=os.environ.get('QT_SCALE_FACTOR','native')
-    assert w.devicePixelRatioF()==float(suffix)
+    if suffix!='native':assert w.devicePixelRatioF()==float(suffix)
     assert w.grab().save(str(evidence/f'project-tab-{suffix}.png'))
     click(qtbot,page,'save_project');qtbot.waitUntil(lambda:not w.project_busy,timeout=10000)
     click(qtbot,page,'project_camera_details');qtbot.wait(100)

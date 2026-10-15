@@ -1,8 +1,8 @@
 import copy
 from uuid import uuid4
-from sqlalchemy import select
+from sqlalchemy import select, text
 from ivad_app.core.contracts import AppError,utc_now
-from ivad_app.storage.models import Camera,MediaAsset
+from ivad_app.storage.models import Camera,MediaAsset,ProjectRecord
 from ivad_app.storage.project_store import row_dict
 
 class CameraService:
@@ -17,23 +17,58 @@ class CameraService:
     def list(self,root=None,available_only=False):
         with self.store.open(root) as (_,db,_),db.transaction() as session:
             return [row_dict(c) for c in session.scalars(select(Camera).order_by(Camera.name,Camera.id)) if not available_only or c.details.get('enabled',True)]
-    def save(self,name,camera_id=None,revision=None,root=None,details=None):
+    @staticmethod
+    def _snapshot(session):
+        cameras={c.id:copy.deepcopy(row_dict(c)) for c in session.scalars(select(Camera))}
+        # Capture actual persisted references/content, independent of GUI caches.
+        tables=['projects','media_assets','frames','rois','annotations','annotation_revisions',
+                'datasets','dataset_versions','dataset_samples','training_runs','model_versions','clip_labels','exports']
+        references={t:session.execute(text('SELECT * FROM '+t+' ORDER BY rowid')).fetchall() for t in tables}
+        return cameras,references
+    @staticmethod
+    def _verify(before,after,camera_id,mode):
+        old,refs=before;new,newrefs=after
+        expected=set(old)|{camera_id} if mode=='CREATE' else set(old)
+        if set(new)!=expected or len(new)!=len(old)+(mode=='CREATE'):
+            raise AppError('CAMERA_INTEGRITY','摄像头数量或UUID集合异常，事务已拒绝提交。')
+        if mode=='CREATE' and camera_id in old:
+            raise AppError('CAMERA_INTEGRITY','新建UUID已存在，事务已拒绝提交。')
+        if any(new[k]!=v for k,v in old.items() if k!=camera_id) or refs!=newrefs:
+            raise AppError('CAMERA_INTEGRITY','其他摄像头或历史关联发生变化，事务已拒绝提交。')
+    def save(self,name,camera_id=None,revision=None,root=None,details=None,*,mode=None):
+        mode=mode or ('EDIT' if camera_id else 'CREATE')
+        if mode not in {'CREATE','EDIT'} or (mode=='CREATE' and camera_id) or (mode=='EDIT' and not camera_id):
+            raise AppError('CAMERA_MODE','新建/编辑状态与UUID不一致，已拒绝保存。')
         name=name.strip()
         if not name or len(name)>200:raise AppError('CAMERA_NAME','摄像头名称不能为空且不超过200个字符。')
-        with self.store.open(root) as (_,db,_),db.transaction() as session:
-            row=session.get(Camera,camera_id) if camera_id else None
-            if camera_id and (not row or row.revision!=revision):raise AppError('CAMERA_CONFLICT','摄像头被其他操作修改，请刷新。')
-            if not row:
-                row=Camera(id=str(uuid4()),name=name,legacy_key=None,revision=0,history=[]);session.add(row)
-            if details is not None:
-                info={k:str(details.get(k,'')).strip() for k in ['code','location','equipment']};info['enabled']=bool(details.get('enabled',True))
-                if any(len(info[k])>200 for k in ['code','location','equipment']):raise AppError('CAMERA_DETAILS','摄像头资料每项不超过200字。')
-                if info['code'] and any(c.id!=row.id and c.details.get('code')==info['code'] for c in session.scalars(select(Camera))):raise AppError('CAMERA_CODE','项目内摄像头编号已存在。')
-                previous=copy.deepcopy(row.details or {});row.details=info
-            else:previous=copy.deepcopy(row.details or {})
-            history=copy.deepcopy(row.history);history.append({'action':'EDIT' if row.revision else 'CREATE','previous_name':row.name,'name':name,'previous_details':previous,'details':copy.deepcopy(row.details or {}),'at':utc_now(),'by':'local_operator'})
-            row.name=name;row.revision+=1;row.history=history;session.flush();result=row_dict(row)
-        self.logs.write('camera','摄像头已保存，UUID保持稳定。');return result
+        try:
+            with self.store.open(root) as (_,db,project_id),db.transaction(camera_write=True) as session:
+                if list(session.scalars(select(ProjectRecord.id)))!=[project_id]:raise AppError('CAMERA_PROJECT','摄像头所属项目身份不一致，拒绝写入。')
+                before=self._snapshot(session)
+                row=session.get(Camera,camera_id) if mode=='EDIT' else None
+                if mode=='EDIT' and (not row or row.revision!=revision):raise AppError('CAMERA_CONFLICT','摄像头被其他操作修改，请刷新。')
+                if mode=='CREATE':
+                    row=Camera(id=str(uuid4()),name=name,legacy_key=None,revision=0,history=[]);session.add(row)
+                previous=copy.deepcopy(row.details or {})
+                if details is not None:
+                    info={k:str(details.get(k,'')).strip() for k in ['code','location','equipment']};info['enabled']=bool(details.get('enabled',True))
+                    if any(len(info[k])>200 for k in ['code','location','equipment']):raise AppError('CAMERA_DETAILS','摄像头资料每项不超过200字。')
+                    if info['code'] and any(c.id!=row.id and str(c.details.get('code','')).strip()==info['code'] for c in session.scalars(select(Camera))):raise AppError('CAMERA_CODE','项目内摄像头编号已存在，不会覆盖原记录。')
+                    row.details=info
+                history=copy.deepcopy(row.history);history.append({'action':mode,'previous_name':row.name,'name':name,'previous_details':previous,'details':copy.deepcopy(row.details or {}),'at':utc_now(),'by':'local_operator','project_id':project_id})
+                row.name=name;row.revision+=1;row.history=history;session.flush()
+                after=self._snapshot(session);self._verify(before,after,row.id,mode)
+                codes=[str(c['details'].get('code','')).strip() for c in after[0].values() if c['details'].get('code')]
+                if len(codes)!=len(set(codes)):raise AppError('CAMERA_INTEGRITY','编号唯一性验证失败。')
+                result=copy.deepcopy(row_dict(row))
+        except Exception:
+            try:self.logs.exception('camera','摄像头保存事务失败，未报告成功；请检查诊断。')
+            except Exception:pass
+            raise
+        # Commit has completed; a diagnostic logging failure must not imply rollback.
+        try:self.logs.write('camera',f'{mode}已提交；项目{project_id}，摄像头{result["id"]}，数量{len(before[0])}→{len(after[0])}，完整性验证通过。')
+        except Exception:result['diagnostic_warning']='数据已提交，但诊断日志写入失败；不能视为已回滚，请核查磁盘。'
+        return result
     def associate(self,media_id,camera_id,expected_camera_id,root=None,expected_signature=None):
         with self.store.open(root) as (folder,db,_),db.transaction() as session:
             if expected_signature:

@@ -11,7 +11,7 @@ from alembic.config import Config
 from alembic import command
 from ivad_app.core.contracts import AppError
 
-SCHEMA_HEAD = '0007'
+SCHEMA_HEAD = '0008'
 MIGRATION_LOCK = threading.Lock()  # Alembic使用模块级代理，不并发运行迁移。
 
 class Database:
@@ -29,7 +29,7 @@ class Database:
                     if raw.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
                         raise AppError('DB_CORRUPT', '数据库完整性检查失败，已停止打开。')
                     current = raw.execute('SELECT version_num FROM alembic_version').fetchone()[0]
-                if current not in {'0001', '0002', '0003', '0004', '0005', '0006', SCHEMA_HEAD}:
+                if current not in {'0001', '0002', '0003', '0004', '0005', '0006', '0007', SCHEMA_HEAD}:
                     raise AppError('SCHEMA_UNSUPPORTED', '数据库版本不受支持，请使用兼容版本。')
                 needs_migration = current != revision
                 if current != revision:
@@ -48,7 +48,7 @@ class Database:
             dbapi.execute('PRAGMA busy_timeout=5000')
         @event.listens_for(self.engine, 'begin')
         def begin(connection):
-            connection.exec_driver_sql('BEGIN')
+            connection.exec_driver_sql('BEGIN IMMEDIATE' if connection.get_execution_options().get('camera_write') else 'BEGIN')
         self.sessions = sessionmaker(self.engine, expire_on_commit=False)
         try:
             cfg = Config()
@@ -62,9 +62,14 @@ class Database:
             raise AppError('DB_MIGRATION', '数据库迁移失败，已停止打开；请查看诊断日志及迁移备份。') from exc
 
     @contextmanager
-    def transaction(self):
-        with self.lock, self.sessions.begin() as session:
-            yield session
+    def transaction(self, *, camera_write=False):
+        if camera_write:
+            with self.lock, self.engine.connect().execution_options(camera_write=True) as connection:
+                with connection.begin(), self.sessions(bind=connection) as session, session.begin():
+                    yield session
+        else:
+            with self.lock, self.sessions.begin() as session:
+                yield session
 
     def integrity_check(self) -> str:
         with self.lock, self.engine.connect() as connection:

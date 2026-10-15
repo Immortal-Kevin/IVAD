@@ -12,3 +12,5 @@ P1采用独立.venv-p1，保留P0环境与全部资产。GUI业务经服务层�
 P2复用P1 GUI/数据库/日志/队列；普通解码/人工标注CPU允许，AI训练/推理仍GPU-only。
 历史P0/P1报告、锁文件与运行证据不得覆盖；P2输出写artifacts/p2。新增依赖仅GUI环境。
 仅本地Git版本追踪，不建立远程；排除虚拟环境、模型、日志、缓存与用户数据。
+
+2026-10-15 Camera Registry Hotfix v2：代码/80项针对性测试通过，Schema目标0008；真实项目仅只读备份且仍0007，同一Camera UUID被历史EDIT复用。禁止未经用户另行批准恢复/补建真实摄像头或改动关联。P3已完成，不重复训练；打包冻结，P4–P6未授权。报告reports/P2_CAMERA_REGISTRY_PERSISTENCE_HOTFIX.md。
