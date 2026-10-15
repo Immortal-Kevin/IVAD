@@ -1,17 +1,15 @@
 """Wire incremental project camera, media safety and independent review controls."""
 from PySide6.QtCore import Qt,QTimer
-from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QTabWidget,QGroupBox,QCheckBox,QComboBox,QLabel,QMessageBox,QDialog,QDialogButtonBox
+from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QGroupBox,QCheckBox,QComboBox,QLabel,QMessageBox,QDialog,QDialogButtonBox
 from ivad_app.gui.pages import button,table
 from ivad_app.gui.camera_management import CameraPanel
 
 class P2HotfixController:
     def __init__(self,p2):
         self.p2=p2;self.w=p2.window;self.s=p2.s;self.runner=p2.runner;self.root=None;self.camera_busy=False;self.camera_pending=False;self.review_rows=[];self.detail_requested=False
-        projects=self.w.pages['projects'];tabs=QTabWidget();self.tabs=tabs;details=QWidget();layout=QVBoxLayout(details)
-        while projects.layout.count()>2:layout.addItem(projects.layout.takeAt(2))
-        tabs.addTab(details,'项目详情');self.cameras=CameraPanel(self);tabs.addTab(self.cameras,'摄像头管理');projects.layout.addWidget(tabs,1)
+        projects=self.w.pages['projects'];self.tabs=projects.tabs
+        self.cameras=CameraPanel(self);projects.camera_layout.addWidget(self.cameras)
         projects.recent.cellDoubleClicked.connect(lambda *_:setattr(self,'detail_requested',True))
-        layout.insertWidget(0,button('进入项目详情 / 摄像头列表',lambda:tabs.setCurrentIndex(1),name='project_camera_details'))
         media=p2.media;left=media.table.parentWidget().layout();media.show_inactive=QCheckBox('显示已停用 / 已移除录像');left.addWidget(media.show_inactive);media.show_inactive.toggled.connect(p2.refresh)
         grid=QGridLayout();left.addLayout(grid)
         for i,(text,fn,name) in enumerate([('从项目移除视频',self.remove_media,'media_remove'),('查看下游依赖',self.show_dependencies,'media_dependencies'),('恢复普通列表',self.restore_media,'media_restore')]):grid.addWidget(button(text,fn,name=name),i//2,i%2)
@@ -23,9 +21,11 @@ class P2HotfixController:
         row.addWidget(self.review_status);row.addWidget(button('提交所选图片审核',self.review_selected,name='dataset_review_submit'));self.review_info=QLabel('请选择有实际标注的图片，检查内容后再明确审核。');self.review_info.setWordWrap(True);review.addWidget(self.review_info);p2.dataset.layout.insertWidget(0,group)
     def set_project(self,project):
         root=project.root if project else None
-        if root!=self.root:self.cameras.new()
+        if root!=self.root:
+            self.cameras.rows=[];self.cameras.table.setRowCount(0);self.cameras.new()
+            self.p2.media.set_cameras([])
         self.root=root;self.cameras.setEnabled(bool(root));self.review_table.setRowCount(0);self.review_rows=[]
-        self.cameras.project.setText(f'所属项目：{project.name}\n项目UUID：{project.id}' if project else '请打开项目')
+        self.cameras.project.setText(f'所属项目：{project.name}\n项目UUID：{project.id}' if project else '请先打开项目')
         if self.detail_requested and root:self.tabs.setCurrentIndex(1);self.detail_requested=False
         self.refresh_cameras()
     def refresh_cameras(self):

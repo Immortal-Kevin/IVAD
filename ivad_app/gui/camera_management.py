@@ -1,10 +1,11 @@
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QFormLayout,QLineEdit,QLabel,QCheckBox
 from ivad_app.gui.pages import table,button
 
 class CameraPanel(QWidget):
     def __init__(self,controller):
-        super().__init__();self.controller=controller;self.rows=[];self.record=None;self.dirty=False;layout=QVBoxLayout(self)
-        self.project=QLabel('请打开项目');self.project.setWordWrap(True);layout.addWidget(self.project)
+        super().__init__();self.setObjectName('camera_management_panel');self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground,True);self.controller=controller;self.rows=[];self.record=None;self.dirty=False;layout=QVBoxLayout(self)
+        self.project=QLabel('请先打开项目');self.project.setWordWrap(True);layout.addWidget(self.project)
         self.table=table(['编号','显示名称','UUID','位置','启用']);self.table.setMinimumHeight(125);self.table.itemSelectionChanged.connect(self.select);layout.addWidget(self.table,1)
         form=QFormLayout();layout.addLayout(form);self.uuid=QLabel('新建时自动生成');self.uuid.setWordWrap(True);form.addRow('Camera UUID',self.uuid)
         self.fields={}
