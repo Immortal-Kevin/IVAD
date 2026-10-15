@@ -265,7 +265,7 @@ class AnnotationPage(Page):
         if not ids:self.info.setText('请先勾选或多选图片。');return
         reason=''
         if action=='exclude':
-            reason,ok=QInputDialog.getItem(self,'剔除原因','无效画面原因（无法判断故障请用待复核，不应剔除）',['严重运动模糊','失焦/明显模糊','图像解码错误','转码花屏/画面损坏','严重曝光异常','摄像头画面丢失','其他人工指定原因'],0,True)
+            reason,ok=QInputDialog.getItem(self,'剔除原因','由人工判断；轻微模糊不自动无效。无法判断故障请用待复核。',['严重模糊','图像解码错误','花屏或画面损坏','严重曝光异常','摄像头画面丢失','其他原因'],0,False)
             if not ok or not reason.strip():return
         root=self.root;fid=self.frame_id;self.batch_busy=True
         row=next((i for i in range(self.frames.count()) if self.frames.item(i).data(Qt.ItemDataRole.UserRole)==fid),-1)
@@ -274,7 +274,8 @@ class AnnotationPage(Page):
             if root!=self.root:self.batch_busy=False;return
             if error:self.batch_busy=False;self.info.setText(error);return
             message=f"已选{preview['selected']}张，可处理{len(preview['eligible'])}张，跳过{len(preview['skipped'])}张。\n已有标注/审核{preview['annotated']}张；旧数据集引用{preview['referenced']}张。\n"+'\n'.join(sorted({r['reason'] for r in preview['skipped']}))
-            if not preview['eligible'] or QMessageBox.question(self,'确认帧操作',message+'\n批量正常仅限操作员已检查确认正常的图片。是否继续？',QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No,QMessageBox.StandardButton.No)!=QMessageBox.StandardButton.Yes:
+            help_text='批量正常仅限操作员已检查确认正常的图片。' if action=='normal' else ('仅软剔除，文件和历史保留，可恢复。' if action=='exclude' else '恢复原处理状态，保留标注和历史。')
+            if not preview['eligible'] or QMessageBox.question(self,'确认帧操作',message+'\n'+help_text+'是否继续？',QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No,QMessageBox.StandardButton.No)!=QMessageBox.StandardButton.Yes:
                 self.batch_busy=False;self.info.setText(message);return
             def done(result,error):
                 self.batch_busy=False

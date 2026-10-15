@@ -1,6 +1,7 @@
 # 项目执行规则
 
 用户明确批准P2，当前仅执行P2。未经用户再次明确批准，禁止进入P3–P6。
+2026-10-15用户Development Directive v3优先：P2最终验收PASS后已授权自动进入P3，P2若有阻断立即停止；P3结束停止，P4–P6未授权。PACKAGING_FREEZE = TRUE：禁止构建/更新EXE、Portable、Setup和分发，既有包原状保留，解除冻结须用户明确批准。
 遵守 SRS、ARCHITECTURE、CODEX_MASTER_PROMPT 和 P0_IMPLEMENTATION_PROMPT。
 项目专属 venv；禁止修改其他 AI 环境、全局 Python、驱动或系统配置。
 AI 必须 GPU 执行，失败即记录，不自动降级 CPU。报告保留真实原始证据。

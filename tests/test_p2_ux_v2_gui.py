@@ -79,3 +79,23 @@ def test_refresh_coalesces_label_save_while_collection_running(qtbot,services,me
     release.set();qtbot.waitUntil(lambda:w.p2.annotation.classes.findData(new['id'])>=0,timeout=10000)
     assert len(calls)>=2
     close_window(qtbot,w)
+
+
+def test_single_exclude_next_default_and_restore(qtbot,services,media_project,monkeypatch):
+    project,_,_=media_project;w=make_window(qtbot,services);w.p2.set_project(project);w.show_page('annotation');a=w.p2.annotation
+    qtbot.waitUntil(lambda:bool(a.frame_id) and not a.loading and not w.p2.refreshing,timeout=10000)
+    first=a.frame_id;following=a.frames.item(a.frames.currentRow()+1).data(Qt.ItemDataRole.UserRole)
+    assert a.auto_next.isChecked()
+    monkeypatch.setattr(QMessageBox,'question',lambda *args,**kwargs:QMessageBox.StandardButton.Yes)
+    seen=[]
+    def choose(*args,**kwargs):
+        seen.extend(args[3]);assert args[5] is False;return ('严重模糊',True)
+    monkeypatch.setattr(QInputDialog,'getItem',choose)
+    click(qtbot,a,'frame_exclude')
+    qtbot.waitUntil(lambda:not a.batch_busy and not a.loading and a.frame_id==following and not w.p2.refreshing,timeout=10000)
+    assert len(seen)==6 and services.annotations.frames_status()[first]['processing_state']=='EXCLUDED'
+    a.state_filter.setCurrentIndex(a.state_filter.findData('EXCLUDED'))
+    qtbot.waitUntil(lambda:a.frame_id==first and not a.loading,timeout=10000)
+    a.batch_action('restore',True);qtbot.waitUntil(lambda:not a.batch_busy,timeout=10000)
+    assert services.annotations.frames_status()[first]['processing_state']=='UNPROCESSED'
+    close_window(qtbot,w)

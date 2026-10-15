@@ -56,3 +56,6 @@ YOLO26 与 YOLO11 输出与 NMS 分别适配；原始张量对齐和最终检测
 - Schema0004只加媒体kind、parent_id、clip_info，旧媒体默认为ORIGINAL。parent_id为应用层来源关系，服务和一致性检查验证；不为新外键重建SQLite表。
 - 失败/取消清理本次UUID暂存与未提交文件，不登记错误READY；已发布完成的片段不因末尾取消误记为未完成。源录像只读，REFERENCE裁剪产物仍COPY落项目内。
 - DatasetService只增加必要source_group_id关联，避免父子录像进不同来源划分；原真值模块未重写。旧P2报告先完整存history，原artifacts/p2不覆盖。当前84项全部通过，原环境包版本与历史hash不变。
+
+
+2026-10-15 Development Directive v3：PACKAGING_FREEZE = TRUE。暂停所有EXE/Portable/Setup构建、签名与分发，旧包保留。P2最终验收PASS后已获准自动进入P3，若P2阻断则停止；P3完成后停止，P4–P6未授权。只维护源码和现有隔离环境，不重制Word/PDF。

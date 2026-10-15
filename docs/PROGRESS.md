@@ -16,3 +16,6 @@ Schema0003添加业务表，旧0002数据/迁移备份验证；原P0/P1报告和
 
 
 2026-10-14 P2 Annotation UX v2：正常/异常/未知快捷保存、自动翻页开关、处理状态图标/勾选筛选、批量正常、UUID摄像头/ROI/片段关联、软剔除/恢复和保护已实现。0005增量迁移前备份，真实45帧复用仅在副本测试，用户原数据与环境保留。最终完整100测试通过，额外真实GUI及DPI验证见P2_ANNOTATION_UX_V2_TEST_RESULTS.md；原生自动化访问冲突仍未定位。Word18页/PDF1页更新；旧Beta.1过期，新Beta.2另名本地候选，许可/分发继续BLOCKED。停止在P2，等待用户审阅，未进入P3–P6。构建/哈希/验收按本轮package-summary和P2_ACCEPTANCE为准。
+
+
+2026-10-15 Development Directive v3：PACKAGING_FREEZE = TRUE。暂停所有EXE/Portable/Setup构建、签名与分发，旧包保留。P2最终验收PASS后已获准自动进入P3，若P2阻断则停止；P3完成后停止，P4–P6未授权。只维护源码和现有隔离环境，不重制Word/PDF。
