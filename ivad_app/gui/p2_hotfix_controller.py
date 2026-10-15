@@ -15,16 +15,12 @@ class P2HotfixController:
         for i,(text,fn,name) in enumerate([('从项目移除视频',self.remove_media,'media_remove'),('查看下游依赖',self.show_dependencies,'media_dependencies'),('恢复普通列表',self.restore_media,'media_restore')]):grid.addWidget(button(text,fn,name=name),i//2,i%2)
         media.camera_association_requested.connect(self.associate_camera)
         p2.annotation.camera_navigation.connect(self.go_media)
-        group=QGroupBox('独立人工审核（已标注不等于已审核）');review=QVBoxLayout(group);self.review_table=table(['选择','图片 / 来源','标注完成','详细审核状态']);self.review_table.setMinimumHeight(130);review.addWidget(self.review_table)
-        row=QHBoxLayout();review.addLayout(row);self.review_status=QComboBox()
-        for text,status in [('DRAFT · 未审核','DRAFT'),('REVIEWED · 人工已审核','REVIEWED'),('APPROVED · 人工批准','APPROVED'),('REJECTED · 审核拒绝','REJECTED')]:self.review_status.addItem(text,status)
-        row.addWidget(self.review_status);row.addWidget(button('提交所选图片审核',self.review_selected,name='dataset_review_submit'));self.review_info=QLabel('请选择有实际标注的图片，检查内容后再明确审核。');self.review_info.setWordWrap(True);review.addWidget(self.review_info);p2.dataset.layout.insertWidget(0,group)
     def set_project(self,project):
         root=project.root if project else None
         if root!=self.root:
             self.cameras.rows=[];self.cameras.table.setRowCount(0);self.cameras.new(force=True)
             self.p2.media.set_cameras([])
-        self.root=root;self.cameras.setEnabled(bool(root));self.review_table.setRowCount(0);self.review_rows=[]
+        self.root=root;self.cameras.setEnabled(bool(root))
         self.cameras.project.setText(f'所属项目：{project.name}\n项目UUID：{project.id}' if project else '请先打开项目')
         if self.detail_requested and root:self.tabs.setCurrentIndex(1);self.detail_requested=False
         self.refresh_cameras()
@@ -108,14 +104,4 @@ class P2HotfixController:
         mid=self.p2.media.media_id;root=self.root
         if mid:self.runner.run(lambda:self.s.media.remove(mid,root,restore=True),lambda _,e:(self.p2.media.info.setText(e or '已恢复普通列表。'),self.p2.refresh()))
     def update_data(self,media,frames):
-        self.refresh_cameras();selected={self.review_rows[i]['id'] for i in range(len(self.review_rows)) if self.review_table.item(i,0) and self.review_table.item(i,0).checkState()==Qt.CheckState.Checked}
-        self.review_rows=[f for f in frames if f.get('annotation_revision',0)>0];self.review_table.setRowCount(len(self.review_rows))
-        from PySide6.QtWidgets import QTableWidgetItem
-        for i,f in enumerate(self.review_rows):
-            check=QTableWidgetItem();check.setFlags(Qt.ItemFlag.ItemIsEnabled|Qt.ItemFlag.ItemIsUserCheckable);check.setCheckState(Qt.CheckState.Checked if f['id'] in selected else Qt.CheckState.Unchecked);self.review_table.setItem(i,0,check)
-            for j,value in enumerate([f['id'][:8]+' · '+f.get('media_name',''),('已剔除（无效）' if f['processing_state']=='EXCLUDED' else '已标注' if f['completion_state']=='LABELED' else '未标注'),f['review_status']+(' · 内容待重新审核' if f['review_stale'] else '')],1):self.review_table.setItem(i,j,QTableWidgetItem(value))
-    def review_selected(self):
-        root=self.root;expected={f['id']:f['annotation_revision'] for i,f in enumerate(self.review_rows) if self.review_table.item(i,0).checkState()==Qt.CheckState.Checked};status=self.review_status.currentData()
-        if not expected:self.review_info.setText('请先勾选图片，人工核查内容。');return
-        if QMessageBox.question(self.p2.dataset,'人工审核确认',f'确认已逐张检查所选{len(expected)}张，更新底层审核为{status}？“已标注”不会自动审核。',QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No,QMessageBox.StandardButton.No)!=QMessageBox.StandardButton.Yes:return
-        self.runner.run(lambda:self.s.annotations.review_frames(expected,status,root),lambda _,e:(self.review_info.setText(e or '人工审核已保存，旧记录保留。'),self.p2.refresh()))
+        self.refresh_cameras()
