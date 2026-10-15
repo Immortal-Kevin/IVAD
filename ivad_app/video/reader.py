@@ -6,6 +6,7 @@ from pathlib import Path
 import av
 from PIL import Image
 from ivad_app.core.contracts import AppError
+from ivad_app.video.timestamps import relative_time_us
 
 @dataclass
 class VideoFrame:
@@ -72,7 +73,7 @@ class FileVideoSource:
                     if first is None:continue
                     if first.pts is None or first.time_base is None:
                         raise AppError('PTS_MISSING','解码帧缺少PTS；停止处理，不按FPS补造时间。')
-                    if micros(first.pts,first.time_base)-self.metadata['origin_us']<=start_us or requested==0:
+                    if relative_time_us(micros(first.pts,first.time_base),self.metadata)<=start_us or requested==0:
                         decoded=chain([first],decoded);break
                 else:decoded=iter(())
             else:decoded=container.decode(stream)
@@ -84,7 +85,7 @@ class FileVideoSource:
                 if previous_pts is not None and pts_us <= previous_pts:
                     raise AppError('PTS_DISORDER', '显示帧PTS倒退或重复，停止处理以避免错误标注定位。')
                 previous_pts = pts_us
-                time_us = pts_us - self.metadata['origin_us']
+                time_us = relative_time_us(pts_us,self.metadata)
                 if time_us < start_us: continue
                 if end_us is not None and time_us > end_us: break
                 rotation = int(round(frame.rotation or self.metadata['rotation']))
@@ -107,7 +108,7 @@ class FileVideoSource:
                 previous = None
                 for frame in container.decode(stream):
                     if frame.pts is None: raise AppError('PTS_MISSING', '帧没有PTS时间戳。')
-                    pts = micros(frame.pts, frame.time_base); relative = pts - self.metadata['origin_us']
+                    pts = micros(frame.pts, frame.time_base); relative = relative_time_us(pts,self.metadata)
                     current = VideoFrame(image_of(frame, int(round(frame.rotation or self.metadata['rotation']))), pts, relative, None, self.metadata['rotation'])
                     if relative >= time_us:
                         if previous: return previous

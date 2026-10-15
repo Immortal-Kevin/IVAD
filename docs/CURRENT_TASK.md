@@ -1,11 +1,9 @@
 # 当前任务
 
-2026-10-15 P3 Dataset Management UX & Data Integrity Hotfix功能PASS：四Tab、摄像头/故障/来源筛选、会话草稿及候选排除、软剔除恢复、自动实验准入、来源/摄像头/随机划分和版本完整性/来源检查完成。
+2026-10-15 P3 Dataset Hotfix v2 PASS。四Tab保留，顶部筛选142→72px，正常/异常/当前有效全选与计数、动态项目提示、Tab待添加及草稿去重完成。
 
-最终68项针对性整组回归通过，最终200% GUI专项1项通过；原审核数据和旧冻结政策保留，新实验快照记录human-auto-v1及EXPERIMENT_ONLY。Schema0008不变，无Migration。
+8525时长70.040秒、起始PTS对应52241.877778秒；旧数据集列表误直接展示pts_us。200条既有time_us全部正确，本轮统一派生媒体/原视频时间，不写回历史。真实副本三处5.800秒一致，正常16/异常184/合计200批量选择与重复添加验证通过。
 
-真实测试1号只读备份及副本核验251帧，其中8525合格实验检测候选200帧（16正常/184异常、402目标）；原类别名“压滤版破裂”保留。来源组1，默认来源划分200/0/0为LIMITED，不能当独立工业验证。163项选取保护哈希0变化，备份逻辑一致。
+最终A66+B31=97不同用例通过，200% GUI专项1项重复通过。165项选取保护哈希0变化，SQLite只读备份逻辑一致，Schema0008无迁移。报告：P3_DATASET_UX_HOTFIX_V2.md、P3_FRAME_TIMESTAMP_INVESTIGATION.md、P3_DATASET_SELECTION_TEST_RESULTS.md。
 
-报告：reports/P3_DATASET_UI_HOTFIX.md、P3_DATASET_VALIDATION.md、P3_DATA_SPLIT_TEST_RESULTS.md；操作指南docs/P3_DATASET_USER_GUIDE.md。
-
-P3原有成果完成，不重启训练或重复开发。Hotfix完成后停止待审；PACKAGING_FREEZE = TRUE，不生成EXE/Portable/Setup，不进入P4–P6。历史Qt原生访问冲突未定位限制保留，本轮串行未复现。
+P3已有成果完成，不重训、不重复开发；真实单来源LIMITED仍需补充独立来源。Hotfix完成后停止待审，PACKAGING_FREEZE = TRUE，无EXE/Portable/Setup，不进入P4–P6。历史Qt原生访问冲突未定位限制保留。

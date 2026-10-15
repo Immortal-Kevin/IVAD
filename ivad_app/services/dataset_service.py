@@ -1,3 +1,4 @@
+from ivad_app.video.timestamps import frame_times
 import copy, json, random, shutil
 from collections import Counter
 from PIL import Image
@@ -76,7 +77,7 @@ class DatasetService:
                 try:source=self.source_root(media,media_map)
                 except AppError as exc:source=None;issue=exc.message
                 tag=doc.payload.get('image_tag','UNKNOWN') if doc else 'UNKNOWN';faults=set(counts)|({doc.payload.get('image_label_id')} if doc else set())
-                result.append(dict(row_dict(frame),camera_id=media.camera_id,camera_name=camera.name if camera else '未关联摄像头',media_name=media.name,source_path=media.original_path,source_group_id=source,image_tag=tag,objects=len(objects),fault_ids=sorted(f for f in faults if f),fault_text='、'.join((labels[k].name if k in labels else '缺失类别')+' ×'+str(v) for k,v in counts.items()) if objects else ('整帧异常 / 无目标框' if tag=='ABNORMAL' else '正常' if tag=='NORMAL' else '未知'),completion_state=AnnotationService.completion_state(frame,doc),review_status=doc.status if doc else 'DRAFT',eligible=not issue,issue=issue,excluded=bool(frame.handling.get('is_excluded')),annotation_revision=doc.revision if doc else 0))
+                result.append(dict(row_dict(frame),**frame_times(row_dict(frame),row_dict(media),{k:row_dict(v) for k,v in media_map.items()}),camera_id=media.camera_id,camera_name=camera.name if camera else '未关联摄像头',media_name=media.name,source_path=media.original_path,source_group_id=source,image_tag=tag,objects=len(objects),fault_ids=sorted(f for f in faults if f),fault_text='、'.join((labels[k].name if k in labels else '缺失类别')+' ×'+str(v) for k,v in counts.items()) if objects else ('整帧异常 / 无目标框' if tag=='ABNORMAL' else '正常' if tag=='NORMAL' else '未知'),completion_state=AnnotationService.completion_state(frame,doc),review_status=doc.status if doc else 'DRAFT',eligible=not issue,issue=issue,excluded=bool(frame.handling.get('is_excluded')),annotation_revision=doc.revision if doc else 0))
             return result
 
     def split_preview(self,frame_ids,root=None,*,strategy='source',ratios=None,seed=123,allow_leakage=False,admission='experimental'):
@@ -144,7 +145,7 @@ class DatasetService:
                 except AppError as exc:issues.append(exc.message+' '+frame_id);continue
                 if not payload['objects'] and payload['image_tag']=='ABNORMAL':warnings.append('异常图片没有目标标注，仅适合原生标签任务：'+frame_id)
                 if not payload['objects'] and payload['image_tag']=='UNKNOWN':warnings.append('未知图片不会作为正常负样本：'+frame_id)
-                samples.append({'frame_id':frame.id,'media_id':frame.media_id,'camera':media.camera_id or media.camera,'camera_id':media.camera_id,'source_group_id':self.source_root(media,media_map),'validation_level':'AUTO_CHECKED_HUMAN' if admission=='experimental' else 'INDEPENDENT_REVIEW','sha256':frame.sha256,'perceptual_hash':frame.perceptual_hash,'source_image':frame.path,'width':frame.width,'height':frame.height,'pts_us':frame.pts_us,'time_us':frame.time_us,'parameters':frame.parameters,'method':frame.method,'annotation':payload,'annotation_revision':doc.revision,'handling_revision':frame.handling.get('revision',0),'annotation_status':doc.status,'annotation_source':doc.source,'media_lifecycle':copy.deepcopy(media.lifecycle),'media_parent_id':media.parent_id})
+                samples.append({'frame_id':frame.id,'media_id':frame.media_id,'camera':media.camera_id or media.camera,'camera_id':media.camera_id,'source_group_id':self.source_root(media,media_map),'validation_level':'AUTO_CHECKED_HUMAN' if admission=='experimental' else 'INDEPENDENT_REVIEW','sha256':frame.sha256,'perceptual_hash':frame.perceptual_hash,'source_image':frame.path,'width':frame.width,'height':frame.height,'pts_us':frame.pts_us,'time_us':frame.time_us,'parameters':frame.parameters,'method':frame.method,'annotation':payload,'annotation_revision':doc.revision,'handling_revision':frame.handling.get('revision',0),'annotation_status':doc.status,'annotation_source':doc.source,'timing':frame_times(row_dict(frame),row_dict(media),{k:row_dict(v) for k,v in media_map.items()}),'media_lifecycle':copy.deepcopy(media.lifecycle),'media_parent_id':media.parent_id})
                 revisions[frame.id]=doc.revision
             for i,a in enumerate(samples):
                 if any((int(a['perceptual_hash'],16)^int(b['perceptual_hash'],16)).bit_count()<=4 for b in samples[:i]):

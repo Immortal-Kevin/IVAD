@@ -52,3 +52,12 @@ Schema0007（P2 Hotfix during P3）：仅追加cameras.details JSON（code/locat
 Schema仍0008，无新增表、列或migration；Camera/Media/Frame/Annotation/DatasetVersion UUID不变。数据集草稿和候选排除为GUI会话状态，不占用全局handling状态。全局无效帧继续复用is_excluded及历史。
 
 新实验冻结manifest在现有format_version=1增加可选admission对象：policy=human-auto-v1、scope=EXPERIMENT_ONLY、validation_level=AUTO_CHECKED_HUMAN、independent_review=false、split_status、allow_limited、allow_multi_camera、camera_ids、source_groups、expected_counts、actual_counts、near_duplicate_cross_split。样本增加validation_level、media_parent_id、media_lifecycle；annotation_status原值完整保留。DatasetVersion.summary JSON附带admission，模型details登记dataset_admission。旧manifest没有此字段时按原审核政策解析；不会原地重写旧文件或改变旧hash。
+
+
+## P3 Dataset Hotfix v2 时间语义（2026-10-15）
+
+无Schema变更，仍0008。frames.pts_us保留为原始帧PTS已按time_base转换后的微秒，不是当前媒体相对秒，也不是UTC拍摄时间；原始PTS ticks仅能从真实解码证据读取，历史库未独立保存tick值，派生接口raw_pts缺省None，不伪造。frames.time_us是既有媒体相对微秒，两者不改写。
+
+统一派生接口ivad_app/video/timestamps.py：media_relative_us=pts_us-media.video.origin_us；返回media_relative_seconds。origin缺失则显式使用历史time_us并给出待核验警告；时间不一致/越界保留诊断，不在读路径迁移。source_relative_us递归累加每级CLIP.clip_info.first_source_time_us（实际首帧在父媒体中的相对时间）；缺失映射返回未知，不用requested_start_us猜测。time_base保留流时间基；capture_datetime缺省None，没有从文件名推断拍摄日期。
+
+DatasetService.screening和MediaService.frames/frame_image返回这些派生键；新冻结样本可选timing对象保留上述语义。旧DatasetVersion/manifest/SHA256不重写；TrainingRun和ModelRegistry结构不变。播放器经同一relative_time_us函数，标注页只增相对时间信息，不改标注内容。

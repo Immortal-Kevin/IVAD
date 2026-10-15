@@ -49,6 +49,7 @@ class P2Controller(QObject):
             self.refreshing=False
             if root!=self.root:self.refresh();return
             if error:
+                self.dataset.data_error(error)
                 if self.refresh_pending:QTimer.singleShot(0,self.refresh)
                 return
             media,frames,labels,candidates,versions,cameras=result;selected=self.media.media_id
@@ -96,7 +97,7 @@ class P2Controller(QObject):
                         elif kind=='p2_clip':message='视频片段已保存：'+result.get('name','')+'，左侧CLIP资源可播放和抽帧。'
                         elif kind=='p2_freeze':message=f"数据集v{result.get('number')}已冻结：{result.get('images',0)}图片/{result.get('objects',0)}目标。"+'；'.join(result.get('warnings',[])[:2])
                         else:message='数据集导出完成：'+result.get('path','')+'；'.join(result.get('warnings',[]))
-                        self.media.info.setText(message);self.dataset.summary.setText(message)
+                        self.media.info.setText(message);self.dataset.action_info.setText(message)
                         if job['state']=='FAILED':self.window.show_error(job['error'])
                         else:self.window.show_notice(message)
                         self.refresh()
@@ -148,14 +149,14 @@ class P2Controller(QObject):
     def preview(self,ids):
         root=self.root
         def done(result,error):
-            if not error:self.dataset.summary.setText(f"检查：{result['count']}图片/{result['objects']}目标/{result['groups']}独立组\n"+'；'.join(result['issues']+result['warnings']))
+            if not error:self.dataset.action_info.setText(f"检查：{result['count']}图片/{result['objects']}目标/{result['groups']}独立组\n"+'；'.join(result['issues']+result['warnings']))
         self.runner.run(lambda:self.s.datasets.preview(ids,root,admission='experimental'),done)
     def check_dataset_version(self,version_id):
         root=self.root
         def done(result,error):
             if root!=self.root:return
             import json
-            self.dataset.detail.setPlainText(error or json.dumps(result,ensure_ascii=False,indent=2));self.dataset.summary.setText(error or '冻结版本检查：'+result['status']+'；来源记录见详情。此检查不代替训练准入或工业审核。')
+            self.dataset.detail.setPlainText(error or json.dumps(result,ensure_ascii=False,indent=2));self.dataset.action_info.setText(error or '冻结版本检查：'+result['status']+'；来源记录见详情。此检查不代替训练准入或工业审核。')
         self.runner.run(lambda:self.s.datasets.check_version(version_id,root),done)
     def split_preview(self,payload):
         root=self.root

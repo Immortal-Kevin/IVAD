@@ -22,3 +22,5 @@ P2复用P1 GUI/数据库/日志/队列；普通解码/人工标注CPU允许，AI
 2026-10-15 顶部标注快捷按钮Hotfix PASS：58项回归/200%专项4项通过，162项保护哈希0变化。Schema0008不变；P3此前已完成，不重启，打包冻结，停止待审。历史Qt原生访问冲突限制保留。报告reports/P2_TOP_TOOLBAR_SHORTCUT_HOTFIX.md。
 
 2026-10-15 用户批准P3 Dataset UX Hotfix已完成：68项回归及200% GUI1项通过，Schema0008不变。新GUI用显式human-auto-v1实验政策，不改原审核/旧冻结政策；真实8525来源1组200帧划分LIMITED。163项选取保护哈希0变化。P3原成果完成，停止待审，打包冻结，P4–P6未授权。报告reports/P3_DATASET_UI_HOTFIX.md及对应VALIDATION/SPLIT结果。
+
+2026-10-15 P3 Dataset Hotfix v2 PASS：97不同用例/200% GUI1项通过。8525为旧GUI误显带偏移PTS，200条time_us正确；仅派生时间，不写历史。Schema0008不变，165项保护hash0变化，P3原成果保留，停止待审，打包冻结、P4–P6未授权。报告reports/P3_DATASET_UX_HOTFIX_V2.md。
