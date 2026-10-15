@@ -22,7 +22,7 @@ class P2HotfixController:
     def set_project(self,project):
         root=project.root if project else None
         if root!=self.root:
-            self.cameras.rows=[];self.cameras.table.setRowCount(0);self.cameras.new()
+            self.cameras.rows=[];self.cameras.table.setRowCount(0);self.cameras.new(force=True)
             self.p2.media.set_cameras([])
         self.root=root;self.cameras.setEnabled(bool(root));self.review_table.setRowCount(0);self.review_rows=[]
         self.cameras.project.setText(f'所属项目：{project.name}\n项目UUID：{project.id}' if project else '请先打开项目')
@@ -37,23 +37,26 @@ class P2HotfixController:
             if root!=self.root:self.refresh_cameras();return
             if error:self.cameras.info.setText(error);return
             from ivad_app.gui.p2_controller import put_table
-            old=(self.cameras.record or {}).get('id');self.cameras.rows=rows;self.cameras.table.blockSignals(True)
-            put_table(self.cameras.table,[[r['details'].get('code',''),r['name'],r['id'],r['details'].get('location',''),'启用' if r['details'].get('enabled',True) else '停用'] for r in rows]);self.cameras.table.blockSignals(False)
+            old=(self.cameras.record or {}).get('id');self.cameras.rows=rows;self.cameras.loading=True;self.cameras.table.blockSignals(True)
+            put_table(self.cameras.table,[[r['details'].get('code',''),r['name'],r['id'],r['details'].get('location',''),'启用' if r['details'].get('enabled',True) else '停用'] for r in rows]);self.cameras.table.blockSignals(False);self.cameras.loading=False
             if old and not self.cameras.dirty:
                 for i,r in enumerate(rows):
-                    if r['id']==old:self.cameras.table.selectRow(i);self.cameras.select()
+                    if r['id']==old:self.cameras.load_record(r)
+            elif old:self.cameras.restore_selection()
             self.p2.media.set_cameras(rows);self.p2.annotation.load_cameras()
             if self.camera_pending:QTimer.singleShot(0,self.refresh_cameras)
         self.runner.run(lambda:self.s.cameras.list(root),done)
-    def save_camera(self):
+    def save_camera(self,on_success=None):
         if not self.root:return
-        root=self.root;panel=self.cameras;record=panel.record;name=panel.fields['name'].text();info={k:panel.fields[k].text() for k in ['code','location','equipment']};info['enabled']=panel.enabled.isChecked();panel.setEnabled(False)
+        root=self.root;panel=self.cameras;record=panel.record;mode=panel.mode;name=panel.fields['name'].text();info={k:panel.fields[k].text() for k in ['code','location','equipment']};info['enabled']=panel.enabled.isChecked();panel.setEnabled(False)
         def done(result,error):
             panel.setEnabled(bool(self.root))
             if root!=self.root:return
-            panel.info.setText(error or '已保存项目摄像头，UUID及历史关联保留。')
-            if not error:panel.record=result;panel.dirty=False;self.refresh_cameras();self.p2.refresh()
-        self.runner.run(lambda:self.s.cameras.save(name,record['id'] if record else None,record['revision'] if record else None,root,details=info),done)
+            panel.info.setText(error or (result or {}).get('diagnostic_warning') or ('新建摄像头已提交，完整性检查通过。' if mode=='CREATE' else '当前摄像头修改已提交，其他记录保持不变。'))
+            if not error:
+                panel.load_record(result);self.refresh_cameras();self.p2.refresh()
+                if on_success:on_success()
+        self.runner.run(lambda:self.s.cameras.save(name,record['id'] if record else None,record['revision'] if record else None,root,details=info,mode=mode),done)
     @staticmethod
     def impact(preview):
         names={'clips':'片段','frames':'抽帧图片','annotations':'标注','annotation_revisions':'标注历史','dataset_versions':'冻结数据集','training_runs':'训练记录','model_versions':'模型版本','rois':'ROI','clip_labels':'片段标签','active_jobs':'运行/排队任务'}
