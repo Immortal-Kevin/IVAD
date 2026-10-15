@@ -100,7 +100,7 @@ def test_four_tabs_filter_sort_draft_batch_freeze_and_export(qtbot,services,trut
         d.source.setCurrentIndex(d.source.findData(mids[1]));assert all(r['media_id']==mids[1] for r in d.candidate_rows)
         d.select_all();d.omit_selected();assert not d.candidate_rows;d.restore_omitted();assert d.candidate_rows
         d.fault.setCurrentIndex(0);d.source.setCurrentIndex(0);d.camera.setCurrentIndex(0);d.select_all();d.allow_multi.setChecked(True);d.add_selected();assert len(d.draft_frames())==5
-        d.candidates.sortItems(2,Qt.SortOrder.DescendingOrder);d.clear_selection();d.select_all();assert set(d.selected_frames())=={r['id'] for r in d.candidate_rows}
+        d.candidates.sortItems(2,Qt.SortOrder.DescendingOrder);d.clear_selection();d.select_all();assert set(d.selected_frames())=={r['id'] for r in d.candidate_rows if r['eligible']}
         d.name.setText('GUI实验数据集');d.allow_limited.setChecked(True);d.tabs.setCurrentIndex(2);click(qtbot,d,'dataset_split_preview');qtbot.waitUntil(lambda:'split_status' in d.split_detail.toPlainText(),timeout=10000)
         output=Path(os.environ.get('IVAD_DATASET_EVIDENCE',str(tmp_path/'screens')));output.mkdir(parents=True,exist_ok=True)
         for width,height in [(1920,1080),(1040,720)]:
@@ -111,7 +111,9 @@ def test_four_tabs_filter_sort_draft_batch_freeze_and_export(qtbot,services,trut
         d.tabs.setCurrentIndex(3);click(qtbot,d,'freeze_dataset');qtbot.waitUntil(lambda:len(services.datasets.versions())==1,timeout=15000);qtbot.waitUntil(lambda:bool(d.version_rows),timeout=10000)
         d.versions.selectRow(0);click(qtbot,d,'dataset_check_version');qtbot.waitUntil(lambda:'source_trace' in d.detail.toPlainText(),timeout=10000);monkeypatch.setattr(QFileDialog,'getExistingDirectory',lambda *a,**k:str(tmp_path));click(qtbot,d,'export_dataset');qtbot.waitUntil(lambda:bool(list(tmp_path.glob('IVAD-*-yolo_detect-*'))),timeout=15000)
         # Restore the excluded frame using real controller action; old payload remains.
-        d.tabs.setCurrentIndex(0);d.exclusion.setCurrentIndex(1);d.select_all();click(qtbot,d,'dataset_restore');qtbot.waitUntil(lambda:not services.annotations.frames_status()[ids[1]]['processing_state']=='EXCLUDED' and d.isEnabled(),timeout=10000)
+        d.tabs.setCurrentIndex(0);d.exclusion.setCurrentIndex(1)
+        for i in range(d.candidates.rowCount()):d.candidates.item(i,0).setCheckState(Qt.CheckState.Checked)
+        click(qtbot,d,'dataset_restore');qtbot.waitUntil(lambda:not services.annotations.frames_status()[ids[1]]['processing_state']=='EXCLUDED' and d.isEnabled(),timeout=10000)
         assert services.annotations.load(ids[1])['payload']['image_tag']=='NORMAL'
     finally:close_window(qtbot,w)
 
