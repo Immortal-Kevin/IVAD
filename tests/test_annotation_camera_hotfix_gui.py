@@ -19,10 +19,12 @@ def test_gui_filter_batch_status_and_feedback(qtbot,services,media_project,monke
     w.confirm_discard=lambda:True
     def wait():qtbot.waitUntil(lambda:not a.loading and not a.saving and not a.dirty and not a.batch_busy and not w.p2.refreshing,timeout=10000)
     def refresh():w.p2.refresh();wait();qtbot.wait(50)
+    evidence=Path(os.environ.get('IVAD_ANNOTATION_EVIDENCE',str(Path(services.data_dir)/'test-evidence')))
+    evidence.mkdir(parents=True,exist_ok=True)
     def capture(name):
         w.resize(1920,1080)
         for scroll in a.findChildren(QScrollArea):scroll.verticalScrollBar().setValue(0)
-        qtbot.wait(60);assert w.grab().save('artifacts/annotation-camera-hotfix-20261015/'+name+('-dpi2' if os.environ.get('QT_SCALE_FACTOR')=='2' else '')+'.png')
+        qtbot.wait(60);assert w.grab().save(str(evidence/(name+('-dpi2' if os.environ.get('QT_SCALE_FACTOR')=='2' else '')+'.png')))
     try:
         wait();qtbot.waitUntil(lambda:a.camera_filter.findData(c1['id'])>=0,timeout=10000)
         a.camera_filter.setCurrentIndex(a.camera_filter.findData(c1['id']));wait()
@@ -33,7 +35,7 @@ def test_gui_filter_batch_status_and_feedback(qtbot,services,media_project,monke
         click(qtbot,a,'annotation_quick_save');wait();assert a.review.currentData()=='LABELED'
         assert services.annotations.load(fid)['payload']['objects']==[] and services.annotations.load(fid)['status']=='DRAFT'
         capture('normal-saved-status')
-        a.navigate(1);wait();boxfid=a.frame_id;a.tool.setCurrentIndex(1)
+        a.navigate(1);wait();boxfid=a.frame_id;a.classes.setCurrentIndex(1);a.tool.setCurrentIndex(1)
         qtbot.mousePress(a.canvas.viewport(),Qt.MouseButton.LeftButton,pos=a.canvas.mapFromScene(QPointF(10,10)));qtbot.mouseRelease(a.canvas.viewport(),Qt.MouseButton.LeftButton,pos=a.canvas.mapFromScene(QPointF(50,50)))
         a.debounce.stop();assert a.image_tag.currentData()=='ABNORMAL' and a.review.currentData()=='UNLABELED'
         click(qtbot,a,'save_annotation');wait();assert a.review.currentData()=='LABELED'
@@ -66,7 +68,7 @@ def test_gui_filter_batch_status_and_feedback(qtbot,services,media_project,monke
         assert notices and '成功0张' in a.batch_result.text() and '尚未剔除' in a.batch_result.text()
         # Feedback is separate from frame load/refresh notices.
         text=a.batch_result.text();refresh();assert a.batch_result.text()==text
-        output=Path('artifacts/annotation-camera-hotfix-20261015');w.resize(1920,1080);qtbot.wait(80);assert w.grab().save(str(output/('annotation-camera-filter'+('-dpi2' if os.environ.get('QT_SCALE_FACTOR')=='2' else '')+'.png')))
+        output=evidence;w.resize(1920,1080);qtbot.wait(80);assert w.grab().save(str(output/('annotation-camera-filter'+('-dpi2' if os.environ.get('QT_SCALE_FACTOR')=='2' else '')+'.png')))
         assert services.annotations.load(boxfid)['payload']['objects']
     finally:
         a.dirty=False;a.save_error=False;a.debounce.stop();close_window(qtbot,w)

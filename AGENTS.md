@@ -16,3 +16,5 @@ P2复用P1 GUI/数据库/日志/队列；普通解码/人工标注CPU允许，AI
 2026-10-15 Camera Registry Hotfix v2：代码/80项针对性测试通过，Schema目标0008；真实项目仅只读备份且仍0007，同一Camera UUID被历史EDIT复用。禁止未经用户另行批准恢复/补建真实摄像头或改动关联。P3已完成，不重复训练；打包冻结，P4–P6未授权。报告reports/P2_CAMERA_REGISTRY_PERSISTENCE_HOTFIX.md。
 
 2026-10-15 Annotation & Camera Dataset Hotfix完成：103不同用例/高DPI回归通过，Schema0008不变。真实库只读（3摄像头251帧22标注），不得按旧快照还原或猜测关联；保留P3，不重训，不打包。两张历史测试截图覆盖例外已披露，后续所有测试截图必须写本轮独立目录/临时目录。详见reports/P2_HOTFIX_REGRESSION.md。
+
+2026-10-15 Annotation Workflow Simplification功能PASS：69项最终整组/高DPI4项通过；一次混合GUI测试原生访问冲突未定位，串行复验未复现，必须保留报告限制。Schema0008不变，P3不重启，打包冻结，后续截图仅本轮独立目录。详见reports/P2_ANNOTATION_WORKFLOW_SIMPLIFICATION.md。

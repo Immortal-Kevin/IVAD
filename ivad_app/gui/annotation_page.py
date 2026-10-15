@@ -13,7 +13,7 @@ class AnnotationPage(Page):
     def __init__(self,services,runner):
         super().__init__('标注工作台','人工真值 · 原始图片像素坐标 · ROI独立存储；多边形右键/Enter完成，Esc取消。')
         self.s,self.runner=services,runner;self.root=None;self.frame_id=None;self.revision=self.roi_revision=0;self.dirty=self.saving=False;self.pending=None;self.save_error=False;self.roi_snapshot=[];self.loading=False;self.loaded_camera_roi=False;self.load_serial=0;self.roi_notice=''
-        self.current_tag='UNKNOWN';self.loaded_payload={};self.normal_confirmed=False;self.media_id=None;self.camera_id=None;self.camera_records=[];self.camera_load_serial=0;self.camera_choice_dirty=False;self.camera_desired=None;self.batch_busy=False;self.checked_ids=set();self.excluded=False;self.filter_signature=None
+        self.current_tag='UNKNOWN';self.loaded_payload={};self.normal_confirmed=False;self.media_id=None;self.camera_id=None;self.camera_records=[];self.camera_load_serial=0;self.camera_choice_dirty=False;self.camera_desired=None;self.batch_busy=False;self.checked_ids=set();self.excluded=False;self.filter_signature=None;self.working_labels={};self.enabled_labels=set()
         toolbar=QHBoxLayout();self.tool=QComboBox();self.tool.setObjectName('annotation_tool')
         for text,value in [('选择/移动/顶点编辑','select'),('矩形框','box'),('多边形','polygon'),('矩形ROI','roi_box'),('多边形ROI','roi_polygon')]:self.tool.addItem(text,value)
         toolbar.addWidget(self.tool);toolbar.addWidget(button('适应窗口',lambda:self.canvas.fit()));toolbar.addWidget(button('撤销',lambda:self.canvas.undo(),name='annotation_undo'));toolbar.addWidget(button('重做',lambda:self.canvas.redo(),name='annotation_redo'))
@@ -47,37 +47,41 @@ class AnnotationPage(Page):
         self.frames.setMinimumHeight(120)
         self.canvas=AnnotationCanvas();splitter.addWidget(self.canvas)
         props=QWidget();props.setObjectName('annotation_properties');props.setStyleSheet('QWidget#annotation_properties { background: #ffffff; }');props.setMinimumWidth(230);props.setMaximumWidth(310);p=QVBoxLayout(props)
-        self.classes=QComboBox();self.classes.setObjectName('annotation_class');self.classes.currentIndexChanged.connect(self.class_changed)
-        self.review=QComboBox();self.review.setObjectName('annotation_completion');self.review.setToolTip('标注完成不等于人工审核；详细审核在数据集管理中进行。')
+        self.classes=QComboBox();self.classes.setObjectName('annotation_class');self.classes.currentIndexChanged.connect(self.class_changed);self.classes.activated.connect(self.class_changed)
+        self.review=QComboBox(self);self.review.hide();self.review.setObjectName('annotation_completion');self.review.setToolTip('标注完成不等于人工审核；详细审核在数据集管理中进行。')
         for text,value in [('未标注','UNLABELED'),('已标注','LABELED')]:self.review.addItem(text,value)
         self.image_tag=QComboBox();self.image_tag.setObjectName('image_tag')
         for text,value in [('未知/待确认','UNKNOWN'),('正常','NORMAL'),('异常','ABNORMAL')]:self.image_tag.addItem(text,value)
-        self.image_label=QComboBox();self.image_label.addItem('无整帧故障类别',None)
+        self.image_label=QComboBox(self);self.image_label.hide();self.image_label.addItem('无整帧故障类别',None)
         self.roi_scope=QComboBox(self);self.roi_scope.addItems(['ROI关联当前视频','ROI关联摄像头']);self.roi_scope.hide()
         self.objects=QListWidget();self.objects.setMaximumHeight(150);self.objects.currentRowChanged.connect(self.select_object)
-        for text,widget in [('目标类别',self.classes),('标注状态',self.review),('整帧标签',self.image_tag),('整帧故障类别',self.image_label),('当前对象',self.objects)]:p.addWidget(QLabel(text));p.addWidget(widget)
+        p.addWidget(QLabel('当前摄像头'));self.camera_display=QLabel('未关联摄像头');self.camera_display.setWordWrap(True);p.addWidget(self.camera_display)
+        for text,widget in [('当前处理方式',self.image_tag),('故障类型（用于新绘制目标）',self.classes),('当前对象',self.objects)]:p.addWidget(QLabel(text));p.addWidget(widget)
+        self.fault_summary=QLabel('本帧故障：无');self.fault_summary.setWordWrap(True);p.addWidget(self.fault_summary)
+        p.addWidget(button('修改所选对象类别',self.apply_object_label,name='annotation_apply_class'))
+        p.addWidget(button('整帧标签详情…',self.edit_frame_label,name='annotation_frame_details'))
         p.addWidget(button('ROI 管理 / 来源说明',self.manage_roi,name='annotation_roi_manage'))
         self.processing_notice=QLabel('标注完成不等于已审核。');self.processing_notice.setWordWrap(True);p.addWidget(self.processing_notice)
         p.addWidget(QLabel('当前图片处理'))
         self.reason=QLineEdit();self.reason.setPlaceholderText('无法判断原因（可选）');p.addWidget(self.reason);self.reason.textEdited.connect(self.mark_dirty)
-        self.auto_next=QCheckBox('快捷保存后自动进入下一张');self.auto_next.setChecked(True);p.addWidget(self.auto_next)
+        self.auto_next=QCheckBox('待复核保存后自动下一张');self.auto_next.setChecked(True);p.addWidget(self.auto_next)
         self.runner.run(lambda:self.s.settings.get('annotation_ux',{'auto_next':True}),lambda value,error:self.auto_next.setChecked(value.get('auto_next',True)) if not error else None)
         self.auto_next.toggled.connect(lambda value:self.runner.run(lambda:self.s.settings.set('annotation_ux',{'auto_next':value})))
+        self.normal_button=button('保存正常并下一张',self.save_normal_next,True,'annotation_normal_next');p.addWidget(self.normal_button)
+        self.abnormal_button=button('保存异常并下一张',self.save_abnormal_next,True,'annotation_abnormal_next');p.addWidget(self.abnormal_button)
         self.quick_button=button('保存待复核并进入下一张',self.quick_save,True,'annotation_quick_save');p.addWidget(self.quick_button)
         self.auto_next.toggled.connect(self.update_quick_text)
-        p.addWidget(button('剔除当前帧并进入下一张',lambda:self.batch_action('exclude',True),name='frame_exclude'))
+        self.exclude_button=button('剔除并下一张',lambda:self.batch_action('exclude',True,True),name='frame_exclude');p.addWidget(self.exclude_button)
         p.addWidget(button('恢复当前帧',lambda:self.batch_action('restore',True),name='frame_restore'))
         self.save_button=button('保存标注',self.save_now,True,'save_annotation');p.addWidget(self.save_button);p.addWidget(button('放弃修改并重载',self.reload_discard));p.addStretch()
         p.addWidget(button('恢复历史标注…',self.restore_history,name='annotation_restore_history'))
-        p.addWidget(QLabel('所属摄像头（在视频管理关联）'));self.camera_display=QLabel('未关联摄像头');self.camera_display.setWordWrap(True);p.addWidget(self.camera_display)
         p.addWidget(button('前往视频管理关联摄像头',lambda:self.camera_navigation.emit(self.media_id or ''),name='camera_go_media'))
-        props.setMinimumHeight(920);scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setWidget(props);scroll.setMinimumWidth(250);scroll.setMaximumWidth(330);splitter.addWidget(scroll);splitter.setSizes([220,650,290]);self.layout.addWidget(splitter,1)
+        scroll=QScrollArea();scroll.setWidgetResizable(True);scroll.setWidget(props);scroll.setMinimumWidth(250);scroll.setMaximumWidth(330);splitter.addWidget(scroll);splitter.setSizes([220,650,290]);self.layout.addWidget(splitter,1)
         row=QHBoxLayout();row.addWidget(button('上一张',lambda:self.navigate(-1)));row.addWidget(button('下一张',lambda:self.navigate(1)));self.info=QLabel('请打开项目并抽帧。');self.info.setWordWrap(True);row.addWidget(self.info,1);self.layout.addLayout(row)
         self.debounce=QTimer(self);self.debounce.setSingleShot(True);self.debounce.setInterval(350);self.debounce.timeout.connect(self.save_now)
         self.canvas.changed.connect(self.mark_dirty);self.canvas.selected.connect(self.selection);self.canvas.error.connect(self.info.setText)
         self.tool.currentIndexChanged.connect(lambda:self.canvas.set_tool(self.tool.currentData()))
         self.frames.currentRowChanged.connect(self.select_frame)
-        self.review.currentIndexChanged.connect(lambda:self.mark_dirty(completion_edit=True))
         self.image_label.currentIndexChanged.connect(self.mark_dirty)
         self.image_tag.currentIndexChanged.connect(self.tag_changed)
         self.roi_scope.currentIndexChanged.connect(lambda:self.request_load(self.frame_id,force=True) if self.frame_id else None)
@@ -91,12 +95,12 @@ class AnnotationPage(Page):
         for mid in dict.fromkeys(r['media_id'] for r in frames):self.media_filter.addItem(next((r.get('media_name','来源录像') for r in frames if r['media_id']==mid),'来源录像'),mid)
         self.media_filter.setCurrentIndex(max(0,self.media_filter.findData(selected_filter)));self.media_filter.blockSignals(False);self.filter_frames()
         old=self.classes.currentData();old_image=self.image_label.currentData()
-        self.classes.blockSignals(True);self.image_label.blockSignals(True);self.classes.clear();self.image_label.clear();self.image_label.addItem('无整帧故障类别',None)
+        self.classes.blockSignals(True);self.image_label.blockSignals(True);self.classes.clear();self.classes.addItem('请选择故障类型',None);self.enabled_labels={r['id'] for r in labels if r['enabled']};self.image_label.clear();self.image_label.addItem('无整帧故障类别',None)
         for label in labels:
             text=label['name']+('（停用）' if not label['enabled'] else '')
-            self.classes.addItem(text,label['id']);self.image_label.addItem(text,label['id'])
+            self.classes.addItem(text,label['id']);self.classes.model().item(self.classes.count()-1).setEnabled(bool(label['enabled']));self.image_label.addItem(text,label['id'])
         self.classes.setCurrentIndex(max(0,self.classes.findData(old)));self.image_label.setCurrentIndex(max(0,self.image_label.findData(old_image)));self.classes.blockSignals(False);self.image_label.blockSignals(False)
-        self.canvas.label_names={r['id']:r['name'] for r in labels};self.canvas.label_id=self.classes.currentData()
+        self.canvas.label_names={r['id']:r['name'] for r in labels};self.canvas.label_id=self.classes.currentData() if self.classes.currentData() in self.enabled_labels else None
         if not self.frame_id and self.frames.count():self.frames.setCurrentRow(0)
         self.load_cameras()
 
@@ -163,7 +167,7 @@ class AnnotationPage(Page):
             self.roi_notice=data['notice'];self.roi_scope.setToolTip(data['notice'] or 'ROI 为可选辅助信息，与目标标注及整帧标签独立。')
             self.canvas.set_image(qimage(image));self.canvas.set_shapes(data['payload']['objects']+data['roi_objects']);self.canvas.label_id=self.classes.currentData()
             for widget,value in [(self.review,data['completion_state']),(self.image_tag,data['payload']['image_tag']),(self.image_label,data['payload'].get('image_label_id'))]:widget.blockSignals(True);widget.setCurrentIndex(max(0,widget.findData(value)));widget.blockSignals(False)
-            self.reason.setText(data['payload'].get('uncertain_reason',''));self.update_mode();self.load_cameras()
+            self.choose_working_label(data['payload']['objects']);self.reason.setText(data['payload'].get('uncertain_reason',''));self.update_mode();self.load_cameras()
             self.dirty=False;self.update_objects();self.restore_selection();self.info.setText(f"PTS {data['frame']['pts_us']} µs · {image.width}×{image.height} · 标注修订 {self.revision} · Human Generated\n"+data['notice'])
         self.runner.run(operation,done)
 
@@ -180,18 +184,54 @@ class AnnotationPage(Page):
     def update_objects(self):
         self.objects.blockSignals(True);self.objects.clear()
         for obj in self.canvas.shapes:self.objects.addItem(obj['kind']+' · '+self.canvas.label_names.get(obj.get('label_id'),'ROI'))
+        names={self.canvas.label_names.get(obj.get('label_id'),obj.get('label_id','未知')) for obj in self.canvas.shapes if not obj['kind'].startswith('roi_')}
+        historical=self.image_label.currentText() if self.image_label.currentData() else '无'
+        self.fault_summary.setText('目标故障：'+('、'.join(sorted(names)) if names else '无')+'\n历史整帧类别：'+historical)
         self.objects.setCurrentRow(self.canvas.selected_index if self.canvas.selected_index is not None else -1);self.objects.blockSignals(False)
     def select_object(self,index):
         self.canvas.selected_index=index if index>=0 else None;self.canvas.render();self.selection(self.canvas.shapes[index] if 0<=index<len(self.canvas.shapes) else None)
     def selection(self,obj):
         self.delete_button.setEnabled(obj is not None)
-        if obj and obj.get('label_id'):
-            self.classes.blockSignals(True);self.classes.setCurrentIndex(max(0,self.classes.findData(obj['label_id'])));self.classes.blockSignals(False);self.canvas.label_id=self.classes.currentData()
         self.update_objects()
+    def working_key(self):
+        return (self.root,'camera',self.camera_id) if self.camera_id else (self.root,'media',self.media_id)
+    def choose_working_label(self,objects):
+        # Reading historical truth never changes the session default or the objects.
+        label=self.working_labels.get(self.working_key())
+        self.classes.blockSignals(True);self.classes.setCurrentIndex(max(0,self.classes.findData(label)));self.classes.blockSignals(False)
+        self.canvas.label_id=label if label in self.enabled_labels else None
     def class_changed(self,*args):
-        self.canvas.label_id=self.classes.currentData();index=self.canvas.selected_index
-        if index is not None and index<len(self.canvas.shapes) and not self.canvas.shapes[index]['kind'].startswith('roi_'):
-            self.canvas.shapes[index]['label_id']=self.canvas.label_id;self.canvas.commit()
+        label=self.classes.currentData();self.canvas.label_id=label if label in self.enabled_labels else None
+        if self.frame_id and not self.loading:self.working_labels[self.working_key()]=self.canvas.label_id
+    def apply_object_label(self):
+        index=self.canvas.selected_index;label=self.classes.currentData()
+        if self.excluded or index is None or not 0<=index<len(self.canvas.shapes) or label not in self.enabled_labels:return
+        shape=self.canvas.shapes[index]
+        if shape['kind'].startswith('roi_'):return
+        shape['label_id']=label;self.canvas.commit()
+    def edit_frame_label(self):
+        if not self.frame_id or self.loading or self.excluded:return
+        choices=[self.image_label.itemText(i)+(' · '+str(self.image_label.itemData(i)) if self.image_label.itemData(i) else '') for i in range(self.image_label.count())]
+        choice,ok=QInputDialog.getItem(self,'整帧标签详情','整帧类别独立保留；确认后沿用自动保存，也可手动保存；不会创建检测框。',choices,max(0,self.image_label.currentIndex()),False)
+        if not ok:return
+        index=choices.index(choice)
+        if index==self.image_label.currentIndex():return
+        if self.image_label.itemData(index):
+            self.image_tag.blockSignals(True);self.image_tag.setCurrentIndex(self.image_tag.findData('ABNORMAL'));self.image_tag.blockSignals(False);self.current_tag='ABNORMAL'
+        self.image_label.setCurrentIndex(index);self.update_mode()
+    def save_normal_next(self):
+        if not self.frame_id or self.excluded or self.loading:return
+        if self.saving or (self.dirty and self.image_tag.currentData()!='NORMAL'):
+            self.pending=self.save_normal_next;self.save_now();return
+        self.image_tag.setCurrentIndex(self.image_tag.findData('NORMAL'))
+        if self.image_tag.currentData()!='NORMAL':return
+        self.mark_dirty();self.pending=lambda:self.navigate(1);self.save_now()
+    def save_abnormal_next(self):
+        if not self.frame_id or self.excluded or self.loading:return
+        if not any(not obj['kind'].startswith('roi_') for obj in self.canvas.shapes) and not self.image_label.currentData():
+            self.info.setText('请先绘制故障目标，或在“整帧标签详情”明确分类类别；不会自动创建框。');return
+        self.image_tag.blockSignals(True);self.image_tag.setCurrentIndex(self.image_tag.findData('ABNORMAL'));self.image_tag.blockSignals(False);self.current_tag='ABNORMAL'
+        self.mark_dirty();self.update_mode();self.pending=lambda:self.navigate(1);self.save_now()
 
     def save_now(self):
         self.debounce.stop()
@@ -240,11 +280,11 @@ class AnnotationPage(Page):
     def update_mode(self):
         normal=self.image_tag.currentData()=='NORMAL';enabled=not self.excluded and not self.loading
         self.processing_notice.setText('已剔除：已处理的无效帧，不作为训练标注；恢复后保留原内容。' if self.excluded else '标注完成不等于已审核；请到数据集管理人工审核。')
-        self.image_tag.setEnabled(enabled);self.review.setEnabled(False);self.canvas.setEnabled(enabled);self.save_button.setEnabled(enabled);self.quick_button.setEnabled(enabled)
+        self.image_tag.setEnabled(enabled);self.review.setEnabled(False);self.canvas.setEnabled(enabled);self.save_button.setEnabled(enabled);self.quick_button.setEnabled(enabled);self.normal_button.setEnabled(enabled);self.abnormal_button.setEnabled(enabled);self.exclude_button.setEnabled(not self.loading)
         self.image_label.setEnabled(enabled and not normal);self.classes.setEnabled(enabled and not normal)
         for i in [1,2]:self.tool.model().item(i).setEnabled(enabled and not normal)
         if normal and self.tool.currentData() in {'box','polygon'}:self.tool.setCurrentIndex(0)
-        self.reason.setVisible(self.image_tag.currentData()=='UNKNOWN');self.reason.setEnabled(enabled)
+        self.auto_next.setVisible(self.image_tag.currentData()=='UNKNOWN');self.quick_button.setVisible(self.image_tag.currentData()=='UNKNOWN');self.reason.setVisible(self.image_tag.currentData()=='UNKNOWN');self.reason.setEnabled(enabled)
         names={'NORMAL':'保存正常帧','ABNORMAL':'保存异常标注','UNKNOWN':'保存待复核'}
         self.quick_button.setText(names[self.image_tag.currentData()]+('并进入下一张' if self.auto_next.isChecked() else ''))
 
@@ -281,10 +321,10 @@ class AnnotationPage(Page):
             if not unprocessed or states[item.data(Qt.ItemDataRole.UserRole)]=='UNPROCESSED':item.setCheckState(Qt.CheckState.Checked)
         self.update_checked_count()
 
-    def batch_action(self,action,single=False):
+    def batch_action(self,action,single=False,force_next=False):
         if not self.root or self.batch_busy:return
         if self.dirty or self.saving:
-            self.pending=lambda:self.batch_action(action,single);self.save_now();return
+            self.pending=lambda:self.batch_action(action,single,force_next);self.save_now();return
         ids=[self.frame_id] if single and self.frame_id else self.chosen_frames()
         visible={self.frames.item(i).data(Qt.ItemDataRole.UserRole) for i in range(self.frames.count())};ids=[fid for fid in ids if fid in visible]
         if not ids:self.batch_result.setText('请先勾选当前可见图片。');return
@@ -317,7 +357,7 @@ class AnnotationPage(Page):
 
                 if result.get('warning'):self.batch_result.setText(self.batch_result.text()+'\n'+result['warning'])
                 self.saved.emit()
-                if single and action=='exclude' and self.auto_next.isChecked() and next_id:self.request_load(next_id)
+                if single and action=='exclude' and (force_next or self.auto_next.isChecked()) and next_id:self.request_load(next_id)
                 elif self.frame_id:self.request_load(self.frame_id,force=True)
             self.runner.run(lambda:self.s.annotations.batch_apply(preview,reason,root),done)
         self.runner.run(lambda:self.s.annotations.batch_preview(ids,action,root),preview_done)
