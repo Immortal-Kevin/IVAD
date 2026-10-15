@@ -1,7 +1,7 @@
 """P1基础页面；后续功能有清晰阶段说明，未提供假动作按钮。"""
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFormLayout,
-    QLineEdit, QTextEdit, QPlainTextEdit, QTableWidget, QHeaderView, QComboBox, QFileDialog, QFrame, QScrollArea)
+    QLineEdit, QTextEdit, QPlainTextEdit, QTableWidget, QHeaderView, QComboBox, QFileDialog, QFrame, QScrollArea, QTabWidget)
 from ivad_app.gui.i18n import tr
 
 def button(text, handler, primary=False, name=''):
@@ -58,12 +58,29 @@ class ProjectsPage(Page):
 
     def __init__(self):
         super().__init__('项目管理', '新建选煤厂项目，或打开已有项目目录。在此编辑并保存名称、厂区和描述。')
+        self.setObjectName('project_management_page')
+        self.tabs = QTabWidget(); self.tabs.setObjectName('project_camera_tabs')
+        self.layout.addWidget(self.tabs, 1)
+        self.project_body = QWidget(); self.project_body.setObjectName('project_tab_body')
+        self.project_body.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        content = QVBoxLayout(self.project_body)
+        self.project_scroll = QScrollArea(); self.project_scroll.setWidgetResizable(True)
+        self.project_scroll.setWidget(self.project_body)
+        self.tabs.addTab(self.project_scroll, '项目管理')
+        self.camera_body = QWidget(); self.camera_body.setObjectName('camera_tab_body')
+        self.camera_body.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        self.camera_layout = QVBoxLayout(self.camera_body)
+        self.camera_scroll = QScrollArea(); self.camera_scroll.setWidgetResizable(True)
+        self.camera_scroll.setWidget(self.camera_body)
+        self.tabs.addTab(self.camera_scroll, '摄像头管理')
+        self.tabs.setCurrentIndex(0)
+        content.addWidget(button('进入摄像头管理', lambda: self.tabs.setCurrentIndex(1), name='project_camera_details'))
         self.revision = 0; self.loaded = False
         self.name = QLineEdit(); self.name.setObjectName('project_name'); self.name.setPlaceholderText('例如：一号选煤厂')
         self.site = QLineEdit(); self.site.setObjectName('project_site'); self.site.setPlaceholderText('厂区或设备关联信息（可选）')
         self.description = QTextEdit(); self.description.setObjectName('project_description'); self.description.setMaximumHeight(110)
         form = QFormLayout(); form.addRow('项目名称', self.name); form.addRow('厂区信息', self.site); form.addRow('项目描述', self.description)
-        self.layout.addLayout(form)
+        content.addLayout(form)
         row = QHBoxLayout()
         self.create_button = button('新建项目…', self.choose_create, True, 'create_project')
         self.open_button = button('打开项目…', self.choose_open, name='open_project')
@@ -71,12 +88,12 @@ class ProjectsPage(Page):
         self.close_button = button('关闭项目', self.close_requested.emit, name='close_project')
         self.check_button = button('一致性检查', self.check_requested.emit, name='check_project')
         for item in [self.create_button, self.open_button, self.save_button, self.close_button, self.check_button]: row.addWidget(item)
-        self.layout.addLayout(row)
+        content.addLayout(row)
         self.info = QLabel('尚未打开项目 · 新建项目请选择存储父目录'); self.info.setWordWrap(True); self.info.setObjectName('notice')
-        self.layout.addWidget(self.info)
-        self.layout.addWidget(QLabel('最近打开的项目（双击打开；路径失效时会显示错误，不会删除项目）'))
+        content.addWidget(self.info)
+        content.addWidget(QLabel('最近打开的项目（双击打开；路径失效时会显示错误，不会删除项目）'))
         self.recent = table(['名称', 'UUID', '位置']); self.recent.setObjectName('recent_projects')
-        self.recent.cellDoubleClicked.connect(self.open_recent); self.layout.addWidget(self.recent, 1)
+        self.recent.cellDoubleClicked.connect(self.open_recent); content.addWidget(self.recent, 1)
         self.refresh_controls()
 
     def choose_create(self):

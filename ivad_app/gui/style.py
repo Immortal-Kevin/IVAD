@@ -47,4 +47,13 @@ QLabel#notice { background: #e7effb; color: #234f84; padding: 10px; border-radiu
 QLabel#error { background: #fff0ed; color: #943b2f; padding: 10px; border-radius: 6px; }
 QProgressBar { border: 1px solid #d8e2ef; border-radius: 4px; text-align: center; }
 QProgressBar::chunk { background: #4687bf; }
+
+QWidget#project_management_page, QWidget#project_tab_body, QWidget#camera_tab_body, QWidget#camera_management_panel { background: #f2f5fa; color: #203047; }
+QTabWidget#project_camera_tabs::pane { background: #f2f5fa; border: 1px solid #cbd6e4; }
+QTabWidget#project_camera_tabs QTabBar::tab { background: #2479a2; color: white; padding: 10px 22px; border: 1px solid #cbd6e4; }
+QTabWidget#project_camera_tabs QTabBar::tab:selected, QTabWidget#project_camera_tabs QTabBar::tab:hover { background: white; color: #203047; }
+QWidget#project_management_page QPushButton:disabled { background: #e7ebf0; color: #65758a; }
+QWidget#camera_management_panel QLabel:disabled, QWidget#camera_management_panel QCheckBox:disabled { color: #65758a; }
+QWidget#camera_management_panel QLineEdit:disabled { background: #f0f3f7; color: #65758a; }
+QWidget#project_management_page QAbstractItemView { background: white; alternate-background-color: #f0f5fb; color: #203047; selection-background-color: #d6e8ff; selection-color: #203047; }
 '''
