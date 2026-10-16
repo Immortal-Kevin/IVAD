@@ -146,3 +146,7 @@ Dataset仍为单项目SQLite内的聚合根；0009复用既有datasets表，只�
 GUI的临时勾选、未保存编辑与已持久化草稿分离。手动保存是持久化边界，退出/切换可保存、放弃或取消。修改使检查失效。校验重新读取真实媒体/标注，记录签名；冻结按保存的Dataset UUID与revision执行，提交前再比较草稿/标注/来源/类别，生成不可变manifest、图片和SQL版本关系。原DatasetVersion/Sample表不变，旧工件不重写。
 
 分配器优先原视频根组（派生片段同组），按组大小与正常/异常/故障分布做确定性贪心近似，保存实际分配而不强凑比例。隔离工程回退仅小样本且明确双重风险同意，effective_strategy与LIMITED写入版本。训练页按Dataset过滤实际版本，排除草稿、缺Train/Val或清单损坏项；强制训练前全量校验，TrainingRun增加Dataset UUID元数据，不改GPU Worker或模型接口。
+
+### P3.5 源码离线演示扩展（2026-10-16）
+
+OfflineDemoPage → OfflineDemoService → JobService(p35_offline) → 单GPU隔离offline_worker。普通视频由既有FileVideoSource按实际PTS在GUI运行时解码，单帧PNG/JSON-lines协议交给现有NVIDIA环境执行PT预测/NMS；CUDA参数/前向/输出有真实检查。服务验证原图坐标后编码缓存，结果带源UUID/hash、模型/数据版本、参数和时间。缓存独立demos目录、完成seal及视频哈希，不写Annotation/Dataset/TrainingRun或Camera模型配置；取消保留日志/未完成文件，历史只载入校验完整结果。已接入训练同一资源gate/OS锁，无RTSP、生产规则或多模型调度。

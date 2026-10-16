@@ -14,7 +14,7 @@ def local_time(value):
     return datetime.fromisoformat(value).astimezone(timezone(timedelta(hours=8))).strftime('%Y-%m-%d %H:%M:%S')
 
 DEV = [('总览', 'dashboard'), ('项目管理', 'projects'), ('视频管理', 'media'), ('标注工作台', 'annotation'),
-       ('数据集管理', 'dataset'), ('AI训练', 'training'), ('模型仓库', 'models'), ('系统设置', 'settings')]
+       ('数据集管理', 'dataset'), ('AI训练', 'training'), ('离线AI识别演示', 'offline'), ('模型仓库', 'models'), ('系统设置', 'settings')]
 PRODUCTION = [('监控总览', 'monitoring'), ('摄像头管理', 'cameras'), ('视频检测', 'detection'),
               ('报警中心', 'alarms'), ('事件复核', 'review'), ('系统状态', 'devices')]
 
@@ -104,6 +104,8 @@ class MainWindow(QMainWindow):
         from ivad_app.gui.training_page import TrainingPage,ModelsPage
         for key,page in [('training',TrainingPage(self)),('models',ModelsPage(self))]:
             old=self.pages[key];self.stack.removeWidget(old);old.deleteLater();self.pages[key]=page;self.stack.addWidget(page)
+        from ivad_app.gui.offline_demo_page import OfflineDemoPage
+        self.pages['offline']=OfflineDemoPage(self);self.stack.addWidget(self.pages['offline'])
         self.switch_workspace(0); self.load_settings(); self.refresh()
         self.pages['projects'].set_project(self.s.projects.current)
         self.update_project_summary();self.p2.set_project(self.s.projects.current)
@@ -135,7 +137,7 @@ class MainWindow(QMainWindow):
         if 0 <= row < len(self.navigation): self.show_page(self.navigation[row][1])
 
     def show_page(self, key):
-        self.context_panel.setVisible(key not in {'media','annotation','dataset','training','models'})
+        self.context_panel.setVisible(key not in {'media','annotation','dataset','training','models','offline'})
         self.nav.blockSignals(True)
         self.nav.setCurrentRow(next((i for i, (_, value) in enumerate(self.navigation) if value == key), -1))
         self.nav.blockSignals(False)
@@ -184,7 +186,7 @@ class MainWindow(QMainWindow):
         self.project_operation(self.s.projects.check, '项目目录UUID、数据库Schema和完整性检查通过。')
 
     def update_project_summary(self):
-        for key in ['training','models']:
+        for key in ['training','models','offline']:
             if hasattr(self.pages[key],'set_root'):self.pages[key].set_root(self.s.projects.current.root if self.s.projects.current else None)
         p = self.s.projects.current
         name = p.name if p else '未打开'
@@ -302,7 +304,7 @@ class MainWindow(QMainWindow):
         self.centralWidget().setEnabled(False)
         def shutdown():
             try:
-                self.p2.shutdown();self.runner.stop(); self.s.close(); self.shutdown_done.emit('')
+                self.pages['offline'].player.shutdown();self.p2.shutdown();self.runner.stop(); self.s.close(); self.shutdown_done.emit('')
             except Exception:
                 try: self.s.logs.exception('application', '后台关闭失败，保留数据库等待重试。')
                 except OSError: pass

@@ -38,7 +38,7 @@ class JobService:
         self.thread.start()
 
     def register(self, kind: str, handler):
-        if not kind.startswith('p2_') and kind not in {'p3_train','p3_validate'}: raise AppError('JOB_UNSUPPORTED', '不支持的业务任务类型。')
+        if not kind.startswith('p2_') and kind not in {'p3_train','p3_validate','p35_offline'}: raise AppError('JOB_UNSUPPORTED', '不支持的业务任务类型。')
         self.handlers[kind] = handler
 
     def submit(self, kind: str = 'diagnostic', project_id: str | None = None, payload: dict | None = None) -> str:
@@ -86,7 +86,8 @@ class JobService:
                         self._change(job_id, progress=round(step * 100 / 30))
                 # Clip publication is complete when its handler returns the committed asset.
                 published_clip=row['kind']=='p2_clip' and bool(result.get('media_id'))
-                state = 'SUCCEEDED' if published_clip else ('CANCELLED' if event.is_set() else 'SUCCEEDED')
+                published_demo=row['kind']=='p35_offline' and bool(result.get('path'))
+                state = 'SUCCEEDED' if published_clip or published_demo else ('CANCELLED' if event.is_set() else 'SUCCEEDED')
                 with self.lock: self._change(job_id, state, progress=100 if state=='SUCCEEDED' else None)
                 self.logs.write('job', '任务已取消。' if state == 'CANCELLED' else '后台任务完成。', job_id=job_id)
             except AppError as exc:

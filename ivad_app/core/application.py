@@ -34,6 +34,8 @@ class ApplicationServices:
         self.datasets = DatasetService(self.store, self.logs)
         self.models = ModelService(self.store,self.logs)
         self.training = TrainingService(self.store,self.datasets,self.models,self.devices,self.logs,self.root,self.settings)
+        from ivad_app.services.offline_demo_service import OfflineDemoService
+        self.offline = OfflineDemoService(self)
         self.jobs.register('p2_import', self.media.import_batch)
         self.jobs.register('p2_extract', self.media.extract)
         self.jobs.register('p2_clip', self.media.save_video_clip)
@@ -41,6 +43,7 @@ class ApplicationServices:
         self.jobs.register('p2_export', self.datasets.export)
         if not self.lite:
             self.jobs.register('p3_train', self.training.train);self.jobs.register('p3_validate',self.training.validate)
+            self.jobs.register('p35_offline',self.offline.run)
         self.logs.write('application', 'IVAD源码模式P3训练基础设施；P4–P6尚未实现。' if not self.lite else 'Lite不启用AI Worker。')
         self.closed = False
 

@@ -28,3 +28,5 @@ P2复用P1 GUI/数据库/日志/队列；普通解码/人工标注CPU允许，AI
 2026-10-16 Dataset Lifecycle Hotfix PASS：127不同用例、后续11复验/200%3项通过。Schema头0009，只增Dataset.details/revision；真实项目仍0008只读，166项保护hash0变化。旧内存草稿不可虚构恢复，副本200重启/版本已验；停止待审，不重训，PACKAGING_FREEZE=TRUE，P4–P10未授权。报告reports/P3_DATASET_PERSISTENCE_HOTFIX.md等四份。
 
 2026-10-16 Workflow & Training GUI Hotfix：数据集检查先原子保存，工程/严格模式及签名风险确认；训练响应双栏/预检门控/恢复原参数只读。62不同用例、末次100%2项/200%3项通过；Schema0009不变，真实7a01bcad/4a1c7df7/8525test1 v1及660文件/全表/5选取环境hash0变化。无新训练/打包，历史Qt及epoch显示差异保留，停止待审。详见reports/P3_WORKFLOW_GUI_HOTFIX.md。
+
+2026-10-16 用户明确批准P3.5离线演示（不是完整P4）：Part A模型4a1c7df7/真实GUI/CUDA/ONNX已PASS，新增主程序离线预处理回放/真实框/导出。48不同pytest、3实际CUDA比对通过，200%11+最终1复验；原项目2训练/2模型全表、1120工件及256选取文件0变化。无schema变化、无新训练/安装/打包，背景低置信度框需人工复核，不宣称独立工业质量PASS。PACKAGING_FREEZE=TRUE，停止待审，P4–P10仍未授权。报告reports/P3_MODEL_VALIDATION.md、P3_5_OFFLINE_DEMO_ACCEPTANCE.md。

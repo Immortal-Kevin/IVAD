@@ -1,15 +1,15 @@
 # 当前任务
 
-2026-10-16 P3 Dataset Workflow & Training GUI Simplification Hotfix完成，等待审阅。P3已完成首次真实YOLO11n训练，本轮只修复GUI/流程，没有重新训练。
+2026-10-16 P3 Model Validation + P3.5 Offline AI Video Demo已完成源码与软件功能验收，停止待审。用户仅授权P3.5离线演示，未授权完整P4–P10，PACKAGING_FREEZE=TRUE。
 
-数据集检查先原子保存整个待处理草稿，保留UUID/CAS；两个风险框改默认工程实验/严格验证，工程确认绑定检查结果，严格阻断LIMITED，所有完整性错误不能绕过。没有后台定时自动保存，点击检查无需返回创建Tab。
+Part A先执行真实P3 GUI检查/现有4a1c7df7完整性/真实CUDA前向/新ONNX导出及ORT CUDA节点验证，PASS后才实现P3.5。3个实际输入均raw/NMS一致，239个ORT计算节点均CUDA，无CPU回退；原PT SHA b878f79dbc83a78267c329671014e853147c26f260eb60691abbc289750a8b9f不变。
 
-训练宽双栏/窄堆叠、5按钮自适应、简单只读与高级可编辑、禁用Tooltip；恢复训练显示原参数并锁定。完整配置预检/失效/启动复核、重复提交保护、精确取消确认；实际运行参数与新任务表单隔离。保留Camera多Dataset、多版本、多训练/模型关系。
+新增主程序“离线AI识别演示”：项目视频或复制导入MP4、EXPERIMENTAL模型、NVIDIA/阈值/范围、GPU后台预处理、带框缓存、结果定位、逐帧/播放/暂停/拖动、历史恢复与视频/CSV/JSON/PNG导出。复用解码/PTS/任务/资源锁；GPU环境没有PyAV，采用GUI解码与单帧PNG有界交换，不安装依赖。没有新数据库schema或正式摄像头模型配置写入。
 
-完整针对性回归61通过、0失败（排除两个需显式副本的用例）；另以现有8525test1独立副本完成1项200成员/旧v1/新v2/重开验证，合计62不同用例通过。末次100%训练专项2通过、200%专项3通过（重复复验，不重复计入62）。原始证据pass.xml、accepted100.xml、accepted200.xml及final-gui/real-copy-results.json位于artifacts/workflow-training-gui-20261016/。
+真实0–2秒50帧0预测、7–9秒50帧31预测；缓存阶段2.56–3.13FPS，模型调用5.46–7.23FPS，不含前置GPU检查，不宣称实时。PyTorch峰值分配约66.2MiB，不是GPU总占用。两段均训练来源回放，LIMITED；尚无独立工业识别质量验收。导出截图中有背景区域低置信度预测，必须人工复核，不能把软件PASS当成正确故障识别。
 
-真实项目已存在8525test1 v1、训练7a01bcad、模型4a1c7df7；本轮只读备份，不再使用上一轮“空库”状态作为当前事实。前后全部表、660个工件文件、5个选取环境文件无变化。Schema0009不变，历史标签/UUID/指标及Worker环境保留。
+48不同pytest通过、0最终失败，3实际CUDA/PT-ONNX验证PASS；200%首轮11及最终界面1复验通过。保留初始name字段失败/Qt事件错误、测试按钮等待与深色继承问题记录；均已修正复验。历史Qt原生访问冲突/epoch21与20差异保留，单图NMS冷启动警告记录。
 
-未实测真实AMP、优化器对比或长期训练；历史epoch显示21/20与actual_epochs20差异仅记录未修改，历史混合Qt原生访问冲突限制保留。报告reports/P3_WORKFLOW_GUI_HOTFIX.md、P3_DATASET_MODE_SIMPLIFICATION.md、P3_TRAINING_PARAMETERS_GUI_TEST.md；两份Markdown指南与DECISIONS更新。
+真实项目现在有2组训练/模型（包含用户后来生成的1cc172a1/dd2e7eec），全表及1120工件hash0变化，额外256选取文件0变化；原视频、251帧/217标注/720修订/冻结v1/Worker环境保留。所有测试写入独立副本。本轮无新训练、完整P0、依赖安装或应用打包。
 
-原P3已完成，无需重启或重做训练；PACKAGING_FREEZE=TRUE，不进入P4–P10，不生成EXE/Portable/Setup/大型手册。停止待审。
+交付reports/P3_MODEL_VALIDATION.md、reports/P3_5_OFFLINE_DEMO_ACCEPTANCE.md、docs/P3_5_OFFLINE_AI_DEMO_GUIDE.md；证据artifacts/p35-offline-20261016。无RTSP、PLC、正式报警、规则引擎、多摄像头/多模型生产调度、部署或自动发布，停止等待审阅。
