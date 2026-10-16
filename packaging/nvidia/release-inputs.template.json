@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "status": "AUDIT_ONLY_NOT_RELEASE_READY",
+  "source_revision": null,
+  "legal_decision_record": null,
+  "legal_decision_sha256": null,
+  "public_distribution_allowed": false,
+  "inputs": [
+    {
+      "role": "source",
+      "file": "source.zip",
+      "sha256": null
+    },
+    {
+      "role": "python_base",
+      "file": "python-base-3.12.14-windows-amd64.zip",
+      "sha256": null
+    },
+    {
+      "role": "gui_wheel_manifest",
+      "file": "gui-wheelhouse.sha256",
+      "sha256": null
+    },
+    {
+      "role": "cuda_wheel_manifest",
+      "file": "cuda-wheelhouse.sha256",
+      "sha256": null
+    },
+    {
+      "role": "build_wheel_manifest",
+      "file": "build-wheelhouse.sha256",
+      "sha256": null
+    },
+    {
+      "role": "installer_tool",
+      "file": "nsis-3.12.zip",
+      "sha256": null
+    },
+    {
+      "role": "third_party_compliance_bundle",
+      "file": "third-party-compliance.zip",
+      "sha256": null
+    }
+  ],
+  "acceptance": {
+    "clean_windows": false,
+    "packaged_cuda_inference": false,
+    "install_uninstall_retains_projects": false
+  },
+  "note": "Null means missing/unsealed, never approval. Candidate NSIS version not downloaded or validated."
+}
