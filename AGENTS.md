@@ -39,3 +39,6 @@ P2复用P1 GUI/数据库/日志/队列；普通解码/人工标注CPU允许，AI
 
 
 2026-10-16 本周最终收尾：仅P3.5播放器与P0–P3.5管理层Word报告。标准1096×617、专注1440×810（1920×1080/100%），125/150%及11不同针对性GUI用例通过；12页/11图号（10不同截图）Word已真实渲染复核。原项目3训练/3模型全表与1578工件0变化，251帧登记hash一致。QMenu人工确认正常，不改主题，历史XFAIL保留。PACKAGING_FREEZE=TRUE，无重训/打包/P4；本周工作结束，停止等待下一次明确授权。报告P3_5_FINAL_PLAYER_HOTFIX.md、IVAD_REPORT_SOURCE_INDEX.md。
+
+
+2026-10-16 Windows NVIDIA P3.5一次性打包审计结束：基线66e5846，用户确认暂无Ultralytics授权/已批准AGPL发行方案；按本轮发布门禁BLOCKED，未构建Setup/Release ZIP，未安装/卸载或重训。原项目全表/1578工件及既有ZIP保护通过。现有打包仍P2 Lite，不能冒充完整NVIDIA包。PACKAGING_FREEZE = TRUE已恢复。用户仅授权本轮制作 Windows NVIDIA RTX P3.5 展示版安装包。此后安装包更新再次冻结，未经用户明确授权不得重新打包、更新、替换或重新分发新版。停止待审，不进入P4–P10。见reports/P3_5_WINDOWS_RELEASE_ACCEPTANCE.md、P3_5_RELEASE_LICENSE_AUDIT.md。

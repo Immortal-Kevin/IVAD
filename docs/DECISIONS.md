@@ -118,3 +118,6 @@ YOLO26 与 YOLO11 输出与 NMS 分别适配；原始张量对齐和最终检测
 ## 2026-10-16 P3模型验证与P3.5离线演示
 
 用户明确仅批准P3.5，非完整P4。Part A真实GUI/完整性/CUDA/ONNX通过后再实现主程序离线演示。模型/训练/冻结数据只读保护，新缓存位于demos/UUID，无schema或生产配置修改。GPU环境无PyAV，复用GUI解码PTS与逐帧PNG传给隔离CUDA Worker，单帧传输有界；每GPU锁复用训练规则。神经网络不允许CPU回退。采用预处理回放，保留真实来源、原PTS、映射、阈值、模型UUID；空预测不等于工业正常，结果不是报警。未做独立工业验证，背景低置信度框需人工复核；不自动发布或重新训练。PACKAGING_FREEZE继续有效。
+
+
+2026-10-16 Windows NVIDIA P3.5一次性打包审计结束：基线66e5846，用户确认暂无Ultralytics授权/已批准AGPL发行方案；按本轮发布门禁BLOCKED，未构建Setup/Release ZIP，未安装/卸载或重训。原项目全表/1578工件及既有ZIP保护通过。现有打包仍P2 Lite，不能冒充完整NVIDIA包。PACKAGING_FREEZE = TRUE已恢复。用户仅授权本轮制作 Windows NVIDIA RTX P3.5 展示版安装包。此后安装包更新再次冻结，未经用户明确授权不得重新打包、更新、替换或重新分发新版。停止待审，不进入P4–P10。见reports/P3_5_WINDOWS_RELEASE_ACCEPTANCE.md、P3_5_RELEASE_LICENSE_AUDIT.md。
