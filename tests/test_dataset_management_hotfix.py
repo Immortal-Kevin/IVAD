@@ -101,7 +101,7 @@ def test_four_tabs_filter_sort_draft_batch_freeze_and_export(qtbot,services,trut
         d.select_all();d.omit_selected();assert not d.candidate_rows;d.restore_omitted();assert d.candidate_rows
         d.fault.setCurrentIndex(0);d.source.setCurrentIndex(0);d.camera.setCurrentIndex(0);d.select_all();d.allow_multi.setChecked(True);d.add_selected();assert len(d.draft_frames())==5
         d.candidates.sortItems(2,Qt.SortOrder.DescendingOrder);d.clear_selection();d.select_all();assert set(d.selected_frames())=={r['id'] for r in d.candidate_rows if r['eligible']}
-        d.name.setText('GUI实验数据集');d.allow_limited.setChecked(True);d.tabs.setCurrentIndex(2);click(qtbot,d,'dataset_split_preview');qtbot.waitUntil(lambda:'split_status' in d.split_detail.toPlainText(),timeout=10000)
+        d.name.setText('GUI实验数据集');d.allow_limited.setChecked(True);d.tabs.setCurrentIndex(1);click(qtbot,d,'dataset_save_draft');qtbot.waitUntil(lambda:bool(d.active_dataset) and not d.draft_saving,timeout=10000);d.tabs.setCurrentIndex(2);click(qtbot,d,'dataset_split_preview');qtbot.waitUntil(lambda:'split_status' in d.split_detail.toPlainText(),timeout=10000)
         output=Path(os.environ.get('IVAD_DATASET_EVIDENCE',str(tmp_path/'screens')));output.mkdir(parents=True,exist_ok=True)
         for width,height in [(1920,1080),(1040,720)]:
             w.resize(width,height);qtbot.wait(80)

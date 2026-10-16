@@ -80,7 +80,7 @@ def test_gui_import_play_extract_annotate_freeze_export_reopen(qtbot,services,tm
     from PySide6.QtCore import QPoint
     qtbot.mouseClick(dataset.candidates.viewport(),Qt.MouseButton.LeftButton,pos=QPoint(cell.left()+10,cell.center().y()))
     assert dataset.candidates.item(0,0).checkState()==Qt.CheckState.Checked
-    dataset.camera.setCurrentIndex(dataset.camera.findData('__all__'));dataset.select_all();dataset.allow_multi.setChecked(True);dataset.allow_limited.setChecked(True);dataset.add_selected();dataset.tabs.setCurrentIndex(3);dataset.name.setText('GUI完整分割数据集');click(qtbot,dataset,'freeze_dataset')
+    dataset.camera.setCurrentIndex(dataset.camera.findData('__all__'));dataset.select_all();dataset.allow_multi.setChecked(True);dataset.allow_limited.setChecked(True);dataset.add_selected();dataset.tabs.setCurrentIndex(3);dataset.name.setText('GUI完整分割数据集');dataset.tabs.setCurrentIndex(1);click(qtbot,dataset,'dataset_save_draft');qtbot.waitUntil(lambda:bool(dataset.active_dataset) and not dataset.draft_saving,timeout=10000);dataset.tabs.setCurrentIndex(2);click(qtbot,dataset,'dataset_split_preview');qtbot.waitUntil(lambda:dataset.active_validated,timeout=10000);dataset.tabs.setCurrentIndex(3);click(qtbot,dataset,'freeze_dataset')
     qtbot.waitUntil(lambda:dataset.versions.rowCount()==1,timeout=20000)
     assert all(v>0 for v in dataset.version_rows[0]['summary']['splits'].values())
     dataset.versions.selectRow(0);dataset.format.setCurrentIndex(1)
@@ -96,6 +96,7 @@ def test_gui_import_play_extract_annotate_freeze_export_reopen(qtbot,services,tm
     from ivad_app.core.application import ApplicationServices
     reopened=ApplicationServices(services.root,tmp_path/'reopen-application',step_seconds=.01)
     reopened.projects.open(root);second=make_window(qtbot,reopened);second.p2.set_project(reopened.projects.current)
-    qtbot.waitUntil(lambda:len(second.p2.dataset.version_rows)==1,timeout=10000)
+    qtbot.waitUntil(lambda:bool(second.p2.dataset.dataset_records),timeout=10000)
+    second.p2.dataset.existing.setCurrentIndex(second.p2.dataset.existing.findData(dataset.active_dataset));assert len(second.p2.dataset.version_rows)==1
     assert len(reopened.datasets.candidates(root))==3
     close_window(qtbot,second);reopened.close()
