@@ -75,6 +75,7 @@ def test_schema0005_to0006_append_only(tmp_path):
 
 def test_training_gui_config_and_cpu_rejection(qtbot,services,media_project):
     p,vid=freeze_valid(services,media_project);w=make_window(qtbot,services);w.update_project_summary();page=w.pages['training'];w.show_page('training')
+    page.model.setCurrentText('yolo26n')
     qtbot.waitUntil(lambda:page.dataset.findData(vid)>=0,timeout=10000)
     assert page.mode.currentIndex()==0 and not page.inputs["epochs"].isEnabled()
     page.mode.setCurrentIndex(1);assert page.advanced.isEnabled();page.inputs['imgsz'].setValue(641)

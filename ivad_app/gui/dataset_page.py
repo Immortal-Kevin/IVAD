@@ -13,7 +13,7 @@ class DatasetPage(DatasetLifecyclePage,Page):
     freeze_requested=Signal(dict)
     export_requested=Signal(dict)
     def __init__(self):
-        super().__init__('数据集管理','已保存人工真值通过自动校验后可创建实验数据集；自动检查不等于独立人工审核或生产批准。')
+        super().__init__('数据集管理','已保存人工真值通过自动校验后可创建实验数据集；自动检查不等于独立人工审核或生产批准。RF-DETR Nano在训练页读取冻结版本并生成独立COCO副本，不改变已冻结划分；LIMITED仍为实验数据。')
         self.all_rows=[];self.candidate_rows=[];self.version_rows=[];self.omitted={};self.root=None;self.updating=False
         self.filters_widget=QWidget();self.filters_widget.setObjectName('dataset_filters');self.filters=QGridLayout(self.filters_widget);self.filters.setContentsMargins(0,0,0,0);self.filters.setVerticalSpacing(4);self.filters.setHorizontalSpacing(12);self.filter_cells=[];self.layout.addWidget(self.filters_widget)
         self.camera=QComboBox();self.fault=QComboBox();self.tag=QComboBox();self.source=QComboBox();self.completion=QComboBox();self.exclusion=QComboBox()

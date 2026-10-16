@@ -1,0 +1,2 @@
+# Preserve original publisher HTML bytes, including CRLF and source whitespace.
+*.html -text -diff

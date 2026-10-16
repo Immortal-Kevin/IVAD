@@ -11,7 +11,7 @@ from ivad_app.datasets.exporters import export_snapshot
 from ivad_app.compute.model_adapters import ADAPTERS,adapter
 from ivad_app.annotations.geometry import validate_geometry
 
-MODELS=ADAPTERS
+MODELS={name:value for name,value in ADAPTERS.items() if name in {'yolo26n','yolo11n'}}
 DEFAULTS={'epochs':20,'imgsz':640,'batch':4,'lr0':0.01,'optimizer':'SGD','weight_decay':0.0005,'augment':True,'patience':10,'seed':123,'amp':False}
 
 def validate_parameters(values):
@@ -29,6 +29,7 @@ class TrainingService:
     def __init__(self,store,datasets,models,devices,logs,root,settings):self.store,self.datasets,self.models,self.devices,self.logs,self.root,self.settings=store,datasets,models,devices,logs,Path(root),settings
     def configuration_preflight(self,payload):
         """Validate a proposed job without creating a run or launching a worker."""
+        if payload.get('model')=='rfdetr-nano':raise AppError('TRAIN_MODEL','RF-DETR必须使用独立Adapter，禁止通过旧YOLO服务执行。')
         root=payload['root'];name=payload['model'];adapter(name,payload.get('operation','train'))
         parameters=validate_parameters(payload.get('parameters',{}));device=self.devices.require_gpu(payload['device_id'])
         if not device.id.startswith('nvidia:'):raise AppError('TRAIN_BACKEND','仅支持已检查的NVIDIA CUDA后端。')

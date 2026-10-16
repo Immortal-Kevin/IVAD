@@ -73,6 +73,7 @@ def test_gui_save_failure_no_check(qtbot,services,truth,monkeypatch):
 def test_training_controls_preflight_guards_and_layout(qtbot,services,media_project,monkeypatch):
     p,vid=freeze_valid(services,media_project);w=make_window(qtbot,services);w.update_project_summary();page=w.pages['training'];w.show_page('training')
     try:
+        page.model.setCurrentText('yolo26n')
         qtbot.waitUntil(lambda:page.dataset.findData(vid)>=0 and not page.busy,timeout=10000);page.timer.stop();page.gpu.addItem('NVIDIA TEST DEVICE (not hardware evidence)','nvidia:fixture');page.gpu.setCurrentIndex(page.gpu.findData('nvidia:fixture'))
         assert all(not x.isEnabled() and x.toolTip() for x in page.inputs.values())
         page.mode.setCurrentIndex(1);assert all(x.isEnabled() for x in page.inputs.values());page.inputs['optimizer'].setCurrentText('AdamW');page.inputs['amp'].setChecked(True)

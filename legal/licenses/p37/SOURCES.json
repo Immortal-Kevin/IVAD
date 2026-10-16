@@ -1,0 +1,38 @@
+[
+  {
+    "file": "LGPL-3.0-only.txt",
+    "url": "https://raw.githubusercontent.com/qt/qtbase/v6.8.3/LICENSES/LGPL-3.0-only.txt",
+    "sha256": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+    "status": "DOWNLOADED"
+  },
+  {
+    "file": "GPL-3.0-only.txt",
+    "url": "https://raw.githubusercontent.com/qt/qtbase/v6.8.3/LICENSES/GPL-3.0-only.txt",
+    "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+    "status": "DOWNLOADED"
+  },
+  {
+    "file": "QtSvg-LGPL-3.0-only.txt",
+    "url": "https://raw.githubusercontent.com/qt/qtsvg/v6.8.3/LICENSES/LGPL-3.0-only.txt",
+    "sha256": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+    "status": "DOWNLOADED"
+  },
+  {
+    "file": "NVIDIA-CUDA-12.8.1-EULA.html",
+    "url": "https://docs.nvidia.com/cuda/archive/12.8.1/eula/index.html",
+    "sha256": "6722d4c310a2ec9ad869ede3371a648fe2cfc2baaf8e1ece2c35e1dccc05752c",
+    "status": "DOWNLOADED"
+  },
+  {
+    "file": "NVIDIA-cuDNN-9.10.2-EULA.html",
+    "url": "https://docs.nvidia.com/deeplearning/cudnn/backend/v9.10.2/reference/eula.html",
+    "sha256": "f3763a5ae20aa135e6f0186ac64c22f61c049e5ef5b81122ea06dd4b9ce58707",
+    "status": "DOWNLOADED"
+  },
+  {
+    "file": "FFmpeg-legal.html",
+    "url": "https://ffmpeg.org/legal.html",
+    "sha256": "cd51dc25f9e3200b1e3953aee036f499ed51f01f7ba30563873186cb3f870eda",
+    "status": "DOWNLOADED"
+  }
+]

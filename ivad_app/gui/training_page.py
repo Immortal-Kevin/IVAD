@@ -4,7 +4,8 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QFormLayout,QComboBox,QSpinBox,QDoubleSpinBox,QCheckBox,QLabel,QScrollArea,QGroupBox,QMessageBox,QFileDialog,QPlainTextEdit,QInputDialog
 from ivad_app.gui.pages import button,table
 from ivad_app.gui.training_controls import TrainingControls
-from ivad_app.services.training_service import DEFAULTS,validate_parameters
+from ivad_app.compute.legacy_training_parameters import DEFAULTS,validate_parameters
+from ivad_app.compute.rfdetr_contract import MODEL as RF_MODEL,DEFAULTS as RF_DEFAULTS
 
 class TrainingPage(TrainingControls,QWidget):
     def __init__(self,window):
@@ -16,7 +17,7 @@ class TrainingPage(TrainingControls,QWidget):
         self.mode=QComboBox();self.mode.addItems(['简易训练','高级训练']);form.addRow('训练模式',self.mode)
         self.dataset_group=QComboBox();self.dataset_group.setObjectName('training_dataset_group');form.addRow('所属数据集',self.dataset_group);self.frozen_versions=[];self.dataset_group.currentIndexChanged.connect(self.filter_dataset_versions)
         self.dataset=QComboBox();self.dataset.setObjectName('training_dataset');form.addRow('冻结数据集版本',self.dataset)
-        self.model=QComboBox();self.model.addItems(['yolo26n','yolo11n']);form.addRow('基础模型',self.model)
+        self.model=QComboBox();self.model.setObjectName('training_model');self.model.addItems([RF_MODEL,'yolo26n','yolo11n']);form.addRow('基础模型',self.model)
         self.gpu=QComboBox();self.gpu.setObjectName('training_gpu');form.addRow('NVIDIA GPU',self.gpu)
         self.initial=QComboBox();form.addRow('初始权重',self.initial)
         self.resume=QComboBox();self.resume.setToolTip('同数据版本与架构，使用原训练参数和已完成epoch的优化器状态；写入新的训练目录，不覆盖原实验。');form.addRow('条件恢复（沿用原参数）',self.resume)
@@ -29,6 +30,18 @@ class TrainingPage(TrainingControls,QWidget):
         for key,label in [('augment','启用数据增强'),('amp','AMP混合精度（关闭为FP32）')]:
             widget=QCheckBox(label);widget.setChecked(DEFAULTS[key]);params.addRow(widget);self.inputs[key]=widget
         self.advanced.setAttribute(Qt.WidgetAttribute.WA_AlwaysShowToolTips,True)
+        self.rf_advanced=QGroupBox('RF-DETR Nano · AdamW / 独立CUDA环境');rf_form=QFormLayout(self.rf_advanced);self.config_layout.addWidget(self.rf_advanced,6);self.rf_inputs={}
+        labels={'epochs':'训练轮数','resolution':'Nano输入分辨率','batch_size':'每批图片数','grad_accum_steps':'梯度累积步数','seed':'随机种子','lr':'学习率','lr_encoder':'骨干学习率','weight_decay':'权重衰减','amp_dtype':'计算精度','use_ema':'保留EMA权重'}
+        tips={'epochs':'完整遍历训练集的次数。短验证默认1轮，不重复P3.6完整实验。','resolution':'Nano方形输入尺寸，32倍数；不等同YOLO letterbox。','batch_size':'一次前向的图片数量；显存不足时减小，不会回落CPU。','grad_accum_steps':'累积多次梯度后更新，用较小显存模拟较大有效批次。','seed':'在构造模型之前设置随机种子；不承诺跨驱动逐位一致。','lr':'RF-DETR AdamW学习率。','lr_encoder':'骨干网络独立学习率；不是YOLO的lr0。','weight_decay':'AdamW权重衰减，用于正则化。','amp_dtype':'fp32关闭AMP；bf16/fp16只用于支持的CUDA设备。最终登记评估统一FP32。','use_ema':'训练保留EMA模型。登记时明确最佳权重来源，不混用最后一轮指标。'}
+        for key,value in RF_DEFAULTS.items():
+            if type(value) is bool:w=QCheckBox();w.setChecked(value)
+            elif type(value) is int:
+                w=QSpinBox();w.setRange(0 if key=='seed' else 1,2147483647 if key=='seed' else 1024 if key=='resolution' else 10000 if key=='epochs' else 32);w.setValue(value)
+            elif type(value) is float:w=QDoubleSpinBox();w.setDecimals(6);w.setRange(0,1);w.setValue(value)
+            else:w=QComboBox();w.addItems(['fp32','bf16','fp16']);w.setCurrentText(value)
+            w.setObjectName('rf_'+key);w.setAttribute(Qt.WidgetAttribute.WA_AlwaysShowToolTips,True);w.setToolTip(tips[key]);self.rf_inputs[key]=w;rf_form.addRow(labels[key],w)
+            (w.toggled if isinstance(w,QCheckBox) else w.currentIndexChanged if isinstance(w,QComboBox) else w.valueChanged).connect(self.configuration_changed)
+        self.model.currentIndexChanged.connect(self.refresh)
         bar=QGridLayout();self.actions=bar;self.action_buttons=[];v.addLayout(bar)
         for i,(title,fn,name) in enumerate([('刷新数据与GPU',self.refresh,'training_refresh'),('训练前检查',self.preflight,'training_preflight'),('启动GPU训练',self.start,'training_start'),('验证所选初始模型',lambda:self.start('validate'),'training_validate'),('取消所选训练',self.cancel,'training_cancel')]):
             b=button(title,fn,name=name);self.action_buttons.append(b);bar.addWidget(b,0,i)
@@ -45,20 +58,24 @@ class TrainingPage(TrainingControls,QWidget):
     def refresh(self):
         if not self.root or self.busy or self.s.lite:return
         self.busy=True;root=self.root
-        def collect():return self.s.datasets.training_versions(root),self.s.training.runs(root),self.s.models.versions(root),self.s.devices.snapshot()
+        model=self.model.currentText()
+        def collect():return self.s.datasets.training_versions(root),self.s.training.runs(root),self.s.models.versions(root),self.s.training.rf_devices() if model==RF_MODEL else self.s.devices.snapshot()
         def done(data,error):
             self.busy=False
-            if root!=self.root:return
+            if root!=self.root or model!=self.model.currentText():self.refresh();return
             if error:self.info.setText(error);return
             versions,runs,models,gpus=data
+            self.rf_device_info={d.id:d for d in gpus} if model==RF_MODEL else {}
             def fill(combo,rows):
+                if [(combo.itemText(i),combo.itemData(i)) for i in range(combo.count())]==rows:return
                 old=combo.currentData();combo.blockSignals(True);combo.clear()
                 for title,value in rows:combo.addItem(title,value)
                 idx=combo.findData(old)
                 if idx>=0:combo.setCurrentIndex(idx)
                 combo.blockSignals(False)
             self.frozen_versions=versions;seen={r['dataset_id']:r['name'] for r in versions};fill(self.dataset_group,[(name+' · '+did[:8],did) for did,name in seen.items()]);self.filter_dataset_versions();fill(self.gpu,[(d.name+' · '+d.status,d.id) for d in gpus if d.id.startswith('nvidia:') and d.backend_available])
-            fill(self.initial,[('本地P0官方基础权重',None)]+[(r.get('model','?')+' · '+r['id'][:8],r['id']) for r in models if r['path'].endswith('.pt')]);fill(self.resume,[('新训练（不恢复）',None)]+[(r['model']+' · '+r['id'][:8],r['id']) for r in runs if r['state'] in {'FAILED','CANCELLED'}])
+            eligible=[r for r in models if r.get('model')==model and (r.get('backend')=='rfdetr' and r['path'].endswith('.pth') if model==RF_MODEL else r['path'].endswith('.pt'))]
+            fill(self.initial,[('官方Nano COCO预训练权重（本地哈希核验）' if model==RF_MODEL else '本地P0官方基础权重',None)]+[(r.get('model','?')+' · '+r['id'][:8],r['id']) for r in eligible]);fill(self.resume,[('新训练（不恢复）',None)]+[(r['model']+' · '+r['id'][:8],r['id']) for r in runs if model!=RF_MODEL and r['model']==model and r['state'] in {'FAILED','CANCELLED'}])
             self.rows=runs;self.runs.blockSignals(True);self.runs.setRowCount(len(runs))
             from PySide6.QtWidgets import QTableWidgetItem
             for i,r in enumerate(runs):
@@ -70,9 +87,14 @@ class TrainingPage(TrainingControls,QWidget):
             except Exception:valid=False
             if not valid:self.checked_configuration=None
             self.action_buttons[2].setEnabled(valid and not self.submitting);self.update_mode()
+            if self.info.text().startswith('请选择冻结数据集') and self.dataset.currentData() and self.gpu.currentData():self.info.setText('冻结数据与CUDA设备已就绪，请执行训练前检查。')
+            current=next((r for r in runs if r.get('job_id')==self.job_id),None)
+            if current and current['state'] in {'SUCCEEDED','FAILED','CANCELLED'} and self.info.text().startswith(('GPU任务已排队','已请求取消')):self.info.setText('当前训练任务：'+current['state']+'；请选中记录查看真实指标和日志。')
         self.runner.run(collect,done)
     def filter_dataset_versions(self,*_):
         if not hasattr(self,'dataset'):return
+        rows=[(r['name']+' v'+str(r['number'])+' · '+r['id'][:8],r['id']) for r in self.frozen_versions if r['dataset_id']==self.dataset_group.currentData()]
+        if [(self.dataset.itemText(i),self.dataset.itemData(i)) for i in range(self.dataset.count())]==rows:return
         old=self.dataset.currentData();self.dataset.blockSignals(True);self.dataset.clear()
         for r in self.frozen_versions:
             if r['dataset_id']==self.dataset_group.currentData():self.dataset.addItem(r['name']+' v'+str(r['number'])+' · '+r['id'][:8],r['id'])
@@ -84,7 +106,14 @@ class TrainingPage(TrainingControls,QWidget):
         if not 0<=i<len(self.rows):return
         r=self.rows[i];self.selected_run=r['id'];progress=r.get('progress',{});result=r.get('result',{})
         import json
-        self.metrics.setPlainText(json.dumps(dict(state=r['state'],actual_parameters=r.get('parameters'),progress=progress,metrics=result.get('metrics'),seconds=result.get('seconds'),gpu=result.get('environment'),error=r.get('error'),log=r['path']+'/worker-console.log'),ensure_ascii=False,indent=2))
+        self.metrics.setPlainText(json.dumps(dict(state=r['state'],actual_parameters=r.get('parameters'),progress=progress,metrics=result.get('metrics'),seconds=result.get('seconds'),gpu=result.get('environment') or {k:result.get(k) for k in ['gpu','torch','cuda','peak_allocated_bytes']},error=r.get('error'),log=r['path']+'/worker-console.log'),ensure_ascii=False,indent=2))
+        if r.get('backend')=='rfdetr':
+            from ivad_app.storage.project_store import safe_path
+            try:
+                logfile=safe_path(Path(self.root),r['path']+'/worker-console.log')
+                with logfile.open('rb') as stream:stream.seek(max(0,logfile.stat().st_size-6000));tail=stream.read().decode('utf8',errors='replace')
+                self.metrics.appendPlainText('\n真实Worker日志（末6000字节）：\n'+tail)
+            except OSError:pass
         image=Path(self.root)/r['path']/('validation' if r.get('operation')=='validate' else 'run')/self.plot_choice.currentData()
         if image.exists():self.curve.setPixmap(QPixmap(str(image)).scaledToWidth(700,Qt.TransformationMode.SmoothTransformation))
         else:self.curve.setText('该图尚未生成；请查看训练日志。')

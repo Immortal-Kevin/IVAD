@@ -2,7 +2,8 @@
 import json
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QBoxLayout,QCheckBox,QComboBox,QMessageBox
-from ivad_app.services.training_service import DEFAULTS,validate_parameters
+from ivad_app.compute.legacy_training_parameters import DEFAULTS,validate_parameters
+from ivad_app.compute.rfdetr_contract import MODEL as RF_MODEL,DEFAULTS as RF_DEFAULTS,parameters as rf_parameters
 
 HELP={
  'epochs':'完整遍历训练集的次数。',
@@ -26,18 +27,37 @@ class TrainingControls:
             signal.connect(self.configuration_changed)
         for w in [self.mode,self.dataset_group,self.dataset,self.model,self.gpu,self.initial,self.resume]:w.currentIndexChanged.connect(self.configuration_changed)
         self.mode.currentIndexChanged.connect(self.update_mode)
+        self.model.currentIndexChanged.connect(self.update_mode)
         self.gpu.currentIndexChanged.connect(self.update_mode)
         self.resume.currentIndexChanged.connect(self.update_mode)
         self.initial.setToolTip('选已有模型作为微调起点：创建新训练和独立模型版本，不覆盖旧实验；与恢复中断训练不同。')
         self.resume.setToolTip('恢复同数据版本、同架构的失败/取消训练检查点，沿用原参数和优化器进度；保留原任务，写入独立续训记录及目录。已完成模型应选择初始权重微调。')
         self.dataset.setToolTip('只能选择冻结版本；新草稿或新增样本不会改变此版本。')
-        self.model.setToolTip('选择与初始权重兼容的YOLO26n或YOLO11n适配器。')
+        self.model.setToolTip('RF-DETR Nano采用独立环境和专属参数。旧YOLO选项仅保留历史路径，其授权另行核验。')
         self.gpu.setToolTip('仅显示已通过设备后端检查的NVIDIA GPU。资源使用现有GPU队列。')
         tips=['刷新可用数据集、模型及GPU设备，不会启动训练。','验证当前数据集版本、模型权重、训练参数、GPU后端和文件完整性。','使用当前冻结数据集版本和训练配置创建GPU训练任务；必须先通过训练前检查。','检查所选初始权重的模型加载及验证能力，不等于验证新训练模型的最终效果。','请求取消当前选定的训练任务。已完成任务不会被删除，历史记录予以保留。']
         for b,tip in zip(self.action_buttons,tips):b.setToolTip(tip);b.setAttribute(Qt.WidgetAttribute.WA_AlwaysShowToolTips,True)
         self.update_mode();self.reflow_controls()
 
     def update_mode(self,*_):
+        rf=self.model.currentText()==RF_MODEL
+        self.advanced.setVisible(not rf);self.rf_advanced.setVisible(rf);self.resume.setEnabled(not rf)
+        if rf:
+            self.initial.setEnabled(True)
+            advanced=self.mode.currentIndex()==1
+            for key,w in self.rf_inputs.items():
+                w.setEnabled(advanced)
+                if not advanced:
+                    w.blockSignals(True);value=RF_DEFAULTS[key]
+                    if isinstance(w,QCheckBox):w.setChecked(value)
+                    elif isinstance(w,QComboBox):w.setCurrentText(value)
+                    else:w.setValue(value)
+                    w.blockSignals(False)
+            self.resume.setToolTip('RF本轮保留恢复CKPT但未验收优化器恢复；不能将CKPT冒充PTH推理权重。')
+            device=getattr(self,'rf_device_info',{}).get(self.gpu.currentData())
+            amp=self.rf_inputs['amp_dtype'];amp.setEnabled(advanced and bool(device and device.backend_available))
+            amp.model().item(amp.findText('bf16')).setEnabled(bool(device and device.details.get('bf16_supported')))
+            return
         advanced=self.mode.currentIndex()==1;resuming=bool(self.resume.currentData())
         previous=next((r for r in self.rows if r['id']==self.resume.currentData()),None)
         self.initial.setEnabled(not resuming)
@@ -58,6 +78,9 @@ class TrainingControls:
 
     def configuration(self,operation='train'):
         if not self.root or not self.dataset.currentData() or not self.gpu.currentData():raise ValueError('请选择冻结数据集版本及可用NVIDIA GPU。')
+        if self.model.currentText()==RF_MODEL:
+            values={k:w.isChecked() if isinstance(w,QCheckBox) else w.currentText() if isinstance(w,QComboBox) else w.value() for k,w in self.rf_inputs.items()}
+            return dict(root=self.root,version_id=self.dataset.currentData(),device_id=self.gpu.currentData(),model=RF_MODEL,parameters=rf_parameters(values),initial_model_id=self.initial.currentData(),resume_run_id=None,operation=operation)
         values={k:w.isChecked() if isinstance(w,QCheckBox) else w.currentText() if isinstance(w,QComboBox) else w.value() for k,w in self.inputs.items()} if self.mode.currentIndex()==1 else {}
         if operation=='train' and self.resume.currentData():
             previous=next((r for r in self.rows if r['id']==self.resume.currentData()),None)
@@ -108,6 +131,13 @@ class TrainingControls:
 
     def cancel(self):
         row=next((r for r in self.rows if r['id']==self.selected_run),None)
+        if (not row or row['state'] not in {'PREPARING','RUNNING'}) and self.job_id:
+            job=self.s.jobs.get(self.job_id)
+            if job['state'] in {'QUEUED','RUNNING'}:
+                jid=self.job_id
+                if QMessageBox.question(self,'确认取消训练','取消当前已提交任务？历史与已有检查点保留。',QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No,QMessageBox.StandardButton.No)==QMessageBox.StandardButton.Yes:
+                    self.runner.run(lambda:self.s.jobs.cancel(jid),lambda _,e:self.info.setText(e or '已请求取消。'))
+                return
         if not row or row['state'] not in {'PREPARING','RUNNING'}:self.info.setText('请选择正在执行的训练；完成记录不会删除。');return
         jid=row.get('job_id')
         if jid and QMessageBox.question(self,'确认取消训练','取消TrainingRun '+row['id']+'？历史及已有检查点保留。',QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No,QMessageBox.StandardButton.No)==QMessageBox.StandardButton.Yes:

@@ -17,6 +17,13 @@ class YoloDetectionAdapter:
     output_contract: str='raw_xywh_class_scores_non_end2end_then_nms'
 
 ADAPTERS={name:YoloDetectionAdapter(name) for name in ['yolo26n','yolo11n']}
+@dataclass(frozen=True)
+class RFDETRDetectionAdapter:
+    name: str='rfdetr-nano'
+    task: str='detect'
+    capabilities: frozenset[str]=frozenset({'train','validate'})
+    output_contract: str='rfdetr-query-detection-coco-explicit-class-map-v1'
+ADAPTERS['rfdetr-nano']=RFDETRDetectionAdapter()
 def adapter(name,capability):
     value=ADAPTERS.get(name)
     if not value or capability not in value.capabilities:raise AppError('MODEL_CAPABILITY','该模型适配器尚不支持所选能力。')
