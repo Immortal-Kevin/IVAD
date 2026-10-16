@@ -52,11 +52,11 @@ class MainWindow(QMainWindow):
         header.addWidget(self.project_label)
         self.workspace = QComboBox(); self.workspace.setObjectName('workspace_mode')
         self.workspace.addItems([tr('开发模式'), tr('生产监控模式')]); self.workspace.currentIndexChanged.connect(self.switch_workspace)
-        header.addWidget(self.workspace); layout.addLayout(header)
+        header.addWidget(self.workspace); layout.addLayout(header);self.header_widgets=[header.itemAt(i).widget() for i in range(header.count()) if header.itemAt(i).widget()]
         self.notice = QLabel('P3源码模式 · GPU检查尚未执行；P4–P6未实现，打包冻结。')
         self.notice.setObjectName('notice'); self.notice.setWordWrap(True); layout.addWidget(self.notice)
         splitter = QSplitter(); layout.addWidget(splitter, 1)
-        sidebar = QFrame(); sidebar.setObjectName('sidebar'); sidebar.setMinimumWidth(180); sidebar.setMaximumWidth(260)
+        sidebar = QFrame();self.sidebar=sidebar; sidebar.setObjectName('sidebar'); sidebar.setMinimumWidth(180); sidebar.setMaximumWidth(260)
         side = QVBoxLayout(sidebar); side.addWidget(QLabel('工作空间'))
         self.nav = QListWidget(); self.nav.setMinimumWidth(170); self.nav.setObjectName('navigation'); self.nav.currentRowChanged.connect(self.navigate); side.addWidget(self.nav, 1)
         for title, key in [('任务中心', 'jobs'), ('设备与后端', 'devices'), ('诊断日志', 'logs')]:

@@ -36,3 +36,6 @@ P2复用P1 GUI/数据库/日志/队列；普通解码/人工标注CPU允许，AI
 
 
 2026-10-16 P3.5 Three-Tab Hotfix：三页、真实状态、返回配置、自动跳转/完整身份加载及4帧CUDA通过；59不同用例PASS，2个combo popup用例XFAIL，完整主题验收PARTIAL，Windows系统浅色切换NOT TESTED。原项目全表/1120工件/13视频与缓存文件hash不变；只改GUI/事件/主题/测试，无引擎或schema修改。PACKAGING_FREEZE=TRUE，P4–P10未授权，停止待审。详见reports/P3_5_THREE_TAB_GUI_HOTFIX.md。
+
+
+2026-10-16 本周最终收尾：仅P3.5播放器与P0–P3.5管理层Word报告。标准1096×617、专注1440×810（1920×1080/100%），125/150%及11不同针对性GUI用例通过；12页/11图号（10不同截图）Word已真实渲染复核。原项目3训练/3模型全表与1578工件0变化，251帧登记hash一致。QMenu人工确认正常，不改主题，历史XFAIL保留。PACKAGING_FREEZE=TRUE，无重训/打包/P4；本周工作结束，停止等待下一次明确授权。报告P3_5_FINAL_PLAYER_HOTFIX.md、IVAD_REPORT_SOURCE_INDEX.md。
