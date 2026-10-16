@@ -1,8 +1,9 @@
 """Integrated P3.5 offline demo, explicitly preprocessing playback, never alarm events."""
 import json
 from pathlib import Path
-from PySide6.QtCore import QTimer,Qt
+from PySide6.QtCore import QTimer,Qt,QEvent
 from PySide6.QtWidgets import QWidget,QFileDialog
+from PySide6.QtGui import QShortcut,QKeySequence
 from ivad_app.gui.offline_demo_layout import OfflineDemoLayout
 from ivad_app.gui.offline_demo_interaction import OfflineDemoInteraction
 from ivad_app.video.reader import FileVideoSource
@@ -12,11 +13,12 @@ import math
 class OfflineDemoPage(OfflineDemoInteraction,OfflineDemoLayout,QWidget):
     def __init__(self,window):
         super().__init__();self.setObjectName('p35Offline');self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground,True);self.setStyleSheet('QWidget#p35Offline, QWidget#p35OfflineBody {background:#f2f5fa; color:#18314f;}');self.w=window;self.s=window.s;self.root=None;self.busy=False;self.job=None;self.run_path=None;self.manifest=None;self.media_rows=[];self.model_rows=[]
-        self.session_generation=0;self.load_generation=0;self.task_context=None;self.last_job_id=None;self.camera_rows=[];self.pending_media=None;self.demo_camera_consent=None;self.preview_generation=0;self.source_ready=False;self.build_layout()
+        self.session_generation=0;self.load_generation=0;self.task_context=None;self.last_job_id=None;self.focused=False;self.focus_restore=[];self.camera_rows=[];self.pending_media=None;self.demo_camera_consent=None;self.preview_generation=0;self.source_ready=False;self.build_layout();self.player.picture.installEventFilter(self);self.preview.picture.installEventFilter(self);self.tabs.currentChanged.connect(self.tab_visibility);self.escape=QShortcut(QKeySequence("Escape"),self);self.escape.activated.connect(lambda:self.set_focus_playback(False));self.escape.setEnabled(False)
         self.preview_timer=QTimer(self);self.preview_timer.setSingleShot(True);self.preview_timer.timeout.connect(lambda:self.preview.seek(self.pending_seek) if self.preview.loaded else None)
         self.timer=QTimer(self);self.timer.setInterval(400);self.timer.timeout.connect(self.watch);self.timer.start();self.setEnabled(False)
     def set_root(self,root):
         if root!=self.root:
+            self.set_focus_playback(False)
             self.session_generation+=1;self.load_generation+=1;self.busy=False;self.task_context=None;self.last_job_id=None;self.status_bar.setText("尚未开始识别");self.tabs.setCurrentIndex(0);self.root=root;self.job=None;self.run_path=None;self.manifest=None;self.player.stop();self.preview.stop();self.demo_camera_consent=None;self.results.setRowCount(0);self.refresh()
         self.setEnabled(bool(root) and not self.s.lite)
     def refresh(self):
@@ -118,6 +120,27 @@ class OfflineDemoPage(OfflineDemoInteraction,OfflineDemoLayout,QWidget):
             self.update_status("处理完成，可以播放" if completed else "已加载缓存",manifest=m);self.tabs.setCurrentIndex(1)
             self.set_message(f"预处理回放：{len(m['frames'])}帧；缓存处理{m['end_to_end_fps']:.2f} FPS；不是实时报警。",playback=True)
         self.w.runner.run(collect,done)
+    def eventFilter(self,watched,event):
+        if event.type()==QEvent.Type.Resize:
+            for player in [self.player,self.preview]:
+                if watched is player.picture:QTimer.singleShot(0,player.display)
+        return super().eventFilter(watched,event)
+    def tab_visibility(self,index):
+        if index!=1:self.set_focus_playback(False)
+        self.title_label.setVisible(index!=1);self.warning.setVisible(index!=1)
+    def set_focus_playback(self,enabled):
+        if bool(enabled)==self.focused:return
+        self.focused=bool(enabled);self.escape.setEnabled(self.focused)
+        if enabled:
+            widgets=[self.w.sidebar,self.w.context_panel,self.w.notice,self.w.statusBar(),*self.w.header_widgets,self.tabs.tabBar(),self.experiment_status,self.info,self.timing]
+            self.focus_restore=[(widget,not widget.isHidden()) for widget in widgets]
+            for widget,_ in self.focus_restore:widget.hide()
+            self.focus_button.setText('退出专注播放')
+        else:
+            for widget,visible in self.focus_restore:widget.setVisible(visible)
+            self.focus_restore=[];self.focus_button.setText('专注播放')
+        QTimer.singleShot(0,self.player.display)
+
     def set_message(self,text,playback=False):
         if playback or self.job or not self.manifest:self.info.setText(text)
         self.config_info.setText(text);self.task_details.setText(text)
