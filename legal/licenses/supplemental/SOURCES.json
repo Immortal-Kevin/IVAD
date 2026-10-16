@@ -1,0 +1,60 @@
+[
+  {
+    "name": "flatbuffers",
+    "version": "25.12.19",
+    "error": "ValueError('No exact-version source archive on PyPI')"
+  },
+  {
+    "name": "onnxsim",
+    "version": "0.7.0",
+    "url": "https://files.pythonhosted.org/packages/29/d4/0def0ec1f143963137419fc2cdfc8521724216861abd8ca2cc42f5d257c2/onnxsim-0.7.0.tar.gz",
+    "archive_sha256": "9ee396257785ce07c5a468ba6cc0a8aba4eee0c6ed73f945deb7dc14b5c892c0",
+    "notice_files": [
+      {
+        "archive_path": "onnxsim-0.7.0/LICENSE",
+        "path": "legal\\licenses\\supplemental\\onnxsim\\LICENSE",
+        "sha256": "70774fc513552b4ab9b269cd389baf875c35136489ac7c44f4f6f88e1e601ec4"
+      },
+      {
+        "archive_path": "onnxsim-0.7.0/third_party/onnx-optimizer/LICENSE",
+        "path": "legal\\licenses\\supplemental\\onnxsim\\cfc7749b-LICENSE",
+        "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      },
+      {
+        "archive_path": "onnxsim-0.7.0/third_party/onnx-optimizer/third_party/onnx/LICENSE",
+        "path": "legal\\licenses\\supplemental\\onnxsim\\cfc7749b-LICENSE",
+        "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      },
+      {
+        "archive_path": "onnxsim-0.7.0/third_party/onnx-optimizer/third_party/onnx/NOTICE",
+        "path": "legal\\licenses\\supplemental\\onnxsim\\NOTICE",
+        "sha256": "4d680fb1f48f07f134c9f7a8d715303b8f5160b5757bc9eec4cac783703ea592"
+      }
+    ]
+  },
+  {
+    "name": "polygraphy",
+    "version": "0.53.6",
+    "error": "ValueError('No exact-version source archive on PyPI')"
+  },
+  {
+    "name": "pycocotools",
+    "version": "2.0.11",
+    "url": "https://files.pythonhosted.org/packages/a2/df/32354b5dda963ffdfc8f75c9acf8828ef7890723a4ed57bb3ff2dc1d6f7e/pycocotools-2.0.11.tar.gz",
+    "archive_sha256": "34254d76da85576fcaf5c1f3aa9aae16b8cb15418334ba4283b800796bd1993d",
+    "notice_files": []
+  },
+  {
+    "name": "tokenizers",
+    "version": "0.23.3",
+    "url": "https://files.pythonhosted.org/packages/e0/7c/2cabb2174e772636683008f2c5621949b645da7d303c596589e84516a184/tokenizers-0.23.3.tar.gz",
+    "archive_sha256": "cded33237c77caeef62944d32aa9a7ef42bdce2b3497e18d137e072a8c4be438",
+    "notice_files": [
+      {
+        "archive_path": "tokenizers-0.23.3/tokenizers/LICENSE",
+        "path": "legal\\licenses\\supplemental\\tokenizers\\LICENSE",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+      }
+    ]
+  }
+]

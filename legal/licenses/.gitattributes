@@ -1,0 +1,3 @@
+# Preserve upstream license/NOTICE bytes, including their original line endings.
+* -text
+*.json text eol=lf
