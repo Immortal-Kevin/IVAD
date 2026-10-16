@@ -3,15 +3,16 @@ from PySide6.QtCore import QTimer,Qt
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QGridLayout,QFormLayout,QComboBox,QSpinBox,QDoubleSpinBox,QCheckBox,QLabel,QScrollArea,QGroupBox,QMessageBox,QFileDialog,QPlainTextEdit,QInputDialog
 from ivad_app.gui.pages import button,table
+from ivad_app.gui.training_controls import TrainingControls
 from ivad_app.services.training_service import DEFAULTS,validate_parameters
 
-class TrainingPage(QWidget):
+class TrainingPage(TrainingControls,QWidget):
     def __init__(self,window):
-        super().__init__();self.setObjectName('p3Training');self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground,True);self.w=window;self.s=window.s;self.runner=window.runner;self.root=None;self.busy=False;self.job_id=None;self.rows=[];self.selected_run=None
+        super().__init__();self.setObjectName('p3Training');self.setAttribute(Qt.WidgetAttribute.WA_AlwaysShowToolTips,True);self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground,True);self.w=window;self.s=window.s;self.runner=window.runner;self.root=None;self.busy=False;self.job_id=None;self.rows=[];self.selected_run=None
         outer=QVBoxLayout(self);scroll=QScrollArea();scroll.setObjectName('p3TrainingScroll');scroll.setWidgetResizable(True);outer.addWidget(scroll);body=QWidget();body.setObjectName('p3TrainingBody');body.setAttribute(Qt.WidgetAttribute.WA_StyledBackground,True);scroll.setWidget(body);v=QVBoxLayout(body)
         title=QLabel('P3 · GPU模型训练与验证');title.setObjectName('title');v.addWidget(title)
         note=QLabel('仅使用有效冻结的目标检测版本（历史审核或显式实验准入）。正常无框是负样本；异常无框/未知/剔除不可训练。测试指标不代表工业堵煤准确率。');note.setWordWrap(True);v.addWidget(note)
-        form=QFormLayout();v.addLayout(form)
+        self.config_layout=QHBoxLayout();v.addLayout(self.config_layout);self.basic=QGroupBox("训练基础配置");form=QFormLayout(self.basic);self.config_layout.addWidget(self.basic,4)
         self.mode=QComboBox();self.mode.addItems(['简易训练','高级训练']);form.addRow('训练模式',self.mode)
         self.dataset_group=QComboBox();self.dataset_group.setObjectName('training_dataset_group');form.addRow('所属数据集',self.dataset_group);self.frozen_versions=[];self.dataset_group.currentIndexChanged.connect(self.filter_dataset_versions)
         self.dataset=QComboBox();self.dataset.setObjectName('training_dataset');form.addRow('冻结数据集版本',self.dataset)
@@ -19,7 +20,7 @@ class TrainingPage(QWidget):
         self.gpu=QComboBox();self.gpu.setObjectName('training_gpu');form.addRow('NVIDIA GPU',self.gpu)
         self.initial=QComboBox();form.addRow('初始权重',self.initial)
         self.resume=QComboBox();self.resume.setToolTip('同数据版本与架构，使用原训练参数和已完成epoch的优化器状态；写入新的训练目录，不覆盖原实验。');form.addRow('条件恢复（沿用原参数）',self.resume)
-        self.advanced=QGroupBox('高级参数（简易模式采用下列推荐默认值）');params=QFormLayout(self.advanced);v.addWidget(self.advanced);self.inputs={}
+        self.advanced=QGroupBox('高级参数（简易模式采用下列推荐默认值）');params=QFormLayout(self.advanced);self.config_layout.addWidget(self.advanced,6);self.inputs={}
         for key,label,lo,hi in [('epochs','轮数 Epochs',1,10000),('imgsz','图像尺寸（32倍数）',64,2048),('batch','每批图片数（显存不足时减小）',1,64),('patience','早停等待轮数，0关闭',0,10000),('seed','随机种子',0,2147483647)]:
             widget=QSpinBox();widget.setRange(lo,hi);widget.setValue(DEFAULTS[key]);widget.setObjectName('train_'+key);params.addRow(label,widget);self.inputs[key]=widget
         for key,label,lo,hi in [('lr0','初始学习率',.000001,1),('weight_decay','权重衰减',0,1)]:
@@ -27,17 +28,19 @@ class TrainingPage(QWidget):
         widget=QComboBox();widget.addItems(['SGD','Adam','AdamW','auto']);params.addRow('优化器',widget);self.inputs['optimizer']=widget
         for key,label in [('augment','启用数据增强'),('amp','AMP混合精度（关闭为FP32）')]:
             widget=QCheckBox(label);widget.setChecked(DEFAULTS[key]);params.addRow(widget);self.inputs[key]=widget
-        self.mode.currentIndexChanged.connect(lambda i:self.advanced.setEnabled(i==1));self.advanced.setEnabled(False)
-        bar=QGridLayout();v.addLayout(bar)
-        for i,(title,fn,name) in enumerate([('刷新数据与GPU',self.refresh,'training_refresh'),('训练前检查',self.preflight,'training_preflight'),('启动GPU训练',self.start,'training_start'),('验证所选初始模型',lambda:self.start('validate'),'training_validate'),('取消所选训练',self.cancel,'training_cancel')]):bar.addWidget(button(title,fn,name=name),i//3,i%3)
+        self.advanced.setAttribute(Qt.WidgetAttribute.WA_AlwaysShowToolTips,True)
+        bar=QGridLayout();self.actions=bar;self.action_buttons=[];v.addLayout(bar)
+        for i,(title,fn,name) in enumerate([('刷新数据与GPU',self.refresh,'training_refresh'),('训练前检查',self.preflight,'training_preflight'),('启动GPU训练',self.start,'training_start'),('验证所选初始模型',lambda:self.start('validate'),'training_validate'),('取消所选训练',self.cancel,'training_cancel')]):
+            b=button(title,fn,name=name);self.action_buttons.append(b);bar.addWidget(b,0,i)
         self.info=QLabel('请打开项目，并在设备与后端完成GPU检查。');self.info.setWordWrap(True);v.addWidget(self.info)
         self.runs=table(['训练ID','模型','状态','轮次','指标 / 错误']);self.runs.setMinimumHeight(140);v.addWidget(self.runs);self.runs.itemSelectionChanged.connect(self.show_run)
         self.metrics=QPlainTextEdit();self.metrics.setReadOnly(True);self.metrics.setMaximumHeight(160);v.addWidget(self.metrics)
         self.plot_choice=QComboBox();self.plot_choice.addItem('训练与验证曲线','results.png');self.plot_choice.addItem('混淆矩阵（适用时）','confusion_matrix.png');self.plot_choice.currentIndexChanged.connect(self.show_run);v.addWidget(self.plot_choice)
         self.curve=QLabel('训练结束后显示真实结果曲线（如生成）。');self.curve.setAlignment(Qt.AlignmentFlag.AlignCenter);v.addWidget(self.curve)
+        self.init_controls()
         self.timer=QTimer(self);self.timer.setInterval(1000);self.timer.timeout.connect(self.refresh);self.timer.start()
     def set_root(self,root):
-        if root!=self.root:self.root=root;self.job_id=None;self.selected_run=None;self.rows=[];self.runs.setRowCount(0);self.curve.clear();self.refresh()
+        if root!=self.root:self.checked_configuration=None;self.root=root;self.job_id=None;self.selected_run=None;self.rows=[];self.runs.setRowCount(0);self.curve.clear();self.refresh();self.configuration_changed()
         self.setEnabled(bool(root) and not self.s.lite)
     def refresh(self):
         if not self.root or self.busy or self.s.lite:return
@@ -55,7 +58,7 @@ class TrainingPage(QWidget):
                 if idx>=0:combo.setCurrentIndex(idx)
                 combo.blockSignals(False)
             self.frozen_versions=versions;seen={r['dataset_id']:r['name'] for r in versions};fill(self.dataset_group,[(name+' · '+did[:8],did) for did,name in seen.items()]);self.filter_dataset_versions();fill(self.gpu,[(d.name+' · '+d.status,d.id) for d in gpus if d.id.startswith('nvidia:') and d.backend_available])
-            fill(self.initial,[('本地P0官方基础权重',None)]+[(r.get('model','?')+' · '+r['id'][:8],r['id']) for r in models if r['path'].endswith('.pt')]);fill(self.resume,[('新训练（不恢复）',None)]+[(r['model']+' · '+r['id'][:8],r['id']) for r in runs if r['state'] in {'FAILED','CANCELLED','SUCCEEDED'}])
+            fill(self.initial,[('本地P0官方基础权重',None)]+[(r.get('model','?')+' · '+r['id'][:8],r['id']) for r in models if r['path'].endswith('.pt')]);fill(self.resume,[('新训练（不恢复）',None)]+[(r['model']+' · '+r['id'][:8],r['id']) for r in runs if r['state'] in {'FAILED','CANCELLED'}])
             self.rows=runs;self.runs.blockSignals(True);self.runs.setRowCount(len(runs))
             from PySide6.QtWidgets import QTableWidgetItem
             for i,r in enumerate(runs):
@@ -63,6 +66,10 @@ class TrainingPage(QWidget):
                 if r['id']==self.selected_run:self.runs.selectRow(i)
             self.runs.blockSignals(False)
             if self.selected_run:self.show_run()
+            try:valid=self.checked_configuration==self.fingerprint()
+            except Exception:valid=False
+            if not valid:self.checked_configuration=None
+            self.action_buttons[2].setEnabled(valid and not self.submitting);self.update_mode()
         self.runner.run(collect,done)
     def filter_dataset_versions(self,*_):
         if not hasattr(self,'dataset'):return
@@ -72,36 +79,12 @@ class TrainingPage(QWidget):
         idx=self.dataset.findData(old)
         if idx>=0:self.dataset.setCurrentIndex(idx)
         self.dataset.blockSignals(False)
-    def preflight(self):
-        if not self.dataset.currentData():self.info.setText('请选择冻结版本。');return
-        root=self.root;vid=self.dataset.currentData()
-        self.runner.run(lambda:self.s.training.preflight(vid,root)[2],lambda counts,error:self.info.setText(error or f'预检通过：{counts}。启动前仍会复核。'))
-    def start(self,operation='train'):
-        try:
-            if not self.dataset.currentData() or not self.gpu.currentData():raise ValueError('请选择冻结数据集及可用NVIDIA GPU；先在设备页检查GPU。')
-            values={}
-            if self.mode.currentIndex()==1:
-                for k,w in self.inputs.items():values[k]=w.isChecked() if isinstance(w,QCheckBox) else w.currentText() if isinstance(w,QComboBox) else w.value()
-            if operation=='validate' and not self.initial.currentData():raise ValueError('独立验证请选择已登记的初始模型版本。')
-            p=validate_parameters(values);payload={'root':self.root,'version_id':self.dataset.currentData(),'device_id':self.gpu.currentData(),'model':self.model.currentText(),'parameters':p,'initial_model_id':self.initial.currentData(),'resume_run_id':self.resume.currentData()}
-        except Exception as e:self.info.setText(str(e));return
-        root=self.root;project_id=self.s.projects.current.id
-        def submit():
-            self.s.devices.require_gpu(payload['device_id']);self.s.training.preflight(payload['version_id'],root)
-            return self.s.jobs.submit('p3_validate' if operation=='validate' else 'p3_train',project_id,payload)
-        def done(jid,error):
-            if error:self.info.setText(error);return
-            self.job_id=jid;self.info.setText('训练已排队：'+jid+'；可在任务中心查看与取消。');self.refresh()
-        self.runner.run(submit,done)
-    def cancel(self):
-        row=next((r for r in self.rows if r['id']==self.selected_run),None);jid=row.get('job_id') if row else self.job_id
-        if jid:self.runner.run(lambda:self.s.jobs.cancel(jid),lambda *_:self.info.setText('已请求取消；保留已完成epoch检查点，强制结束前最多等待20秒。'))
     def show_run(self):
         i=self.runs.currentRow()
         if not 0<=i<len(self.rows):return
         r=self.rows[i];self.selected_run=r['id'];progress=r.get('progress',{});result=r.get('result',{})
         import json
-        self.metrics.setPlainText(json.dumps(dict(state=r['state'],progress=progress,metrics=result.get('metrics'),seconds=result.get('seconds'),gpu=result.get('environment'),error=r.get('error'),log=r['path']+'/worker-console.log'),ensure_ascii=False,indent=2))
+        self.metrics.setPlainText(json.dumps(dict(state=r['state'],actual_parameters=r.get('parameters'),progress=progress,metrics=result.get('metrics'),seconds=result.get('seconds'),gpu=result.get('environment'),error=r.get('error'),log=r['path']+'/worker-console.log'),ensure_ascii=False,indent=2))
         image=Path(self.root)/r['path']/('validation' if r.get('operation')=='validate' else 'run')/self.plot_choice.currentData()
         if image.exists():self.curve.setPixmap(QPixmap(str(image)).scaledToWidth(700,Qt.TransformationMode.SmoothTransformation))
         else:self.curve.setText('该图尚未生成；请查看训练日志。')

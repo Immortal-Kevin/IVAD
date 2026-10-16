@@ -1,11 +1,15 @@
 # 当前任务
 
-2026-10-16 P3 Dataset Lifecycle & Split Workflow Hotfix PASS。原草稿只在GUI内存，真实当前库及5份备份Dataset/Version均空，未虚构恢复或在原项目新建同名记录。
+2026-10-16 P3 Dataset Workflow & Training GUI Simplification Hotfix完成，等待审阅。P3已完成首次真实YOLO11n训练，本轮只修复GUI/流程，没有重新训练。
 
-新增显式草稿事务保存、UUID/CAS、项目/摄像头/故障关联、关闭切换保护和重启恢复。三预设及按组/正常异常/类别近似分配完成；版本跟随Dataset，冻结读取已保存VALIDATED修订、不可变快照和签名；训练按Dataset/Version选择，继续强制全量预检。
+数据集检查先原子保存整个待处理草稿，保留UUID/CAS；两个风险框改默认工程实验/严格验证，工程确认绑定检查结果，严格阻断LIMITED，所有完整性错误不能绕过。没有后台定时自动保存，点击检查无需返回创建Tab。
 
-真实独立副本200成员重启恢复、同UUID再次保存、v1/v2不可变已验证。来源组1，标准200/0/0为LIMITED；明确工程小样本160/40/0（Train13正常147异常331目标；Val3正常37异常71目标），没有独立Test结论或实际训练。
+训练宽双栏/窄堆叠、5按钮自适应、简单只读与高级可编辑、禁用Tooltip；恢复训练显示原参数并锁定。完整配置预检/失效/启动复核、重复提交保护、精确取消确认；实际运行参数与新任务表单隔离。保留Camera多Dataset、多版本、多训练/模型关系。
 
-主回归50+77=127不同用例通过，后续11项复验及200% GUI3项通过。Schema目标0009（Dataset两列），原项目保持0008只读，副本迁移验证。166项选取保护哈希0变化，原库/备份逻辑一致。下次重启新源码打开旧项目时先自动备份后迁移。
+完整针对性回归61通过、0失败（排除两个需显式副本的用例）；另以现有8525test1独立副本完成1项200成员/旧v1/新v2/重开验证，合计62不同用例通过。末次100%训练专项2通过、200%专项3通过（重复复验，不重复计入62）。原始证据pass.xml、accepted100.xml、accepted200.xml及final-gui/real-copy-results.json位于artifacts/workflow-training-gui-20261016/。
 
-交付reports/P3_DATASET_PERSISTENCE_HOTFIX.md、P3_DATASET_SPLIT_PRESETS.md、P3_DATASET_VERSION_LIFECYCLE.md、P3_DATASET_WORKFLOW_TEST_RESULTS.md。指南已更新。原P3已完成成果不重复训练，当前Hotfix停止待审；PACKAGING_FREEZE=TRUE，不进入P4–P10，不生成分发包。
+真实项目已存在8525test1 v1、训练7a01bcad、模型4a1c7df7；本轮只读备份，不再使用上一轮“空库”状态作为当前事实。前后全部表、660个工件文件、5个选取环境文件无变化。Schema0009不变，历史标签/UUID/指标及Worker环境保留。
+
+未实测真实AMP、优化器对比或长期训练；历史epoch显示21/20与actual_epochs20差异仅记录未修改，历史混合Qt原生访问冲突限制保留。报告reports/P3_WORKFLOW_GUI_HOTFIX.md、P3_DATASET_MODE_SIMPLIFICATION.md、P3_TRAINING_PARAMETERS_GUI_TEST.md；两份Markdown指南与DECISIONS更新。
+
+原P3已完成，无需重启或重做训练；PACKAGING_FREEZE=TRUE，不进入P4–P10，不生成EXE/Portable/Setup/大型手册。停止待审。

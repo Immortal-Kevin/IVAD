@@ -78,4 +78,4 @@ def test_compact_selection_feedback_tabs_and_protection(qtbot,services,truth,tmp
             assert w.grab().save(str(output/f'compact-{width}.png'))
         (output/'geometry.json').write_text(json.dumps(geometry,indent=2),encoding='utf-8')
         d.set_project(None);assert d.summary.text()=='请先前往项目管理打开或创建项目。'
-    finally:close_window(qtbot,w)
+    finally:d.draft_dirty=False;close_window(qtbot,w)

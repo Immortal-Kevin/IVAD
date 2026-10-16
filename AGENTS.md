@@ -26,3 +26,5 @@ P2复用P1 GUI/数据库/日志/队列；普通解码/人工标注CPU允许，AI
 2026-10-15 P3 Dataset Hotfix v2 PASS：97不同用例/200% GUI1项通过。8525为旧GUI误显带偏移PTS，200条time_us正确；仅派生时间，不写历史。Schema0008不变，165项保护hash0变化，P3原成果保留，停止待审，打包冻结、P4–P6未授权。报告reports/P3_DATASET_UX_HOTFIX_V2.md。
 
 2026-10-16 Dataset Lifecycle Hotfix PASS：127不同用例、后续11复验/200%3项通过。Schema头0009，只增Dataset.details/revision；真实项目仍0008只读，166项保护hash0变化。旧内存草稿不可虚构恢复，副本200重启/版本已验；停止待审，不重训，PACKAGING_FREEZE=TRUE，P4–P10未授权。报告reports/P3_DATASET_PERSISTENCE_HOTFIX.md等四份。
+
+2026-10-16 Workflow & Training GUI Hotfix：数据集检查先原子保存，工程/严格模式及签名风险确认；训练响应双栏/预检门控/恢复原参数只读。62不同用例、末次100%2项/200%3项通过；Schema0009不变，真实7a01bcad/4a1c7df7/8525test1 v1及660文件/全表/5选取环境hash0变化。无新训练/打包，历史Qt及epoch显示差异保留，停止待审。详见reports/P3_WORKFLOW_GUI_HOTFIX.md。

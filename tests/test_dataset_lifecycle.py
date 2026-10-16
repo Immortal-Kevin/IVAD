@@ -143,5 +143,5 @@ def test_gui_dataset_version_scope_and_advanced(qtbot,services,truth):
             for tab in range(4):
                 d.tabs.setCurrentIndex(tab);qtbot.wait(30);assert w.grab().save(str(output/f'lifecycle-{width}-tab{tab+1}.png'))
             geometry.append({'requested':[width,height],'actual':[w.width(),w.height()],'dpr':w.devicePixelRatioF()})
-        (output/'geometry.json').write_text(json.dumps(geometry,indent=2),encoding='utf-8');d.tabs.setCurrentIndex(2);d.preset.setCurrentIndex(d.preset.findData('custom'));assert d.advanced_split.isVisible() and d.draft_dirty and not d.split_button.isEnabled()
+        (output/'geometry.json').write_text(json.dumps(geometry,indent=2),encoding='utf-8');d.tabs.setCurrentIndex(2);d.preset.setCurrentIndex(d.preset.findData('custom'));assert d.advanced_split.isVisible() and d.draft_dirty and d.split_button.isEnabled()
     finally:d.draft_dirty=False;close_window(qtbot,w)
