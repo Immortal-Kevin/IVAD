@@ -2,6 +2,17 @@ from pathlib import Path
 from PySide6.QtCore import QDir
 QDir.addSearchPath('ivad_icons',str(Path(__file__).parent/'icons'))
 STYLE = '''
+QMenu { background:#ffffff; color:#203047; border:1px solid #8a9bb0; padding:4px; }
+QMenu::item { background:#ffffff; color:#203047; padding:7px 24px; }
+QMenu::item:selected { background:#176a94; color:white; }
+QMenu::item:hover { background:#d6e8ff; color:#203047; }
+QMenu::item:disabled { background:#f0f3f7; color:#738092; }
+QMenu::separator { background:#cbd6e4; height:1px; margin:3px 6px; }
+QAbstractItemView { background:#ffffff; alternate-background-color:#f0f5fb; color:#203047; selection-background-color:#176a94; selection-color:white; }
+QAbstractItemView::item:hover { background:#d6e8ff; color:#203047; }
+QAbstractItemView::item:selected { background:#176a94; color:white; }
+QAbstractItemView::item:disabled { background:#f0f3f7; color:#738092; }
+
 QWidget { font-family: "Microsoft YaHei UI", "Segoe UI"; font-size: 13px; color: #203047; }
 QMainWindow { background: #f2f5fa; }
 QDialog, QMessageBox { background: #f2f5fa; color: #203047; }
@@ -26,7 +37,8 @@ QComboBox:hover, QComboBox:focus { border-color: #6690c5; }
 QComboBox:disabled { background: #f0f3f7; color: #738092; border-color: #d8e0e9; }
 QComboBox QAbstractItemView { background: #ffffff; color: #203047; border: 1px solid #8a9bb0; selection-background-color: #d6e8ff; selection-color: #203047; outline: none; }
 QComboBox QAbstractItemView::item { min-height: 26px; padding: 4px 8px; background: #ffffff; color: #203047; }
-QComboBox QAbstractItemView::item:hover, QComboBox QAbstractItemView::item:selected { background: #d6e8ff; color: #203047; }
+QComboBox QAbstractItemView::item:hover { background: #d6e8ff; color: #203047; }
+QComboBox QAbstractItemView::item:selected { background: #176a94; color: white; }
 QComboBox QAbstractItemView::item:disabled { background: #f0f3f7; color: #738092; }
 QSpinBox, QDoubleSpinBox { background: white; color: #203047; border: 1px solid #cbd6e4; border-radius: 5px; padding: 5px; min-height: 22px; }
 QCheckBox::indicator { background: white; border: 1px solid #8a9bb0; width: 16px; height: 16px; }
