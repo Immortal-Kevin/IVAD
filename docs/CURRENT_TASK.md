@@ -25,3 +25,6 @@ Part A先执行真实P3 GUI检查/现有4a1c7df7完整性/真实CUDA前向/新ON
 
 
 2026-10-16 Windows NVIDIA P3.5一次性打包审计结束：基线66e5846，用户确认暂无Ultralytics授权/已批准AGPL发行方案；按本轮发布门禁BLOCKED，未构建Setup/Release ZIP，未安装/卸载或重训。原项目全表/1578工件及既有ZIP保护通过。现有打包仍P2 Lite，不能冒充完整NVIDIA包。PACKAGING_FREEZE = TRUE已恢复。用户仅授权本轮制作 Windows NVIDIA RTX P3.5 展示版安装包。此后安装包更新再次冻结，未经用户明确授权不得重新打包、更新、替换或重新分发新版。停止待审，不进入P4–P10。见reports/P3_5_WINDOWS_RELEASE_ACCEPTANCE.md、P3_5_RELEASE_LICENSE_AUDIT.md。
+
+
+2026-10-16 最新用户授权补充：允许继续依赖/许可证审计、完整RTX可复现构建方案准备及受控内部构建测试/隔离验证（不得作为正式发行或交领导）；暂无Enterprise或已批准AGPL方案，不得正式分发或交领导安装。内部审计不替公司决定许可路径，也不消耗/自动触发正式一次性构建。该次正式打包仅在用户确定授权方案且合规门禁满足后按本轮条件继续，完成后立即再次冻结；后续版本不得自动重打包。当前PACKAGING_FREEZE=TRUE。本轮审计14/45/21包闭包、156份原通知副本hash与既有CUDA隔离探针通过；未生成EXE/Setup，无业务/环境修改。reports/THIRD_PARTY_LICENSE_AUDIT.md、packaging/nvidia/BUILD_PLAN.md已交付；输入哈希封存/最终payload/干净系统验收仍未完成。停止等待用户确定授权方案，不进入P4。
