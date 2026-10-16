@@ -4,7 +4,7 @@ from pathlib import Path
 from uuid import uuid4
 from sqlalchemy import select
 from ivad_app.core.contracts import AppError,utc_now
-from ivad_app.storage.models import ModelVersion,Camera,LabelCategory,SettingRecord,RegionOfInterest,MediaAsset
+from ivad_app.storage.models import ModelVersion,Camera,LabelCategory,SettingRecord,RegionOfInterest,MediaAsset,TrainingRun
 from ivad_app.storage.project_store import safe_path,file_hash
 from ivad_app.storage.project_store import atomic_json
 
@@ -35,17 +35,26 @@ class ModelService:
             record={'id':str(uuid4()),'camera_id':camera_id,'model_version_id':model_version_id,'fault_ids':faults,'roi_scope':roi_scope,'created_at':utc_now(),'enabled':False,'purpose':'configuration_only'}
             items.append(record);row.value={'items':items}
             return record
-    def register(self,path,details,root=None,*,trusted=False):
+    def register(self,path,details,root=None,*,trusted=False,training_completion=None):
         source=Path(path)
         if not trusted:raise AppError('MODEL_TRUST','仅导入可信权重；PT文件可能执行代码，请明确确认来源可信。')
-        if source.suffix.lower() not in {'.pt','.onnx'} or not source.is_file():raise AppError('MODEL_FORMAT','请选择存在的PT或ONNX模型。')
+        allowed={'.pt','.onnx'}
+        if details.get('backend')=='rfdetr':
+            if details.get('model')!='rfdetr-nano' or details.get('artifact_format')!='rf-detr-weights-pth' or details.get('parity',{}).get('status')!='PASS' or not details.get('evaluation_protocol_sha256'):raise AppError('RF_MODEL_GATE','RF权重需先通过可信CUDA加载、统一评估与重载一致性检查。恢复CKPT不能登记为推理权重。')
+            allowed={'.pth'}
+        if source.suffix.lower() not in allowed or not source.is_file():raise AppError('MODEL_FORMAT','模型文件格式与后端/用途不匹配。')
         mid=str(uuid4())
         with self.store.open(root) as (folder,db,_):
             target=folder/'models'/mid/source.name;target.parent.mkdir(parents=True)
             shutil.copyfile(source,target);digest=file_hash(target)
             if digest!=file_hash(source):raise AppError('MODEL_HASH','模型复制校验失败，未登记。')
             data=dict(copy.deepcopy(details),path=target.relative_to(folder).as_posix(),sha256=digest,state='EXPERIMENTAL',created_at=utc_now(),history=[{'action':'REGISTER','at':utc_now()}])
-            with db.transaction() as s:s.add(ModelVersion(id=mid,details=data,revision=1))
+            with db.transaction() as s:
+                s.add(ModelVersion(id=mid,details=data,revision=1))
+                if training_completion:
+                    rid,run_data=training_completion;row=s.get(TrainingRun,rid)
+                    if row is None:raise AppError('RF_RUN_MISSING','训练记录缺失，模型登记事务回滚。')
+                    row.details=dict(copy.deepcopy(run_data),state='SUCCEEDED',model_id=mid,completed_at=utc_now());row.revision+=1
         return mid
     def verify(self,mid,root=None):
         with self.store.open(root) as (folder,db,_),db.transaction() as s:
@@ -61,7 +70,7 @@ class ModelService:
         source,data=self.verify(mid,root);parent=Path(parent)
         if not parent.is_dir():raise AppError('MODEL_EXPORT','请选择已有输出目录。')
         target=parent/('IVAD-model-'+mid+'-'+uuid4().hex[:8]);stage=target.with_name('.'+target.name+'.partial');stage.mkdir()
-        shutil.copyfile(source,stage/'model.pt' if source.suffix.lower()=='.pt' else stage/'model.onnx')
+        shutil.copyfile(source,stage/('model'+source.suffix.lower()))
         with self.store.open(root) as (folder,_,_):
             if data.get('onnx'):shutil.copyfile(safe_path(folder,data['onnx']['path']),stage/'model.onnx')
         manifest=dict(data,model_version_id=mid,files={p.name:file_hash(p) for p in stage.iterdir()},note='模型工件导出，不含应用程序。工业准确率与商业部署许可未验收。')
@@ -79,6 +88,7 @@ class ModelService:
             row=s.get(ModelVersion,mid)
             if row.revision!=expected_revision:raise AppError('MODEL_CONFLICT','模型状态已更新，请刷新。')
             data=copy.deepcopy(row.details);old=data['state'];metrics=data.get('metrics',{})
+            if data.get('backend')=='rfdetr' and state=='PRODUCTION':raise AppError('RF_EXPERIMENTAL','P3.7-A RF模型仅允许工程实验，不授权生产发布。')
             if state=='CANDIDATE':
                 thresholds=thresholds if thresholds is not None else {'precision':.5,'recall':.5,'map50':.5,'map50_95':.25}
                 if set(thresholds)!={'precision','recall','map50','map50_95'} or any(not isinstance(v,(int,float)) or not math.isfinite(v) or not 0<=v<=1 for v in thresholds.values()):raise AppError('MODEL_GATE','候选指标门槛需为0–1。')

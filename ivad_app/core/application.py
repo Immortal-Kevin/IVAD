@@ -13,7 +13,7 @@ from ivad_app.services.annotation_service import AnnotationService
 from ivad_app.services.dataset_service import DatasetService
 from ivad_app.services.camera_service import CameraService
 from ivad_app.services.model_service import ModelService
-from ivad_app.services.training_service import TrainingService
+from ivad_app.services.training_router import TrainingService
 
 class ApplicationServices:
     def __init__(self, root: Path, data_dir: Path | None = None, *, step_seconds: float = 0.1, lite: bool | None = None):

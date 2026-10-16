@@ -87,7 +87,8 @@ class JobService:
                 # Clip publication is complete when its handler returns the committed asset.
                 published_clip=row['kind']=='p2_clip' and bool(result.get('media_id'))
                 published_demo=row['kind']=='p35_offline' and bool(result.get('path'))
-                state = 'SUCCEEDED' if published_clip or published_demo else ('CANCELLED' if event.is_set() else 'SUCCEEDED')
+                published_training=row['kind'] in {'p3_train','p3_validate'} and bool(result.get('committed_training'))
+                state = 'SUCCEEDED' if published_clip or published_demo or published_training else ('CANCELLED' if event.is_set() else 'SUCCEEDED')
                 with self.lock: self._change(job_id, state, progress=100 if state=='SUCCEEDED' else None)
                 self.logs.write('job', '任务已取消。' if state == 'CANCELLED' else '后台任务完成。', job_id=job_id)
             except AppError as exc:
@@ -127,7 +128,9 @@ class JobService:
 
     def close(self):
         self.request_shutdown()
-        self.thread.join(timeout=10)
+        # GUI shutdown already runs off the UI thread. Allow the isolated RF
+        # worker's 20s cooperative-cancel deadline and owned-tree cleanup.
+        self.thread.join(timeout=35)
         if self.thread.is_alive(): raise AppError('JOB_SHUTDOWN', '后台任务尚未结束，数据库暂不关闭。')
 
 class JobContext:
