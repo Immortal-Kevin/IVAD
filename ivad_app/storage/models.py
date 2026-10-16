@@ -162,6 +162,8 @@ class VideoClipLabel(Base):
 
 class Dataset(Base):
     __tablename__ = 'datasets'
+    details: Mapped[dict] = mapped_column(JSON, default=dict)
+    revision: Mapped[int] = mapped_column(Integer, default=0)
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     name: Mapped[str] = mapped_column(String(120))
     created_at: Mapped[str] = mapped_column(String(40))

@@ -10,9 +10,10 @@ class TrainingPage(QWidget):
         super().__init__();self.setObjectName('p3Training');self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground,True);self.w=window;self.s=window.s;self.runner=window.runner;self.root=None;self.busy=False;self.job_id=None;self.rows=[];self.selected_run=None
         outer=QVBoxLayout(self);scroll=QScrollArea();scroll.setObjectName('p3TrainingScroll');scroll.setWidgetResizable(True);outer.addWidget(scroll);body=QWidget();body.setObjectName('p3TrainingBody');body.setAttribute(Qt.WidgetAttribute.WA_StyledBackground,True);scroll.setWidget(body);v=QVBoxLayout(body)
         title=QLabel('P3 · GPU模型训练与验证');title.setObjectName('title');v.addWidget(title)
-        note=QLabel('仅使用已审核冻结的目标检测数据。正常无框是负样本；异常无框/未知/剔除不可训练。测试指标不代表工业堵煤准确率。');note.setWordWrap(True);v.addWidget(note)
+        note=QLabel('仅使用有效冻结的目标检测版本（历史审核或显式实验准入）。正常无框是负样本；异常无框/未知/剔除不可训练。测试指标不代表工业堵煤准确率。');note.setWordWrap(True);v.addWidget(note)
         form=QFormLayout();v.addLayout(form)
         self.mode=QComboBox();self.mode.addItems(['简易训练','高级训练']);form.addRow('训练模式',self.mode)
+        self.dataset_group=QComboBox();self.dataset_group.setObjectName('training_dataset_group');form.addRow('所属数据集',self.dataset_group);self.frozen_versions=[];self.dataset_group.currentIndexChanged.connect(self.filter_dataset_versions)
         self.dataset=QComboBox();self.dataset.setObjectName('training_dataset');form.addRow('冻结数据集版本',self.dataset)
         self.model=QComboBox();self.model.addItems(['yolo26n','yolo11n']);form.addRow('基础模型',self.model)
         self.gpu=QComboBox();self.gpu.setObjectName('training_gpu');form.addRow('NVIDIA GPU',self.gpu)
@@ -41,7 +42,7 @@ class TrainingPage(QWidget):
     def refresh(self):
         if not self.root or self.busy or self.s.lite:return
         self.busy=True;root=self.root
-        def collect():return self.s.datasets.versions(root),self.s.training.runs(root),self.s.models.versions(root),self.s.devices.snapshot()
+        def collect():return self.s.datasets.training_versions(root),self.s.training.runs(root),self.s.models.versions(root),self.s.devices.snapshot()
         def done(data,error):
             self.busy=False
             if root!=self.root:return
@@ -53,7 +54,7 @@ class TrainingPage(QWidget):
                 idx=combo.findData(old)
                 if idx>=0:combo.setCurrentIndex(idx)
                 combo.blockSignals(False)
-            fill(self.dataset,[(r['name']+' v'+str(r['number'])+' · '+r['id'][:8],r['id']) for r in versions]);fill(self.gpu,[(d.name+' · '+d.status,d.id) for d in gpus if d.id.startswith('nvidia:') and d.backend_available])
+            self.frozen_versions=versions;seen={r['dataset_id']:r['name'] for r in versions};fill(self.dataset_group,[(name+' · '+did[:8],did) for did,name in seen.items()]);self.filter_dataset_versions();fill(self.gpu,[(d.name+' · '+d.status,d.id) for d in gpus if d.id.startswith('nvidia:') and d.backend_available])
             fill(self.initial,[('本地P0官方基础权重',None)]+[(r.get('model','?')+' · '+r['id'][:8],r['id']) for r in models if r['path'].endswith('.pt')]);fill(self.resume,[('新训练（不恢复）',None)]+[(r['model']+' · '+r['id'][:8],r['id']) for r in runs if r['state'] in {'FAILED','CANCELLED','SUCCEEDED'}])
             self.rows=runs;self.runs.blockSignals(True);self.runs.setRowCount(len(runs))
             from PySide6.QtWidgets import QTableWidgetItem
@@ -63,6 +64,14 @@ class TrainingPage(QWidget):
             self.runs.blockSignals(False)
             if self.selected_run:self.show_run()
         self.runner.run(collect,done)
+    def filter_dataset_versions(self,*_):
+        if not hasattr(self,'dataset'):return
+        old=self.dataset.currentData();self.dataset.blockSignals(True);self.dataset.clear()
+        for r in self.frozen_versions:
+            if r['dataset_id']==self.dataset_group.currentData():self.dataset.addItem(r['name']+' v'+str(r['number'])+' · '+r['id'][:8],r['id'])
+        idx=self.dataset.findData(old)
+        if idx>=0:self.dataset.setCurrentIndex(idx)
+        self.dataset.blockSignals(False)
     def preflight(self):
         if not self.dataset.currentData():self.info.setText('请选择冻结版本。');return
         root=self.root;vid=self.dataset.currentData()

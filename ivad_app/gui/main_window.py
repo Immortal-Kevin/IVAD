@@ -144,6 +144,7 @@ class MainWindow(QMainWindow):
 
     def project_operation(self, operation, message):
         if self.project_busy: return
+        if not self.p2.dataset.guard_departure(lambda:self.project_operation(operation,message)):return
         if not self.p2.annotation.flush(lambda:self.project_operation(operation,message)):
             self.show_notice('等待人工标注保存完成后再切换项目。');return
         self.p2.media.player.stop()
@@ -292,6 +293,7 @@ class MainWindow(QMainWindow):
         if self.may_close: event.accept(); return
         event.ignore()
         if self.is_closing: return
+        if not self.p2.dataset.guard_departure(self.close):return
         if not self.p2.annotation.flush(self.close):
             self.show_notice('正在保存人工标注；保存成功后安全关闭。');return
         if not self.confirm_discard(): return

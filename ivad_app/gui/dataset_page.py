@@ -2,8 +2,10 @@ import json
 from PySide6.QtCore import Qt,Signal
 from PySide6.QtWidgets import (QHBoxLayout,QVBoxLayout,QWidget,QLineEdit,QComboBox,QSpinBox,QCheckBox,QLabel,QFileDialog,QMessageBox,QTableWidgetItem,QPlainTextEdit,QTabWidget,QGridLayout,QHeaderView,QScrollArea,QSizePolicy)
 from ivad_app.gui.pages import Page,button,table
+from ivad_app.gui.dataset_lifecycle import DatasetLifecyclePage
 
-class DatasetPage(Page):
+class DatasetPage(DatasetLifecyclePage,Page):
+    save_requested=Signal(object)
     preview_requested=Signal(list)
     version_check_requested=Signal(str)
     split_requested=Signal(dict)
@@ -65,24 +67,19 @@ class DatasetPage(Page):
         for text,value in [('YOLO Detection','yolo_detect'),('YOLO Segmentation','yolo_segment'),('COCO JSON','coco'),('IVAD Native（完整）','ivad_native')]:self.format.addItem(text,value)
         row.addWidget(self.format);row.addWidget(button('导出选中冻结版本…',self.export,True,'export_dataset'));versions.addLayout(row)
         self.detail=QPlainTextEdit();self.detail.setReadOnly(True);self.detail.setMaximumHeight(160);versions.addWidget(self.detail)
-        self.summary=QLabel();self.summary.setWordWrap(True);self.layout.addWidget(self.summary);self.data_error_text='';self.update_counts()
+        self.summary=QLabel();self.summary.setWordWrap(True);self.layout.addWidget(self.summary);self.data_error_text='';self.init_lifecycle(creation,splitting,versions);self.update_counts()
     def key(self):return self.existing.currentData() or '__new__'
     def draft_frames(self):return list(self.drafts.get(self.key(),[]))
     def set_project(self,root):
-        if root!=self.root:self.data_error_text='';self.root=root;self.all_rows=[];self.candidate_rows=[];self.drafts={};self.omitted={};self.camera.clear();self.filter_rows()
+        if root!=self.root:
+            self.lifecycle_loading=True;self.active_dataset=None;self.draft_revision=0;self.draft_dirty=False;self.active_validated=False;self.dataset_records={};self.all_version_rows=[];self.existing.blockSignals(True);self.existing.clear();self.existing.addItem('创建新数据集',None);self.existing.blockSignals(False);self.name.clear();self.lifecycle_loading=False;self.data_error_text='';self.root=root;self.all_rows=[];self.candidate_rows=[];self.drafts={};self.omitted={};self.camera.clear();self.reset_new_draft();self.filter_rows()
     def set_data(self,rows,cameras,labels,versions,preferred_camera=None):
         self.updating=True;self.all_rows=rows
         for combo,items,default in [(self.camera,[('全部摄像头','__all__')]+[(c['name'],c['id']) for c in cameras]+[('未关联摄像头','__unlinked__')],preferred_camera or next((c['id'] for c in cameras if any(r['camera_id']==c['id'] and r['eligible'] for r in rows)),cameras[0]['id'] if cameras else '__unlinked__')),(self.fault,[('全部故障类型',None)]+[(l['name'],l['id']) for l in labels],None),(self.source,[('全部来源',None)]+list(dict.fromkeys((r['media_name'],r['media_id']) for r in rows)),None)]:
             old=combo.currentData() if combo.count() else default;combo.clear()
             for text,value in items:combo.addItem(text,value)
             combo.setCurrentIndex(max(0,combo.findData(old)))
-        old=self.existing.currentData();self.existing.clear();self.existing.addItem('创建新数据集',None);seen=set()
-        for v in versions:
-            if v['dataset_id'] not in seen:self.existing.addItem(v['name'],v['dataset_id']);seen.add(v['dataset_id'])
-        self.existing.setCurrentIndex(max(0,self.existing.findData(old)));self.version_rows=versions;self.versions.setRowCount(len(versions))
-        for i,v in enumerate(versions):
-            for j,value in enumerate([v['name'],v['number'],v['summary']['images'],v['summary']['objects'],str(v['summary']['splits']),v['id']]):self.versions.setItem(i,j,QTableWidgetItem(str(value)))
-        self.updating=False;self.data_error_text='';self.filter_rows(preserve_selection=True)
+        self.all_version_rows=versions;self.updating=False;self.configure_targets(cameras,labels);self.data_error_text='';self.filter_rows(preserve_selection=True);self.render_versions();self.update_identity()
     def resizeEvent(self,event):
         super().resizeEvent(event)
         if not hasattr(self,'filters'):return
@@ -121,27 +118,26 @@ class DatasetPage(Page):
         selected_rows=[r for r in rows if r['id'] in selected];normal=sum(r['image_tag']=='NORMAL' for r in selected_rows);abnormal=sum(r['image_tag']=='ABNORMAL' for r in selected_rows)
         self.selection_info.setText(f"候选{sum(r['eligible'] for r in rows)}张；已选择{len(selected)}张\n正常已勾选{normal}张；异常已勾选{abnormal}张")
         self.selection_info.setToolTip('在这里勾选需要训练的图片，然后前往“新建数据集”Tab，点击“添加所选图片”，即可加入数据集草稿。\n当前范围：'+self.camera.currentText()+' / '+self.source.currentText())
+        self.update_identity()
         self.summary.setText(self.data_error_text or ('请先前往项目管理打开或创建项目。' if not self.root else '当前筛选条件下没有可用图片，请调整摄像头或筛选条件。' if not rows else f'当前显示 {len(rows)} 张图片，已勾选 {len(selected)} 张；可将所选图片添加到新建数据集草稿。'))
     def add_selected(self):
         ids=self.selected_frames();by={r['id']:r for r in self.all_rows};valid=[f for f in ids if by[f]['eligible']];cams={by[f]['camera_id'] for f in self.draft_frames()+valid if f in by}
         if len(cams)>1 and not self.allow_multi.isChecked():self.action_info.setText('BLOCKED：多个摄像头/未关联来源，请明确勾选共享实验数据集。');return
-        new=[f for f in valid if f not in self.draft_frames()];duplicates=len(valid)-len(new);invalid=len(ids)-len(valid);self.drafts[self.key()]=self.draft_frames()+new;self.action_info.setText(f'添加：成功{len(new)}，重复跳过{duplicates}，失败{invalid}（不合格）。勾选不等于已加入草稿，已有成员不会重复添加。');self.update_counts()
+        new=[f for f in valid if f not in self.draft_frames()];duplicates=len(valid)-len(new);invalid=len(ids)-len(valid);self.drafts[self.key()]=self.draft_frames()+new
+        if new:self.mark_draft_dirty();self.infer_member_faults()
+        self.action_info.setText(f'添加：成功{len(new)}，重复跳过{duplicates}，失败{invalid}（不合格）。勾选不等于已加入草稿，已有成员不会重复添加。');self.update_counts()
     def remove_selected(self):
-        ids=set(self.selected_frames());before=self.draft_frames();self.drafts[self.key()]=[f for f in before if f not in ids];self.action_info.setText(f'草稿移除：成功{len(ids & set(before))}，跳过{len(ids-set(before))}，失败0。');self.update_counts()
-    def clear_draft(self):self.drafts[self.key()]=[];self.update_counts()
+        ids=set(self.selected_frames());before=self.draft_frames();self.drafts[self.key()]=[f for f in before if f not in ids]
+        if ids & set(before):self.mark_draft_dirty()
+        self.action_info.setText(f'草稿移除：成功{len(ids & set(before))}，跳过{len(ids-set(before))}，失败0。');self.update_counts()
+    def clear_draft(self):self.drafts[self.key()]=[];self.mark_draft_dirty();self.update_counts()
     def omit_selected(self):
-        ids=set(self.selected_frames());self.omitted.setdefault(self.key(),set()).update(ids);self.drafts[self.key()]=[f for f in self.draft_frames() if f not in ids];self.batch_info.setText(f'仅本草稿候选排除：成功{len(ids)}，跳过0，失败0；全局状态/原文件不变。');self.filter_rows()
+        ids=set(self.selected_frames());self.omitted.setdefault(self.key(),set()).update(ids);self.drafts[self.key()]=[f for f in self.draft_frames() if f not in ids];self.mark_draft_dirty();self.batch_info.setText(f'仅本草稿候选排除：成功{len(ids)}，跳过0，失败0；全局状态/原文件不变。');self.filter_rows()
     def restore_omitted(self):
         count=len(self.omitted.get(self.key(),set()));self.omitted[self.key()]=set();self.batch_info.setText(f'恢复候选：成功{count}，跳过0，失败0。');self.filter_rows()
-    def choose_existing(self):
-        if self.updating:return
-        if self.existing.currentData():self.name.setText(self.existing.currentText())
-        self.filter_rows()
+    def choose_existing(self):self.choose_dataset()
     def payload(self):return {'name':self.name.text(),'dataset_id':self.existing.currentData(),'frame_ids':self.draft_frames(),'strategy':self.strategy.currentData(),'allow_leakage':self.allow_random.isChecked(),'allow_limited':self.allow_limited.isChecked(),'allow_multi_camera':self.allow_multi.isChecked(),'ratios':[s.value() for s in self.ratios],'seed':self.seed.value(),'admission':'experimental'}
-    def freeze(self):
-        if not self.draft_frames():self.action_info.setText('请在图片列表勾选并添加到数据集草稿。');return
-        if QMessageBox.question(self,'确认冻结不可变实验版本','将严格检查并复制当前草稿。保留历史审核原值，不冒充独立审核。历史版本不会覆盖。确认冻结？',QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No)!=QMessageBox.StandardButton.Yes:return
-        self.freeze_requested.emit(self.payload())
+    def freeze(self):self.freeze_saved()
     def check_version(self):
         row=self.versions.currentRow()
         if not 0<=row<len(self.version_rows):self.action_info.setText('请先选择冻结版本。');return
