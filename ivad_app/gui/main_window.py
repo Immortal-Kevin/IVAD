@@ -304,7 +304,7 @@ class MainWindow(QMainWindow):
         self.centralWidget().setEnabled(False)
         def shutdown():
             try:
-                self.pages['offline'].player.shutdown();self.p2.shutdown();self.runner.stop(); self.s.close(); self.shutdown_done.emit('')
+                self.pages['offline'].preview.shutdown();self.pages['offline'].player.shutdown();self.p2.shutdown();self.runner.stop(); self.s.close(); self.shutdown_done.emit('')
             except Exception:
                 try: self.s.logs.exception('application', '后台关闭失败，保留数据库等待重试。')
                 except OSError: pass
