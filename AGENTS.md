@@ -30,3 +30,6 @@ P2复用P1 GUI/数据库/日志/队列；普通解码/人工标注CPU允许，AI
 2026-10-16 Workflow & Training GUI Hotfix：数据集检查先原子保存，工程/严格模式及签名风险确认；训练响应双栏/预检门控/恢复原参数只读。62不同用例、末次100%2项/200%3项通过；Schema0009不变，真实7a01bcad/4a1c7df7/8525test1 v1及660文件/全表/5选取环境hash0变化。无新训练/打包，历史Qt及epoch显示差异保留，停止待审。详见reports/P3_WORKFLOW_GUI_HOTFIX.md。
 
 2026-10-16 用户明确批准P3.5离线演示（不是完整P4）：Part A模型4a1c7df7/真实GUI/CUDA/ONNX已PASS，新增主程序离线预处理回放/真实框/导出。48不同pytest、3实际CUDA比对通过，200%11+最终1复验；原项目2训练/2模型全表、1120工件及256选取文件0变化。无schema变化、无新训练/安装/打包，背景低置信度框需人工复核，不宣称独立工业质量PASS。PACKAGING_FREEZE=TRUE，停止待审，P4–P10仍未授权。报告reports/P3_MODEL_VALIDATION.md、P3_5_OFFLINE_DEMO_ACCEPTANCE.md。
+
+
+2026-10-16 P3.5 GUI重构：两页/统一视频选择/真实探测/双手柄原片预览/大回放与详情导出，57不同用例及100%/200%复验通过；必要10帧CUDA及schema2精确缓存通过。真实项目全表、1120工件、12历史缓存文件0变化，无schema/Worker/TrainingService/Registry修改，无新训练或打包。PACKAGING_FREEZE=TRUE，P4–P10未授权，停止待审。详见reports/P3_5_DEMO_GUI_HOTFIX.md。

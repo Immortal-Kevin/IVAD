@@ -8,18 +8,19 @@ from PIL import ImageDraw,ImageFont
 from ivad_app.core.contracts import AppError,utc_now
 from ivad_app.storage.project_store import atomic_json,file_hash
 from ivad_app.video.reader import FileVideoSource
+from ivad_app.services.offline_cache import OfflineCache
 
-class OfflineDemoService:
+class OfflineDemoService(OfflineCache):
     def __init__(self,services):self.s=services
     def choices(self,root):
-        media=self.s.media.list(root);models=[];versions={v['id']:v for v in self.s.datasets.versions(root)}
+        media=self.s.media.list(root);models=[];versions={v['id']:v for v in self.s.datasets.versions(root)};configured=self.s.models.camera_configurations(root=root)
         for r in self.s.models.versions(root):
-            if r.get('state')!='EXPERIMENTAL' or r.get('model') not in {'yolo11n','yolo26n'} or r.get('task')!='detect':continue
+            if r.get('state') not in {'EXPERIMENTAL','CANDIDATE','PRODUCTION'} or r.get('model') not in {'yolo11n','yolo26n'} or r.get('task')!='detect':continue
             try:
                 self.s.models.verify(r['id'],root);_,snapshot=self.s.datasets.snapshot(r['dataset_version'],root)
                 if r.get('class_map')!=snapshot['classes']:continue
             except (AppError,KeyError):continue
-            r['dataset_display']=versions[r['dataset_version']]['name']+' v'+str(versions[r['dataset_version']]['number']);models.append(r)
+            r['dataset_display']=versions[r['dataset_version']]['name']+' v'+str(versions[r['dataset_version']]['number']);r['camera_ids']=snapshot.get('dataset_scope',{}).get('camera_ids',[]) if snapshot.get('dataset_scope') else sorted({x['camera_id'] for x in snapshot['samples'] if x.get('camera_id')});r['camera_ids']=sorted(set(r['camera_ids'])|{x['camera_id'] for x in configured if x['model_version_id']==r['id']});r['split_status']=snapshot.get('admission',{}).get('split_status','历史审核');models.append(r)
         return media,models,self.s.devices.snapshot()
     def source_notice(self,mid,model,root):
         _,snap=self.s.datasets.snapshot(model['dataset_version'],root)
@@ -39,15 +40,17 @@ class OfflineDemoService:
         device=self.s.devices.require_gpu(payload['device_id'])
         if not device.id.startswith('nvidia:'):raise AppError('DEMO_GPU','仅支持NVIDIA CUDA，禁止CPU回退。')
         weights,model=self.s.models.verify(modelid,root)
-        if model.get('state')!='EXPERIMENTAL' or model.get('task')!='detect' or model.get('model') not in {'yolo11n','yolo26n'}:raise AppError('DEMO_MODEL','仅选择有效实验Detection模型。')
+        if model.get('state') not in {'EXPERIMENTAL','CANDIDATE','PRODUCTION'} or model.get('task')!='detect' or model.get('model') not in {'yolo11n','yolo26n'}:raise AppError('DEMO_MODEL','仅选择有效Detection模型；离线演示不修改生产配置。')
         _,snapshot=self.s.datasets.snapshot(model['dataset_version'],root)
         if model['class_map']!=snapshot['classes']:raise AppError('DEMO_CLASSES','类别映射与冻结版本不符。')
         classes=[r['name'] for r in snapshot['classes']];media=self.s.media.get(mid,root);source=FileVideoSource(Path(media['accessible_path']));start=round(float(payload.get('start',0))*1e6);end=round(float(payload.get('end',source.metadata['duration_us']/1e6))*1e6)
         if start<0 or end<=start or end>source.metadata['duration_us']:raise AppError('DEMO_RANGE','起止时间须有效且不超出视频。')
+        identity=self.cache_identity(dict(payload,start=start/1e6,end=end/1e6,confidence=confidence))
         work=Path(root)/'demos'/str(uuid4());work.mkdir(parents=True);child=None;reader=None;output=None;rows=[];started=time.perf_counter();ready=None
         if shutil.disk_usage(work).free<100*1024*1024:raise AppError('DEMO_SPACE','演示缓存空间不足100MB，请选择其他项目磁盘。')
         manifest=dict(format='ivad-offline-demo-v1',id=work.name,state='PREPROCESSING',media_id=mid,model_id=modelid,dataset_version=model['dataset_version'],model_sha256=model['sha256'],source_sha256=file_hash(Path(media['accessible_path']),context.check),parameters=dict(confidence=confidence,iou=iou,imgsz=640,start=start/1e6,end=end/1e6),source_notice=self.source_notice(mid,model,root),experimental_notice='工程实验，未完成独立工业验证；预处理回放，不是工业报警',video_metadata=source.metadata,created_at=utc_now())
         atomic_json(work/'manifest.json',manifest)
+        manifest['identity']=identity
         python=Path(self.s.settings.preferences().get('worker_python') or self.s.root/'.venv-nvidia/Scripts/python.exe')
         req=dict(weights=str(weights),weights_sha256=model['sha256'],class_names=classes,confidence=confidence,iou=iou,device_uuid=device.id.removeprefix('nvidia:'));atomic_json(work/'request.json',req)
         lines=queue.Queue()

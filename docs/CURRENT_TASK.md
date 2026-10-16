@@ -13,3 +13,6 @@ Part A先执行真实P3 GUI检查/现有4a1c7df7完整性/真实CUDA前向/新ON
 真实项目现在有2组训练/模型（包含用户后来生成的1cc172a1/dd2e7eec），全表及1120工件hash0变化，额外256选取文件0变化；原视频、251帧/217标注/720修订/冻结v1/Worker环境保留。所有测试写入独立副本。本轮无新训练、完整P0、依赖安装或应用打包。
 
 交付reports/P3_MODEL_VALIDATION.md、reports/P3_5_OFFLINE_DEMO_ACCEPTANCE.md、docs/P3_5_OFFLINE_AI_DEMO_GUIDE.md；证据artifacts/p35-offline-20261016。无RTSP、PLC、正式报警、规则引擎、多摄像头/多模型生产调度、部署或自动发布，停止等待审阅。
+
+
+2026-10-16 P3.5 GUI重构：两页/统一视频选择/真实探测/双手柄原片预览/大回放与详情导出，57不同用例及100%/200%复验通过；必要10帧CUDA及schema2精确缓存通过。真实项目全表、1120工件、12历史缓存文件0变化，无schema/Worker/TrainingService/Registry修改，无新训练或打包。PACKAGING_FREEZE=TRUE，P4–P10未授权，停止待审。详见reports/P3_5_DEMO_GUI_HOTFIX.md。
