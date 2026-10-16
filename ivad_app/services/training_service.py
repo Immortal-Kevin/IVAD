@@ -83,7 +83,7 @@ class TrainingService:
         if not base.is_file():raise AppError('TRAIN_WEIGHTS','本地初始权重或可恢复检查点不存在；不会自动下载。')
         rid=str(uuid4())
         with self.store.open(root) as (folder,_,_):work=folder/'training'/rid;work.mkdir(parents=True)
-        data={'state':'PREPARING','operation':operation,'model':name,'version_id':payload['version_id'],'parameters':parameters,'device_id':device.id,'created_at':utc_now(),'path':work.relative_to(folder).as_posix(),'counts':counts,'job_id':context.job_id,'initial_sha256':file_hash(base),'resume':resume}
+        data={'state':'PREPARING','operation':operation,'model':name,'version_id':payload['version_id'],'dataset_id':snapshot['dataset_id'],'parameters':parameters,'device_id':device.id,'created_at':utc_now(),'path':work.relative_to(folder).as_posix(),'counts':counts,'job_id':context.job_id,'initial_sha256':file_hash(base),'resume':resume}
         self._put(rid,data,root)
         try:
             exported=work/'dataset';exported.mkdir();export_snapshot(snapshot,source,exported,'yolo_detect',context.check)

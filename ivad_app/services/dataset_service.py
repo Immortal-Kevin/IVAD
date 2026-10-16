@@ -13,7 +13,10 @@ from ivad_app.annotations.geometry import validate_geometry
 from ivad_app.datasets.exporters import export_snapshot
 from ivad_app.services.annotation_service import AnnotationService
 
-class DatasetService:
+from ivad_app.services.dataset_lifecycle import DatasetLifecycle
+from ivad_app.datasets.splitting import PRESETS,assign_groups,split_statistics
+
+class DatasetService(DatasetLifecycle):
     def __init__(self,store,logs):self.store,self.logs=store,logs
 
     def camera_samples(self,camera_id=None,*,image_tag=None,fault_id=None,root=None,include_excluded=False):
@@ -80,12 +83,21 @@ class DatasetService:
                 result.append(dict(row_dict(frame),**frame_times(row_dict(frame),row_dict(media),{k:row_dict(v) for k,v in media_map.items()}),camera_id=media.camera_id,camera_name=camera.name if camera else '未关联摄像头',media_name=media.name,source_path=media.original_path,source_group_id=source,image_tag=tag,objects=len(objects),fault_ids=sorted(f for f in faults if f),fault_text='、'.join((labels[k].name if k in labels else '缺失类别')+' ×'+str(v) for k,v in counts.items()) if objects else ('整帧异常 / 无目标框' if tag=='ABNORMAL' else '正常' if tag=='NORMAL' else '未知'),completion_state=AnnotationService.completion_state(frame,doc),review_status=doc.status if doc else 'DRAFT',eligible=not issue,issue=issue,excluded=bool(frame.handling.get('is_excluded')),annotation_revision=doc.revision if doc else 0))
             return result
 
-    def split_preview(self,frame_ids,root=None,*,strategy='source',ratios=None,seed=123,allow_leakage=False,admission='experimental'):
+    def split_preview(self,frame_ids,root=None,*,strategy='source',ratios=None,seed=123,allow_leakage=False,admission='experimental',preset=None,pipeline_fallback=False,fault_ids=None):
+        if preset in PRESETS:ratios=PRESETS[preset];strategy='source'
+        requested_strategy=strategy
         ratios=[70,20,10] if ratios is None else ratios
         if strategy not in {'source','camera','random','grouped'}:raise AppError('SPLIT_STRATEGY','划分策略无效。')
         if len(ratios)!=3 or any(type(v) not in {int,float} or v<0 for v in ratios) or sum(ratios)!=100:raise AppError('SPLIT_RATIOS','Train/Val/Test比例必须非负且合计100。')
         if strategy=='random' and not allow_leakage:raise AppError('LEAKAGE_CONSENT','随机划分有相邻帧泄漏风险，必须明确确认。')
         preview=self.preview(frame_ids,root,admission=admission);samples=preview['samples'];warnings=list(preview['warnings']);issues=list(preview['issues'])
+        if fault_ids is not None:
+            with self.store.open(root) as (_,db,_),db.transaction() as session:
+                declared=[session.get(LabelCategory,f) for f in sorted(set(fault_ids))]
+                if not declared or any(not c or not c.enabled for c in declared):issues.append('数据集声明的目标类别缺失或停用')
+                else:preview['classes']=[{'uuid':c.id,'class_id':i,'name':c.name,'revision':c.revision,'enabled':c.enabled} for i,c in enumerate(declared)]
+            if any(o['label_id'] not in fault_ids for s in samples for o in s['annotation']['objects']):issues.append('检测目标超出数据集声明故障类型')
+        if preset=='small' and pipeline_fallback and allow_leakage and len({s['source_group_id'] for s in samples})<sum(r>0 for r in ratios):strategy='random';warnings.append('LIMITED：用户明确允许来源不足的隔离工程图片划分，连续帧存在泄漏风险。')
         def key(s):return s['frame_id'] if strategy=='random' else (s.get('source_group_id') or s['media_id']) if strategy=='source' else (s.get('camera_id') or ('unlinked:'+s.get('source_group_id',s['media_id']))) if strategy=='camera' else (s['camera'] or s.get('source_group_id',s['media_id']))
         groups=sorted({key(s) for s in samples});random.Random(int(seed)).shuffle(groups)
         n=len(groups);nt=min(n,max(1,round(n*ratios[0]/100))) if ratios[0] else 0;nv=min(n-nt,round(n*ratios[1]/100))
@@ -95,6 +107,7 @@ class DatasetService:
             for i,split in enumerate(active):
                 if split not in assignment.values():
                     counts=Counter(assignment.values());g=next(g for g in reversed(groups) if counts[assignment[g]]>1);assignment[g]=split
+        if preset:assignment=assign_groups(samples,key,ratios,int(seed))
         for s in samples:s['split']=assignment[key(s)]
         counts={x:sum(s['split']==x for s in samples) for x in ['train','val','test']}
         limited=False
@@ -105,7 +118,12 @@ class DatasetService:
         near_cross=any(a['split']!=b['split'] and (int(a['perceptual_hash'],16)^int(b['perceptual_hash'],16)).bit_count()<=4 for i,a in enumerate(samples) for b in samples[:i])
         if near_cross:limited=True;warnings.append('LIMITED：跨集合存在高相似度画面，不能宣称独立工业验证。')
         if strategy=='random':limited=True;warnings.append('LIMITED：随机图片划分仅作工程管线测试，不可用于工业泛化结论。')
-        return dict(preview,samples=samples,issues=issues,warnings=sorted(set(warnings)),split_counts=counts,expected_counts={x:len(samples)*r/100 for x,r in zip(['train','val','test'],ratios)},split_status='BLOCKED' if issues else 'LIMITED' if limited else 'PASS',source_groups=len({s['source_group_id'] for s in samples}),split_groups=n,cross_source_groups=len(cross_sources),near_duplicate_cross_split=near_cross)
+        statistics=split_statistics(samples,ratios)
+        if preset:
+            if not ratios[2]:limited=True;warnings.append('LIMITED：没有独立Test集，不生成最终泛化评估结论。')
+            for name,stats in statistics.items():
+                if stats['images'] and any(not stats['classes'].get(c['uuid'],0) for c in preview['classes']):limited=True;warnings.append('LIMITED：'+name+'缺少部分目标类别样本。')
+        return dict(preview,preset=preset,statistics=statistics,effective_strategy=strategy,requested_strategy=requested_strategy,samples=samples,issues=issues,warnings=sorted(set(warnings)),split_counts=counts,expected_counts={x:len(samples)*r/100 for x,r in zip(['train','val','test'],ratios)},split_status='BLOCKED' if issues else 'LIMITED' if limited else 'PASS',source_groups=len({s['source_group_id'] for s in samples}),split_groups=n,cross_source_groups=len(cross_sources),near_duplicate_cross_split=near_cross)
 
     def candidates(self,root=None):
         with self.store.open(root) as (_,db,_),db.transaction() as session:
@@ -157,6 +175,10 @@ class DatasetService:
             return {'samples':samples,'classes':mapping,'issues':issues,'warnings':sorted(set(warnings)),'revisions':revisions,'count':len(samples),'objects':sum(len(s['annotation']['objects']) for s in samples),'groups':len({s['camera'] or s.get('source_group_id',s['media_id']) for s in samples})}
 
     def freeze(self,context,payload):
+        if 'draft_revision' in payload:payload=self.lifecycle_freeze_payload(payload)
+        elif payload.get('dataset_id'):
+            record=self.load_dataset(payload['dataset_id'],payload['root'])
+            if record and record['details'].get('draft'):raise AppError('DRAFT_VALIDATION','持久化草稿必须按保存修订检查并冻结。')
         root=payload['root'];name=payload.get('name','').strip();strategy=payload.get('strategy','grouped')
         if not name or len(name)>120:raise AppError('DATASET_NAME','数据集名称不能为空且不超过120个字符。')
         if strategy not in {'grouped','random','source','camera'}:raise AppError('SPLIT_STRATEGY','划分策略无效。')
@@ -164,9 +186,10 @@ class DatasetService:
         ratios=payload.get('ratios',[70,20,10])
         if len(ratios)!=3 or any(v<0 for v in ratios) or sum(ratios)!=100:raise AppError('SPLIT_RATIOS','Train/Val/Test比例必须非负且合计100。')
         admission=payload.get('admission','reviewed')
-        split=self.split_preview(payload['frame_ids'],root,strategy=strategy,ratios=ratios,seed=payload.get('seed',123),allow_leakage=payload.get('allow_leakage',False),admission=admission)
+        split=self.split_preview(payload['frame_ids'],root,strategy=strategy,ratios=ratios,seed=payload.get('seed',123),allow_leakage=payload.get('allow_leakage',False),admission=admission,preset=payload.get('preset'),pipeline_fallback=payload.get('pipeline_fallback',False),fault_ids=payload.get('fault_ids'))
         if split['issues']:raise AppError('DATASET_INVALID','冻结检查失败：'+'；'.join(split['issues'][:4]))
         if admission=='experimental' and split['split_status']=='LIMITED' and not payload.get('allow_limited'):raise AppError('SPLIT_LIMITED','来源不足或泄漏风险：仅明确同意工程管线测试后可冻结LIMITED实验版本。')
+        strategy=split['effective_strategy'];ratios=list(PRESETS.get(payload.get('preset'),ratios))
         samples=split['samples'];warnings=split['warnings'];seed=int(payload.get('seed',123));splits=split['split_counts'];preview=split
         camera_ids=sorted({s['camera_id'] or '__unlinked__' for s in samples})
         if admission=='experimental' and len(camera_ids)>1 and not payload.get('allow_multi_camera'):raise AppError('MULTI_CAMERA_CONSENT','包含多个摄像头/未关联来源，必须明确同意共享数据集。')
@@ -182,7 +205,7 @@ class DatasetService:
                 label_library=[row_dict(r) for r in session.scalars(select(LabelCategory))]
             version_id=str(uuid4());base=folder/'datasets'/dataset_id;base.mkdir(parents=True,exist_ok=True)
             final=base/f'v{number:04d}';stage=base/f'.{version_id}.partial';stage.mkdir();(stage/'images').mkdir()
-            snapshot={'format':'ivad-dataset','format_version':1,'project_id':project_id,'dataset_id':dataset_id,'version_id':version_id,'version':number,'name':name,'created_at':utc_now(),'strategy':strategy,'ratios':ratios,'seed':seed,'classes':preview['classes'],'label_library':label_library,'samples':samples,'rois':rois,'clip_labels':clips,'media':media,'warnings':sorted(set(warnings))}
+            snapshot={'format':'ivad-dataset','format_version':1,'project_id':project_id,'dataset_id':dataset_id,'version_id':version_id,'version':number,'name':name,'created_at':utc_now(),'dataset_scope':payload.get('dataset_scope'),'draft_revision':payload.get('draft_revision'),'draft_validation_signature':payload.get('draft_signature'),'preset':payload.get('preset'),'statistics':split['statistics'],'strategy':strategy,'ratios':ratios,'seed':seed,'classes':preview['classes'],'label_library':label_library,'samples':samples,'rois':rois,'clip_labels':clips,'media':media,'warnings':sorted(set(warnings))}
             if admission=='experimental':snapshot['admission']={'policy':'human-auto-v1','scope':'EXPERIMENT_ONLY','validation_level':'AUTO_CHECKED_HUMAN','independent_review':False,'split_status':split['split_status'],'allow_limited':bool(payload.get('allow_limited')),'allow_multi_camera':bool(payload.get('allow_multi_camera')),'camera_ids':camera_ids,'source_groups':split['source_groups'],'expected_counts':split['expected_counts'],'actual_counts':splits,'near_duplicate_cross_split':split['near_duplicate_cross_split']}
             for index,s in enumerate(samples):
                 context.check();source=safe_path(folder,s['source_image']);filename=s['frame_id']+source.suffix
@@ -192,7 +215,10 @@ class DatasetService:
             atomic_json(stage/'manifest.json',snapshot);checksum=file_hash(stage/'manifest.json');context.check()
             renamed=False
             try:
-              with db.transaction() as session:
+              with db.transaction(camera_write=True) as session:
+                if 'draft_revision' in payload:
+                    live_dataset=session.get(Dataset,dataset_id)
+                    if not live_dataset or live_dataset.revision!=payload['draft_revision'] or live_dataset.details['draft']['state']!='VALIDATED' or live_dataset.details['draft']['validation']['signature']!=payload['draft_signature']:raise AppError('DRAFT_CONFLICT','冻结期间草稿发生变化，未提交。')
                 current_media={r.id:r for r in session.scalars(select(MediaAsset))}
                 for c in preview['classes']:
                     live_label=session.get(LabelCategory,c['uuid'])
@@ -207,7 +233,7 @@ class DatasetService:
                 if final.exists():raise AppError('VERSION_EXISTS','版本目录已存在，禁止覆盖；请进行一致性检查。')
                 stage.rename(final)
                 renamed=True
-                summary={'admission':snapshot.get('admission',{'policy':'reviewed-legacy'}),'images':len(samples),'objects':preview['objects'],'splits':splits,'classes':preview['classes'],'warnings':snapshot['warnings']}
+                summary={'state':'FROZEN','draft_revision':payload.get('draft_revision'),'statistics':split['statistics'],'admission':snapshot.get('admission',{'policy':'reviewed-legacy'}),'images':len(samples),'objects':preview['objects'],'splits':splits,'classes':preview['classes'],'warnings':snapshot['warnings']}
                 session.add(DatasetVersion(id=version_id,dataset_id=dataset_id,number=number,path=(final/'manifest.json').relative_to(folder).as_posix(),sha256=checksum,summary=summary,created_at=utc_now()));session.flush()
                 for s in samples:session.add(DatasetSample(id=str(uuid4()),version_id=version_id,frame_id=s['frame_id'],split=s['split'],sha256=s['sha256'],annotation=s['annotation']))
             except Exception:

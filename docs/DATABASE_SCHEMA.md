@@ -61,3 +61,14 @@ Schema仍0008，无新增表、列或migration；Camera/Media/Frame/Annotation/D
 统一派生接口ivad_app/video/timestamps.py：media_relative_us=pts_us-media.video.origin_us；返回media_relative_seconds。origin缺失则显式使用历史time_us并给出待核验警告；时间不一致/越界保留诊断，不在读路径迁移。source_relative_us递归累加每级CLIP.clip_info.first_source_time_us（实际首帧在父媒体中的相对时间）；缺失映射返回未知，不用requested_start_us猜测。time_base保留流时间基；capture_datetime缺省None，没有从文件名推断拍摄日期。
 
 DatasetService.screening和MediaService.frames/frame_image返回这些派生键；新冻结样本可选timing对象保留上述语义。旧DatasetVersion/manifest/SHA256不重写；TrainingRun和ModelRegistry结构不变。播放器经同一relative_time_us函数，标注页只增相对时间信息，不改标注内容。
+
+
+## Schema0009：持久化Dataset草稿（2026-10-16）
+
+0008→0009增量迁移只在datasets增加details JSON NOT NULL默认{}、revision INTEGER NOT NULL默认0，不重建表、删行或变更UUID；DatasetVersion/Sample、Frame、Annotation、Camera、TrainingRun/ModelVersion表结构不变。沿用迁移前SQLite backup及完整性检查，ProjectInfo.schema同步0009。
+
+Dataset.details：project_id、task=detect、camera_ids、fault_ids、allow_multi_camera、updated_at；draft包含state DRAFT/VALIDATED、revision、members[{frame_id,annotation_id,annotation_revision}]、settings{preset,strategy,ratios,seed,allow_leakage,allow_limited}、saved_at、validation{signature,at,report}。引用和作用域通过业务事务校验；JSON不提供新增数据库外键。保存revision CAS并使旧validation失效；检查不改变内容revision。
+
+冻结仍写既有DatasetVersion及DatasetSample，summary增加state=FROZEN、draft_revision及分集合statistics。新manifest可记录dataset_scope、draft_revision、draft_validation_signature、preset与实际statistics，旧文件和hash不改写。TrainingRun.details新增dataset_id，原version_id继续保留。
+
+旧Dataset默认details={}、revision=0，保留原名称、版本和工件；列表不会因为没有Draft而隐藏它，也不自动猜原草稿成员。真实测试1号本轮只读，原Schema0008未升级；副本0009迁移/重启/冻结已验。下次用户通过新源码打开旧项目时先自动生成迁移备份，再新增字段。

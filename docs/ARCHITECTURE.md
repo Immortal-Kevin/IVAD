@@ -137,3 +137,12 @@ Frame.handling.is_excluded 是可恢复的无效帧状态，保留真值和冻�
 ROI 自动优先视频有效配置，其次有效摄像头配置；按比例、旋转及区域合法性校验，历史配置不覆盖、不合并。管理入口可明确编辑两种配置，无摄像头仍可基本标注。
 
 项目 SettingRecord.camera_detector_configurations 预留配置元数据：独立配置 UUID + Camera UUID + ModelVersion UUID + 多个 LabelCategory UUID + 可选 ROI scope。ModelService 提供配置与查询接口；可共享/专用模型、同摄像头多个模型、同模型多个故障。记录默认禁用，仅预留，不执行推理或报警；被配置引用的类别只能禁用，不能物理删除。旧 Model Registry 与训练记录不改。PACKAGING_FREEZE = TRUE。
+
+
+## 2026-10-16 Dataset生命周期增量设计
+
+Dataset仍为单项目SQLite内的聚合根；0009复用既有datasets表，只增加details JSON与revision。details保存project_id/task/camera_ids/fault_ids/updated_at及嵌入draft（members含Frame/Annotation UUID与标注revision，settings、saved_at、state及validation签名/报告）。逻辑DatasetDraft不另造重复表。保存采用BEGIN IMMEDIATE与内容revision CAS，事务完成后GUI才标已保存；读写绑定提交时项目根。
+
+GUI的临时勾选、未保存编辑与已持久化草稿分离。手动保存是持久化边界，退出/切换可保存、放弃或取消。修改使检查失效。校验重新读取真实媒体/标注，记录签名；冻结按保存的Dataset UUID与revision执行，提交前再比较草稿/标注/来源/类别，生成不可变manifest、图片和SQL版本关系。原DatasetVersion/Sample表不变，旧工件不重写。
+
+分配器优先原视频根组（派生片段同组），按组大小与正常/异常/故障分布做确定性贪心近似，保存实际分配而不强凑比例。隔离工程回退仅小样本且明确双重风险同意，effective_strategy与LIMITED写入版本。训练页按Dataset过滤实际版本，排除草稿、缺Train/Val或清单损坏项；强制训练前全量校验，TrainingRun增加Dataset UUID元数据，不改GPU Worker或模型接口。

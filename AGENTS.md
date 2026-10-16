@@ -24,3 +24,5 @@ P2复用P1 GUI/数据库/日志/队列；普通解码/人工标注CPU允许，AI
 2026-10-15 用户批准P3 Dataset UX Hotfix已完成：68项回归及200% GUI1项通过，Schema0008不变。新GUI用显式human-auto-v1实验政策，不改原审核/旧冻结政策；真实8525来源1组200帧划分LIMITED。163项选取保护哈希0变化。P3原成果完成，停止待审，打包冻结，P4–P6未授权。报告reports/P3_DATASET_UI_HOTFIX.md及对应VALIDATION/SPLIT结果。
 
 2026-10-15 P3 Dataset Hotfix v2 PASS：97不同用例/200% GUI1项通过。8525为旧GUI误显带偏移PTS，200条time_us正确；仅派生时间，不写历史。Schema0008不变，165项保护hash0变化，P3原成果保留，停止待审，打包冻结、P4–P6未授权。报告reports/P3_DATASET_UX_HOTFIX_V2.md。
+
+2026-10-16 Dataset Lifecycle Hotfix PASS：127不同用例、后续11复验/200%3项通过。Schema头0009，只增Dataset.details/revision；真实项目仍0008只读，166项保护hash0变化。旧内存草稿不可虚构恢复，副本200重启/版本已验；停止待审，不重训，PACKAGING_FREEZE=TRUE，P4–P10未授权。报告reports/P3_DATASET_PERSISTENCE_HOTFIX.md等四份。

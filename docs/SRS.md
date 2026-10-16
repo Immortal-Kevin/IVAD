@@ -129,3 +129,10 @@ IVAD 是一体式工业视觉异常检测平台。全部日常操作经**同一 
 ## 2026-10-15 v3实施更新
 
 2026-10-15实施状态：v3授权P2最终PASS后进入P3。FR-030–038在YOLO26n/YOLO11n Detection与RTX5070Ti范围实现源码GUI训练/独立验证/注册审批/回滚，验收见P3_ACCEPTANCE.md；工业准确率/跨机/Intel未验收。PACKAGING_FREEZE = TRUE，P4–P6未授权。
+
+
+## 2026-10-16 P3 数据集生命周期实施状态
+
+已实现：显式Dataset UUID及项目/摄像头/故障/Detection关联；复用Dataset行持久保存草稿成员和Annotation UUID、设置、内容revision与保存时间；保存/失败保留/退出与切换提示/重启恢复；DRAFT、VALIDATED草稿状态和不可变FROZEN版本分离。三预设标准70/20/10、小样本80/20/0、高级自定义；按完整来源组分配并报告实际图片/目标/类别/正常异常/泄漏。小样本来源不足仅经明确同意才允许LIMITED隔离工程图片划分，不视为工业泛化证据。训练选择Dataset及实际冻结Version，强制预检。
+
+Schema目标0009，仅增Dataset.details JSON/revision；真实项目本轮保持0008，只读调查与备份，迁移/持久化/冻结在副本验证。未实现自动保存、人工拖动调整或日期/工况组；未重新训练、未进入P4–P10、未打包。详见本轮四份P3_DATASET_*生命周期报告及操作指南。

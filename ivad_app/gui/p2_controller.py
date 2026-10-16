@@ -23,7 +23,7 @@ class P2Controller(QObject):
         self.media.load_requested.connect(self.load_media);self.media.relocate_requested.connect(self.relocate);self.media.clip_requested.connect(self.save_clip);self.media.clip_delete_requested.connect(self.delete_clip)
         self.media.check_requested.connect(self.check);self.media.cancel_requested.connect(self.cancel_tasks)
         self.media.labels_requested.connect(self.labels);self.annotation.labels_requested.connect(self.labels);self.annotation.saved.connect(self.refresh)
-        self.dataset.version_check_requested.connect(self.check_dataset_version);self.dataset.split_requested.connect(self.split_preview);self.dataset.batch_requested.connect(self.dataset_batch);self.dataset.preview_requested.connect(self.preview);self.dataset.freeze_requested.connect(lambda p:self.submit('p2_freeze',p));self.dataset.export_requested.connect(lambda p:self.submit('p2_export',p))
+        self.dataset.save_requested.connect(self.save_dataset_draft);self.dataset.version_check_requested.connect(self.check_dataset_version);self.dataset.split_requested.connect(self.split_preview);self.dataset.batch_requested.connect(self.dataset_batch);self.dataset.preview_requested.connect(self.preview);self.dataset.freeze_requested.connect(lambda p:self.submit('p2_freeze',p));self.dataset.export_requested.connect(lambda p:self.submit('p2_export',p))
         self.timer=QTimer(self);self.timer.setInterval(700);self.timer.timeout.connect(self.watch_jobs);self.timer.start()
         from ivad_app.gui.p2_hotfix_controller import P2HotfixController
         self.hotfix=P2HotfixController(self)
@@ -44,7 +44,7 @@ class P2Controller(QObject):
         def collect():
             frames=self.s.media.frames(root);states=self.s.annotations.frames_status(root)
             for frame in frames:frame.update(states.get(frame['id'],{}))
-            return self.s.media.list(root,include_inactive=self.media.show_inactive.isChecked()),frames,self.s.annotations.labels(root),self.s.datasets.screening(root),self.s.datasets.versions(root),self.s.cameras.list(root)
+            return self.s.media.list(root,include_inactive=self.media.show_inactive.isChecked()),frames,self.s.annotations.labels(root),self.s.datasets.screening(root),self.s.datasets.versions(root),self.s.cameras.list(root),self.s.datasets.list_datasets(root)
         def done(result,error):
             self.refreshing=False
             if root!=self.root:self.refresh();return
@@ -52,7 +52,7 @@ class P2Controller(QObject):
                 self.dataset.data_error(error)
                 if self.refresh_pending:QTimer.singleShot(0,self.refresh)
                 return
-            media,frames,labels,candidates,versions,cameras=result;selected=self.media.media_id
+            media,frames,labels,candidates,versions,cameras,datasets=result;selected=self.media.media_id
             self.media.media_rows=media
             put_table(self.media.table,[[('CLIP · ' if r.get('kind')=='CLIP' else '')+r['name'],r['mode'],r['state'],f"{r['video'].get('duration_us',0)/1000000:.3f}s",r['video'].get('codec',''),f"{r['video'].get('display_width','')}×{r['video'].get('display_height','')}"] for r in media])
             if not selected:
@@ -67,7 +67,7 @@ class P2Controller(QObject):
             old_clip=self.media.clip_label.currentData();self.media.clip_label.clear();self.media.clip_label.addItem('无故障类别',None)
             for label in labels:self.media.clip_label.addItem(label['name'],label['id'])
             self.media.clip_label.setCurrentIndex(max(0,self.media.clip_label.findData(old_clip)))
-            self.dataset.set_data(candidates,cameras,labels,versions,self.annotation.camera_id)
+            self.dataset.set_data(candidates,cameras,labels,versions,self.annotation.camera_id);self.dataset.set_lifecycle_data(datasets,self.s.projects.current)
             if self.refresh_pending:QTimer.singleShot(0,self.refresh)
         self.runner.run(collect,done)
 
@@ -146,11 +146,7 @@ class P2Controller(QObject):
     def labels(self):
         if not self.root:return
         dialog=LabelDialog(self.s.annotations,self.runner,self.root,self.refresh,self.window);dialog.exec()
-    def preview(self,ids):
-        root=self.root
-        def done(result,error):
-            if not error:self.dataset.action_info.setText(f"检查：{result['count']}图片/{result['objects']}目标/{result['groups']}独立组\n"+'；'.join(result['issues']+result['warnings']))
-        self.runner.run(lambda:self.s.datasets.preview(ids,root,admission='experimental'),done)
+    def preview(self,ids):self.split_preview()
     def check_dataset_version(self,version_id):
         root=self.root
         def done(result,error):
@@ -158,14 +154,29 @@ class P2Controller(QObject):
             import json
             self.dataset.detail.setPlainText(error or json.dumps(result,ensure_ascii=False,indent=2));self.dataset.action_info.setText(error or '冻结版本检查：'+result['status']+'；来源记录见详情。此检查不代替训练准入或工业审核。')
         self.runner.run(lambda:self.s.datasets.check_version(version_id,root),done)
-    def split_preview(self,payload):
-        root=self.root
-        def done(result,error):
+    def save_dataset_draft(self,continuation=None):
+        d=self.dataset;root=self.root
+        if d.draft_saving:return
+        try:value=d.draft_save_payload()
+        except Exception as exc:d.action_info.setText(str(exc));return
+        d.draft_saving=True;d.setEnabled(False)
+        def done(record,error):
+            d.draft_saving=False;d.setEnabled(bool(self.root))
             if root!=self.root:return
-            if error:self.dataset.split_detail.setPlainText(error);return
-            import json
-            self.dataset.split_detail.setPlainText(json.dumps({k:result[k] for k in ['split_status','count','objects','classes','expected_counts','split_counts','source_groups','split_groups','cross_source_groups','near_duplicate_cross_split','issues','warnings']},ensure_ascii=False,indent=2))
-        self.runner.run(lambda:self.s.datasets.split_preview(payload['frame_ids'],root,**{k:payload[k] for k in ['strategy','ratios','seed','allow_leakage','admission']}),done)
+            if error:d.action_info.setText('草稿保存失败：'+error+'；未保存修改仍在内存。');d.update_identity();return
+            d.active_dataset=record['id'];d.draft_dirty=False;d.dataset_records[record['id']]=record;d.set_lifecycle_data(list(d.dataset_records.values()),self.s.projects.current);d.action_info.setText('已保存草稿：'+record['details']['draft']['saved_at']+' · Dataset UUID '+record['id']);self.refresh()
+            if continuation:continuation()
+        self.runner.run(lambda:self.s.datasets.save_draft(value,root),done)
+    def split_preview(self,payload=None):
+        root=self.root;d=self.dataset
+        if not d.active_dataset or d.draft_dirty:d.action_info.setText('请先保存数据集草稿，再自动划分与检查。');return
+        did=d.active_dataset;revision=d.draft_revision;d.setEnabled(False)
+        def done(result,error):
+            d.setEnabled(bool(self.root))
+            if root!=self.root or did!=d.active_dataset:return
+            if error:d.split_detail.setPlainText(error);d.active_validated=False;d.update_identity();return
+            d.dataset_records[did]=result['dataset'];d.load_record(result['dataset']);d.show_plan(result['plan']);d.action_info.setText('草稿检查：'+result['plan']['split_status']+'；图片数与目标数分开统计。')
+        self.runner.run(lambda:self.s.datasets.validate_draft(did,root,revision),done)
     def dataset_batch(self,action,ids):
         root=self.root
         if not ids:self.dataset.batch_info.setText('成功0，跳过0，失败0：请先勾选当前筛选图片。');return
