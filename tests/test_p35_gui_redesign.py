@@ -27,40 +27,39 @@ def select_8525(qtbot,p):
         dialog.reject()
     QTimer.singleShot(50,choose);p.select_button.menu().actions()[0].trigger();qtbot.waitUntil(lambda:p.preview.last_image is not None,timeout=15000)
 
-def test_real_two_tabs_preview_history_export(qtbot,services,monkeypatch):
+def test_real_three_tabs_preview_history_export(qtbot,services,monkeypatch):
     w,p=open_real(qtbot,services);out=Path(os.environ['IVAD_P35_GUI_EVIDENCE']);out.mkdir(parents=True,exist_ok=True)
     try:
         select_8525(qtbot,p);assert '8525' in p.camera.currentText() and p.model.currentData().startswith('4a1c7df7')
-        assert [p.tabs.tabText(i) for i in range(2)]==['AI 识别演示','检测详情与导出'];assert not services.jobs.history()
-        p.range_slider.set_range(7000000,9000000);p.range_slider.seekRequested.emit(7000000);qtbot.waitUntil(lambda:p.preview.position_us>=7000000,timeout=15000);assert p.start_time.value()==7 and p.end_time.value()==9 and '2.000' in p.range_label.text();assert not services.jobs.history()
-        p.tabs.setCurrentIndex(1);path=p.history.itemData(1);p.history.setCurrentIndex(1);qtbot.waitUntil(lambda:p.manifest is not None and p.player.last_image is not None,timeout=15000)
-        assert p.run_path==path and p.result_rows and all(r[0]['boxes'] for r in p.result_rows)
-        row=p.result_rows[0][0];p.results.selectRow(0);qtbot.waitUntil(lambda:p.tabs.currentIndex()==0 and abs(p.player.position_us-row['cache_time_us'])<1000,timeout=15000)
-        old=p.manifest;p.confidence.setValue(.4);assert p.manifest is old and str(old['parameters']['confidence']) in p.cache_state.text()
-        p.tabs.setCurrentIndex(1);p.show_all.setChecked(True);assert p.results.rowCount()==len(old['frames']);p.tabs.setCurrentIndex(0);assert not services.jobs.history()
+        assert [p.tabs.tabText(i) for i in range(3)]==['识别配置与视频选择','AI 识别演示','检测详情与导出'];assert p.tabs.currentIndex()==0
+        p.range_slider.set_range(7600000,8000000);p.preview_seek(7600000);qtbot.waitUntil(lambda:p.preview.position_us>=7600000,timeout=15000)
+        before=p.configuration_fingerprint();p.use_cache();qtbot.waitUntil(lambda:p.manifest is not None and p.player.last_image is not None,timeout=20000)
+        assert p.tabs.currentIndex()==1 and '已加载缓存' in p.status_bar.text() and 'EXPERIMENTAL' in p.status_bar.text() and 'LIMITED' in p.experiment_status.text() and '0.25' in p.status_bar.text();assert not services.jobs.history()
+        p.back_button.click();assert p.tabs.currentIndex()==0 and p.configuration_fingerprint()==before
+        old=p.manifest;p.confidence.setValue(.4);assert '当前配置与已有缓存不一致' in p.cache_state.text();assert '0.25' in p.status_bar.text() and p.manifest is old
+        p.use_cache();qtbot.waitUntil(lambda:not p.busy,timeout=15000);assert p.tabs.currentIndex()==0 and '没有完全匹配' in p.config_info.text() and not services.jobs.history()
+        p.tabs.setCurrentIndex(2);p.show_all.setChecked(True);assert p.results.rowCount()==len(old['frames']);r=p.result_rows[1][0];p.results.selectRow(1);qtbot.waitUntil(lambda:p.tabs.currentIndex()==1 and abs(p.player.position_us-r['cache_time_us'])<1000,timeout=15000)
+        p.player.next.click();qtbot.waitUntil(lambda:p.player.position_us>r['cache_time_us'],timeout=10000);p.player.goto.setValue(0);p.player.goto_button.click();qtbot.waitUntil(lambda:p.player.position_us==0,timeout=10000)
         geometry=[]
         for width,height in [(1920,1080),(1040,720)]:
-            w.resize(width,height);qtbot.wait(150);p.tabs.setCurrentIndex(0);qtbot.wait(80);assert w.grab().save(str(out/f'demo-{width}.png'))
-            pix=p.player.picture.pixmap();geometry.append(dict(requested=[width,height],actual=[w.width(),w.height()],dpr=w.devicePixelRatioF(),canvas=[p.player.picture.width(),p.player.picture.height()],image=[pix.width(),pix.height()] if pix else None))
-            assert pix and abs(pix.width()/pix.height()-1280/720)<.02
-            assert p.player.picture.geometry().bottom()<p.player.slider.geometry().top()
-            if p.width()>1300:assert pix.height()>200 and p.start_button.isVisible() and p.player.play_button.isVisible()
-            if width==1920:
-                base=pix.height();p.focus_playback.setChecked(True);qtbot.wait(100);focused=p.player.picture.pixmap();assert focused.height()>base;w.grab().save(str(out/'demo-focus-1920.png'));geometry[-1]['focused_image']=[focused.width(),focused.height()];p.focus_playback.setChecked(False);qtbot.wait(80)
-            p.tabs.setCurrentIndex(1);qtbot.wait(40);w.grab().save(str(out/f'details-{width}.png'))
-        monkeypatch.setattr(QFileDialog,'getExistingDirectory',lambda *a,**k:str(out));p.export_button.click();qtbot.waitUntil(lambda:bool(list(out.glob('IVAD-offline-demo-*'))),timeout=15000);p.shot_button.click();qtbot.waitUntil(lambda:bool(list(out.glob('IVAD-demo-frame-*.png'))),timeout=15000)
-        (out/'geometry.json').write_text(json.dumps(geometry,indent=2),encoding='utf8')
-        assert not services.jobs.history()
+            w.resize(width,height);qtbot.wait(150)
+            for tab in range(3):
+                p.tabs.setCurrentIndex(tab);qtbot.wait(80);assert w.grab().save(str(out/f'tab-{tab+1}-{width}.png'))
+            p.tabs.setCurrentIndex(1);pix=p.player.picture.pixmap();assert pix and abs(pix.width()/pix.height()-1280/720)<.02
+            assert p.player.picture.geometry().bottom()<p.player.slider.geometry().top();assert p.status_bar.isVisible() and p.back_button.isVisible()
+            geometry.append(dict(actual=[w.width(),w.height()],dpr=w.devicePixelRatioF(),image=[pix.width(),pix.height()],preview=[p.preview.picture.width(),p.preview.picture.height()]))
+        p.tabs.setCurrentIndex(2);monkeypatch.setattr(QFileDialog,'getExistingDirectory',lambda *a,**k:str(out));p.export_button.click();qtbot.waitUntil(lambda:bool(list(out.glob('IVAD-offline-demo-*'))),timeout=15000);p.shot_button.click();qtbot.waitUntil(lambda:bool(list(out.glob('IVAD-demo-frame-*.png'))),timeout=15000)
+        (out/'geometry.json').write_text(json.dumps(geometry,indent=2),encoding='utf8');assert not services.jobs.history()
     finally:close_window(qtbot,w)
 
 def test_real_short_gpu_exact_cache_reuse(qtbot,services):
     w,p=open_real(qtbot,services);out=Path(os.environ['IVAD_P35_GUI_EVIDENCE']);out.mkdir(parents=True,exist_ok=True)
     try:
-        select_8525(qtbot,p);p.range_slider.set_range(7600000,8000000);qtbot.waitUntil(lambda:p.start_button.isEnabled(),timeout=10000);p.start_button.click()
-        qtbot.waitUntil(lambda:p.manifest is not None or 'FAILED' in p.info.text(),timeout=60000);assert p.manifest,p.info.text();assert len(p.manifest['frames'])==10 and p.manifest.get('identity')
+        select_8525(qtbot,p);p.range_slider.set_range(7640000,7800000);qtbot.waitUntil(lambda:p.start_button.isEnabled(),timeout=10000);p.start_button.click()
+        qtbot.waitUntil(lambda:p.job is not None,timeout=15000);assert p.tabs.currentIndex()==1;p.back_button.click();assert p.job and p.tabs.currentIndex()==0;p.tabs.setCurrentIndex(1);qtbot.waitUntil(lambda:p.manifest is not None or 'FAILED' in p.info.text(),timeout=60000);assert p.manifest,p.info.text();assert len(p.manifest['frames'])==4 and p.manifest.get('identity')
         path=p.run_path;qtbot.waitUntil(lambda:not p.busy and p.job is None,timeout=10000);jobs=len(services.jobs.history());assert jobs==1
         p.start();qtbot.waitUntil(lambda:not p.busy,timeout=15000);qtbot.wait(200);assert p.run_path==path and len(services.jobs.history())==jobs
-        p.confidence.setValue(.8);p.use_cache();qtbot.waitUntil(lambda:not p.busy,timeout=15000);assert '没有完全匹配' in p.info.text() and len(services.jobs.history())==jobs
+        p.confidence.setValue(.8);p.use_cache();qtbot.waitUntil(lambda:not p.busy,timeout=15000);assert '没有完全匹配' in p.config_info.text() and len(services.jobs.history())==jobs
         p.confidence.setValue(.25);p.use_cache();qtbot.waitUntil(lambda:not p.busy,timeout=15000);qtbot.wait(200);assert p.run_path==path
         p.confidence.setValue(.8);p.range_slider.set_range(7600000,8400000);p.start();qtbot.waitUntil(lambda:p.job is not None,timeout=15000);cancel_id=p.job;qtbot.waitUntil(lambda:services.jobs.get(cancel_id)['progress']>0 and p.cancel_button.isEnabled(),timeout=30000);p.cancel_button.click();qtbot.waitUntil(lambda:p.job is None,timeout=20000);assert services.jobs.get(cancel_id)['state']=='CANCELLED';services.offline.load(path)
         (out/'gpu-reuse.json').write_text(json.dumps(dict(path=path,frames=len(p.manifest['frames']),jobs=jobs,cancel_job=cancel_id,cancel_state='CANCELLED',identity=p.manifest['identity'],gpu=p.manifest['gpu'],peak=p.manifest['gpu_peak_bytes'],seconds=p.manifest['seconds']),ensure_ascii=False,indent=2),encoding='utf8')

@@ -16,3 +16,6 @@ Part A先执行真实P3 GUI检查/现有4a1c7df7完整性/真实CUDA前向/新ON
 
 
 2026-10-16 P3.5 GUI重构：两页/统一视频选择/真实探测/双手柄原片预览/大回放与详情导出，57不同用例及100%/200%复验通过；必要10帧CUDA及schema2精确缓存通过。真实项目全表、1120工件、12历史缓存文件0变化，无schema/Worker/TrainingService/Registry修改，无新训练或打包。PACKAGING_FREEZE=TRUE，P4–P10未授权，停止待审。详见reports/P3_5_DEMO_GUI_HOTFIX.md。
+
+
+2026-10-16 P3.5 Three-Tab Hotfix：三页、真实状态、返回配置、自动跳转/完整身份加载及4帧CUDA通过；59不同用例PASS，2个combo popup用例XFAIL，完整主题验收PARTIAL，Windows系统浅色切换NOT TESTED。原项目全表/1120工件/13视频与缓存文件hash不变；只改GUI/事件/主题/测试，无引擎或schema修改。PACKAGING_FREEZE=TRUE，P4–P10未授权，停止待审。详见reports/P3_5_THREE_TAB_GUI_HOTFIX.md。
