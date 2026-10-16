@@ -54,7 +54,7 @@ class DatasetLifecycle:
 
     @staticmethod
     def validation_signature(plan):
-        value={'samples':plan['samples'],'classes':plan['classes'],'issues':plan['issues'],'split_counts':plan['split_counts'],'split_status':plan['split_status']}
+        value={'samples':plan['samples'],'classes':plan['classes'],'issues':plan['issues'],'split_counts':plan['split_counts'],'split_status':plan['split_status'],'warnings':plan.get('warnings',[]),'configuration':plan.get('configuration')}
         return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode('utf-8')).hexdigest()
 
     def draft_plan(self,dataset_id,root=None,expected_revision=None):
@@ -62,6 +62,10 @@ class DatasetLifecycle:
         if not d or not d['details'].get('draft'):raise AppError('DRAFT_MISSING','请先保存数据集草稿。')
         if expected_revision is not None and d['revision']!=expected_revision:raise AppError('DRAFT_CONFLICT','草稿修订已变化，请重新载入。')
         draft=d['details']['draft'];settings=draft['settings'];ids=[m['frame_id'] for m in draft['members']]
+        mode=settings.get('validation_mode');engineering=mode=='engineering'
+        if mode not in {None,'engineering','strict'}:raise AppError('DATASET_MODE','数据集验证模式无效。')
+        settings=dict(settings)
+        if mode:settings.update(allow_leakage=engineering,allow_limited=engineering)
         plan=self.split_preview(ids,root,strategy=settings.get('strategy','source'),ratios=settings.get('ratios',[70,20,10]),seed=settings.get('seed',123),allow_leakage=settings.get('allow_leakage',False),admission='experimental',preset=settings.get('preset','standard'),pipeline_fallback=bool(settings.get('allow_leakage') and settings.get('allow_limited')),fault_ids=d['details']['fault_ids'])
         with self.store.open(root) as (_,db,_),db.transaction() as s:
             for item in draft['members']:
@@ -71,8 +75,19 @@ class DatasetLifecycle:
                     mid=s.get(MediaAsset,frame.media_id)
                     if (mid.camera_id or '__unlinked__') not in d['details']['camera_ids']:plan['issues'].append('图片摄像头超出数据集授权')
         if any(o['label_id'] not in d['details']['fault_ids'] for sample in plan['samples'] for o in sample['annotation']['objects']):plan['issues'].append('目标类别超出数据集故障范围')
+        plan['configuration']=settings
+        if mode=='strict' and plan['split_status']!='PASS':plan['issues'].append('严格验证未通过：独立来源、集合完整性或泄漏检查不足。请补充独立样本。')
         if plan['issues']:plan['split_status']='BLOCKED'
+        plan['risk_confirmation_required']=engineering and plan['split_status']=='LIMITED' and draft.get('risk_ack')!=self.validation_signature(plan)
         return d,plan
+
+    def acknowledge_draft_risk(self,dataset_id,signature,root=None,expected_revision=None):
+        d,plan=self.draft_plan(dataset_id,root,expected_revision)
+        if plan['issues'] or not plan['risk_confirmation_required'] or signature!=self.validation_signature(plan):raise AppError('DATASET_RISK','检查结果已变化，请重新检查并确认。')
+        with self.store.open(root) as (_,db,_),db.transaction(camera_write=True) as s:
+            live=s.get(Dataset,dataset_id)
+            if live.revision!=d['revision']:raise AppError('DRAFT_CONFLICT','风险确认时草稿已变化。')
+            details=copy.deepcopy(live.details);details['draft']['risk_ack']=signature;live.details=details
 
     def validate_draft(self,dataset_id,root=None,expected_revision=None):
         d,plan=self.draft_plan(dataset_id,root,expected_revision);signature=self.validation_signature(plan)
@@ -80,11 +95,14 @@ class DatasetLifecycle:
         with self.store.open(root) as (_,db,_),db.transaction(camera_write=True) as s:
             live=s.get(Dataset,dataset_id)
             if not live or live.revision!=d['revision']:raise AppError('DRAFT_CONFLICT','校验期间草稿发生变化，请重试。')
-            details=copy.deepcopy(live.details);draft=details['draft'];draft['state']='DRAFT' if plan['issues'] else 'VALIDATED';draft['validation']={'signature':signature,'at':utc_now(),'report':report};live.details=details
+            details=copy.deepcopy(live.details);draft=details['draft'];draft['state']='DRAFT' if plan['issues'] or plan['risk_confirmation_required'] else 'VALIDATED';draft['validation']={'signature':signature,'at':utc_now(),'report':report};live.details=details
         return {'dataset':self.load_dataset(dataset_id,root),'plan':plan}
 
     def lifecycle_freeze_payload(self,payload):
         d,plan=self.draft_plan(payload['dataset_id'],payload['root'],payload['draft_revision']);draft=d['details']['draft'];validation=draft.get('validation')
         if draft['state']!='VALIDATED' or not validation or plan['issues'] or validation['signature']!=self.validation_signature(plan):raise AppError('DRAFT_VALIDATION','草稿未检查通过或源数据已变化，请保存并重新检查。')
-        settings=draft['settings']
-        return dict(payload,dataset_scope={k:copy.deepcopy(d['details'][k]) for k in ['project_id','task','camera_ids','fault_ids']},fault_ids=d['details']['fault_ids'],name=d['name'],frame_ids=[m['frame_id'] for m in draft['members']],strategy=settings.get('strategy','source'),ratios=settings.get('ratios',[70,20,10]),seed=settings.get('seed',123),allow_leakage=settings.get('allow_leakage',False),allow_limited=settings.get('allow_limited',False),allow_multi_camera=d['details']['allow_multi_camera'],admission='experimental',preset=settings.get('preset','standard'),pipeline_fallback=bool(settings.get('allow_leakage') and settings.get('allow_limited')),draft_signature=validation['signature'])
+        settings=dict(draft['settings'])
+        if settings.get('validation_mode'):
+            engineering=settings['validation_mode']=='engineering'
+            settings.update(allow_leakage=engineering,allow_limited=engineering and draft.get('risk_ack')==validation['signature'])
+        return dict(payload,validation_mode=settings.get('validation_mode','legacy'),risk_ack=draft.get('risk_ack'),dataset_scope={k:copy.deepcopy(d['details'][k]) for k in ['project_id','task','camera_ids','fault_ids']},fault_ids=d['details']['fault_ids'],name=d['name'],frame_ids=[m['frame_id'] for m in draft['members']],strategy=settings.get('strategy','source'),ratios=settings.get('ratios',[70,20,10]),seed=settings.get('seed',123),allow_leakage=settings.get('allow_leakage',False),allow_limited=settings.get('allow_limited',False),allow_multi_camera=d['details']['allow_multi_camera'],admission='experimental',preset=settings.get('preset','standard'),pipeline_fallback=bool(settings.get('allow_leakage') and settings.get('allow_limited')),draft_signature=validation['signature'])

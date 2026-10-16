@@ -29,6 +29,11 @@ class DatasetLifecyclePage:
         for title,control in zip(['Train（训练集）','Val（验证集）','Test（测试集）','随机种子（Seed）'],self.ratios+[self.seed]):advanced.addRow(title,control)
         splitting.insertWidget(2,self.advanced_split);self.strategy.show()
         self.allow_random.setText('明确允许隔离工程图片划分（来源不足时使用，连续帧存在泄漏风险）')
+        self.allow_random.hide();self.allow_limited.hide()
+        self.validation_mode=QComboBox();self.validation_mode.addItem('工程实验（默认）','engineering');self.validation_mode.addItem('严格验证','strict');splitting.insertWidget(3,self.validation_mode)
+        self.mode_help=QLabel('工程实验适合少量录像的训练测试；LIMITED 结果不代表工业识别准确率。严格验证要求独立来源及完整集合。');self.mode_help.setWordWrap(True);splitting.insertWidget(4,self.mode_help)
+        self.split_save_state=QLabel('检查时先原子化保存全部待处理修改（包括图片成员），无需返回新建数据集。');self.split_save_state.setWordWrap(True);splitting.insertWidget(5,self.split_save_state)
+        self.validation_mode.currentIndexChanged.connect(self.mark_draft_dirty)
         self.split_table=table(['集合','目标比例','实际图片','实际比例','正常','异常','目标数','原视频组','重复/泄漏']);self.split_table.setMinimumHeight(155);splitting.insertWidget(splitting.count()-1,self.split_table)
         self.split_button=self.findChild(type(self.save_draft_button),'dataset_split_preview');self.split_button.setText('自动划分并检查已保存草稿')
         self.version_identity=QLabel();self.version_identity.setWordWrap(True);versions.insertWidget(0,self.version_identity)
@@ -75,7 +80,7 @@ class DatasetLifecyclePage:
             self.strategy.setCurrentIndex(self.strategy.findData('source'))
         self.advanced_split.setVisible(value=='custom');self.lifecycle_loading=loading
         if not loading:self.mark_draft_dirty()
-    def settings_payload(self):return {k:self.payload()[k] for k in ['strategy','ratios','seed','allow_leakage','allow_limited']}|{'preset':self.preset.currentData()}
+    def settings_payload(self):return {k:self.payload()[k] for k in ['strategy','ratios','seed']}|{'preset':self.preset.currentData(),'validation_mode':self.validation_mode.currentData()}
     def draft_save_payload(self):
         self.infer_member_faults();by={r['id']:r for r in self.all_rows};cameras={self.target_camera.currentData() or '__unlinked__'}
         if self.allow_multi.isChecked():cameras.update(by[f]['camera_id'] or '__unlinked__' for f in self.draft_frames() if f in by)
@@ -94,12 +99,14 @@ class DatasetLifecyclePage:
             item=self.target_faults.item(i);item.setCheckState(Qt.CheckState.Checked if item.data(Qt.ItemDataRole.UserRole) in details.get('fault_ids',[]) else Qt.CheckState.Unchecked)
         self.allow_multi.setChecked(details.get('allow_multi_camera',False));self.preset.setCurrentIndex(max(0,self.preset.findData(settings.get('preset','standard'))));self.apply_preset()
         self.strategy.setCurrentIndex(max(0,self.strategy.findData(settings.get('strategy','source'))))
+        self.validation_mode.setCurrentIndex(max(0,self.validation_mode.findData(settings.get('validation_mode','engineering'))))
         for spin,value in zip(self.ratios,settings.get('ratios',[70,20,10])):spin.setValue(value)
         self.seed.setValue(settings.get('seed',123));self.allow_random.setChecked(settings.get('allow_leakage',False));self.allow_limited.setChecked(settings.get('allow_limited',False));self.draft_dirty=False;self.active_validated=draft.get('state')=='VALIDATED';self.saved_state.setText((draft.get('state','DRAFT')+' · 已保存 '+draft.get('saved_at','历史版本，需配置并保存草稿'))+' · '+record['id']);self.lifecycle_loading=False
         if draft.get('validation'):self.show_plan(draft['validation']['report'])
         self.update_counts();self.update_identity();self.render_versions()
     def reset_new_draft(self):
         self.lifecycle_loading=True;self.active_dataset=None;self.draft_revision=0;self.new_uuid=str(uuid4());self.drafts['__new__']=[];self.name.clear();self.allow_multi.setChecked(False);self.allow_random.setChecked(False);self.allow_limited.setChecked(False);self.preset.setCurrentIndex(0);self.apply_preset();self.seed.setValue(123)
+        self.validation_mode.setCurrentIndex(0)
         for i in range(self.target_faults.count()):self.target_faults.item(i).setCheckState(Qt.CheckState.Unchecked)
         self.inherit_camera();self.inherit_fault();self.draft_dirty=False;self.active_validated=False;self.saved_state.setText('尚未保存');self.lifecycle_loading=False;self.split_table.setRowCount(0);self.split_detail.clear()
     def choose_dataset(self):
@@ -131,7 +138,11 @@ class DatasetLifecyclePage:
         if self.allow_multi.isChecked():camera_ids.update(r['camera_id'] or '__unlinked__' for r in rows)
         camera_text='、'.join(self.target_camera.itemText(self.target_camera.findData(cid)) for cid in sorted(c for c in camera_ids if c))
         text=f"数据集：{self.name.text() or '未选择'} · UUID：{self.active_dataset or '请先保存'}\n项目：{(self.project_identity or {}).get('name','未打开')} · 摄像头：{camera_text} · 故障："+'、'.join(self.target_faults.item(i).text() for i in range(self.target_faults.count()) if self.target_faults.item(i).checkState()==Qt.CheckState.Checked)+f"\n草稿{len(self.draft_frames())}张 / 正常{sum(r['image_tag']=='NORMAL' for r in rows)} / 异常{sum(r['image_tag']=='ABNORMAL' for r in rows)} · {state}"
-        self.identity.setText(text);self.version_identity.setText(text);self.split_button.setEnabled(bool(self.active_dataset) and not self.draft_dirty and not self.draft_saving);self.freeze_button.setEnabled(bool(self.active_dataset) and self.active_validated and not self.draft_dirty and not self.draft_saving)
+        self.identity.setText(text);self.version_identity.setText(text)
+        ready=bool(self.project_identity and self.name.text().strip() and self.draft_frames() and self.selected_fault_ids()) and sum(w.value() for w in self.ratios)==100
+        self.split_button.setEnabled(ready and not self.draft_saving)
+        self.split_save_state.setText('保存中，请稍候。' if self.draft_saving else '请填写名称、故障类型、图片成员，比例合计须为100%。' if not ready else '检查时将先原子化保存全部待处理修改（包括图片成员）。' if self.draft_dirty else '当前数据集已保存，可直接检查划分。')
+        self.freeze_button.setEnabled(bool(self.active_dataset) and self.active_validated and not self.draft_dirty and not self.draft_saving)
     def render_versions(self):
         if not hasattr(self,'all_version_rows'):self.all_version_rows=[]
         self.version_rows=[v for v in self.all_version_rows if v['dataset_id']==self.active_dataset];self.versions.setRowCount(len(self.version_rows));self.empty_versions.setVisible(not self.version_rows)

@@ -159,22 +159,33 @@ class P2Controller(QObject):
         if d.draft_saving:return
         try:value=d.draft_save_payload()
         except Exception as exc:d.action_info.setText(str(exc));return
-        d.draft_saving=True;d.setEnabled(False)
+        d.draft_saving=True;d.split_save_state.setText('保存中：全部草稿及划分配置。');d.setEnabled(False)
         def done(record,error):
             d.draft_saving=False;d.setEnabled(bool(self.root))
             if root!=self.root:return
-            if error:d.action_info.setText('草稿保存失败：'+error+'；未保存修改仍在内存。');d.update_identity();return
+            if error:d.action_info.setText('草稿保存失败：'+error+'；未保存修改仍在内存。');d.update_identity();d.split_save_state.setText('保存失败：'+error+'；未启动划分，修改仍在内存。');return
             d.active_dataset=record['id'];d.draft_dirty=False;d.dataset_records[record['id']]=record;d.set_lifecycle_data(list(d.dataset_records.values()),self.s.projects.current);d.action_info.setText('已保存草稿：'+record['details']['draft']['saved_at']+' · Dataset UUID '+record['id']);self.refresh()
             if continuation:continuation()
         self.runner.run(lambda:self.s.datasets.save_draft(value,root),done)
     def split_preview(self,payload=None):
         root=self.root;d=self.dataset
-        if not d.active_dataset or d.draft_dirty:d.action_info.setText('请先保存数据集草稿，再自动划分与检查。');return
+        if d.draft_saving or not d.isEnabled():return
+        if not d.active_dataset or d.draft_dirty:
+            self.save_dataset_draft(lambda:self.split_preview());return
         did=d.active_dataset;revision=d.draft_revision;d.setEnabled(False)
         def done(result,error):
             d.setEnabled(bool(self.root))
             if root!=self.root or did!=d.active_dataset:return
             if error:d.split_detail.setPlainText(error);d.active_validated=False;d.update_identity();return
+            if result['plan'].get('risk_confirmation_required'):
+                from PySide6.QtWidgets import QMessageBox
+                answer=QMessageBox.question(d,'工程实验风险确认','我了解当前数据来源可能不足，训练结果仅供工程实验。\n'+ '\n'.join(result['plan']['warnings']),QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No,QMessageBox.StandardButton.No)
+                if answer==QMessageBox.StandardButton.Yes:
+                    signature=self.s.datasets.validation_signature(result['plan']);d.setEnabled(False)
+                    def accept():
+                        self.s.datasets.acknowledge_draft_risk(did,signature,root,revision)
+                        return self.s.datasets.validate_draft(did,root,revision)
+                    self.runner.run(accept,done);return
             d.dataset_records[did]=result['dataset'];d.load_record(result['dataset']);d.show_plan(result['plan']);d.action_info.setText('草稿检查：'+result['plan']['split_status']+'；图片数与目标数分开统计。')
         self.runner.run(lambda:self.s.datasets.validate_draft(did,root,revision),done)
     def dataset_batch(self,action,ids):

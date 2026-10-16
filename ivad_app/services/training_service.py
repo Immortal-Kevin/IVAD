@@ -27,6 +27,26 @@ def validate_parameters(values):
 
 class TrainingService:
     def __init__(self,store,datasets,models,devices,logs,root,settings):self.store,self.datasets,self.models,self.devices,self.logs,self.root,self.settings=store,datasets,models,devices,logs,Path(root),settings
+    def configuration_preflight(self,payload):
+        """Validate a proposed job without creating a run or launching a worker."""
+        root=payload['root'];name=payload['model'];adapter(name,payload.get('operation','train'))
+        parameters=validate_parameters(payload.get('parameters',{}));device=self.devices.require_gpu(payload['device_id'])
+        if not device.id.startswith('nvidia:'):raise AppError('TRAIN_BACKEND','仅支持已检查的NVIDIA CUDA后端。')
+        python=Path(self.settings.preferences().get('worker_python') or self.root/'.venv-nvidia/Scripts/python.exe')
+        if not python.is_file():raise AppError('WORKER_MISSING','GPU环境解释器不存在。')
+        _,snapshot,counts=self.preflight(payload['version_id'],root)
+        base=self.root/'artifacts/p0'/f'{name}.pt'
+        if payload.get('initial_model_id'):
+            base,entry=self.models.verify(payload['initial_model_id'],root)
+            if entry.get('model')!=name:raise AppError('TRAIN_MODEL','初始权重架构与基础模型不一致。')
+        if payload.get('resume_run_id'):
+            old=next((r for r in self.runs(root) if r['id']==payload['resume_run_id']),None)
+            if not old or old['version_id']!=payload['version_id'] or old['model']!=name or old['state'] not in {'FAILED','CANCELLED'}:raise AppError('TRAIN_RESUME','只允许恢复相同数据版本和架构的中断任务。已完成模型请用初始权重微调。')
+            with self.store.open(root) as (folder,_,_):base=safe_path(folder,old['path'])/'run/weights/resume.pt'
+            parameters=validate_parameters(old['parameters'])
+        if payload.get('operation')=='validate' and not payload.get('initial_model_id'):raise AppError('VALIDATE_MODEL','独立验证请选择已登记的初始模型。')
+        if not base.is_file():raise AppError('TRAIN_WEIGHTS','初始权重或可恢复检查点不存在；不会自动下载。')
+        return {'counts':counts,'parameters':parameters,'weights_sha256':file_hash(base),'worker':str(python),'dataset_id':snapshot['dataset_id']}
     def runs(self,root=None):
         with self.store.open(root) as (_,db,_),db.transaction() as s:return [dict(id=r.id,**r.details) for r in s.scalars(select(TrainingRun))]
     def preflight(self,version_id,root=None):
