@@ -1,5 +1,15 @@
 # P3.7-A RF-DETR训练正式接入验收
 
+## 最新验收：2026-10-19 测试契约更新
+
+本节为当前结论，下方原报告及上一轮收尾补充保留为历史记录。基线 `b0d56b7ea12b071f7e1a7f51182f1dc84e0adf2c`；用户已明确授权修正默认YOLO导出的旧测试断言。
+
+**P3.7-A功能与迁移验收PASS；Qt原生历史异常PARTIAL；整体Ultralytics迁移PARTIAL；软件发行合规BLOCKED。** 最终原生回归88 PASS、1条原有条件SKIP、0失败；当前真实200图/402目标/16正常的Native及COCO GUI导出、冻结版本与来源保护均通过，真实CUDA加载/重载评估通过，未重训。原项目全表、2,328文件及历史崩溃证据不变。
+
+本轮未复现，原始根因仍未确定；独立问题 [IVAD-QT-001](P37_QT_NATIVE_ISSUE.md) 保持OPEN。详见 [最终技术验收报告](P37_A_FINAL_TECHNICAL_ACCEPTANCE.md)，其中保留旧SKIP原因及各项验收边界。`PACKAGING_FREEZE=TRUE`、`DISTRIBUTION_STATUS=BLOCKED`，不进入B/P4、不打包或push。
+
+## 以下为历史验收记录
+
 日期：2026-10-16。**阶段总体 PARTIAL**。RF-DETR Nano核心训练/数据/登记/重载/取消及A范围零Ultralytics路径已实测通过；原生Qt较大批次异常尚未归因，发行许可审计尚未闭合，不能提升为无保留PASS。未进入P3.7-B/P4，`PACKAGING_FREEZE=TRUE`。
 
 ## Git、边界与保护
