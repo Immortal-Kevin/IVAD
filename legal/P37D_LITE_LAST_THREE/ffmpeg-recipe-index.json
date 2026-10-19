@@ -1,0 +1,1075 @@
+[
+  {
+    "recipe": "scripts.d/10-mingw-std-threads.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/meganz/mingw-std-threads.git\"",
+      "SCRIPT_COMMIT=\"c931bac289dd431f1dd30fc4a5d1a7be36668073\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/10-mingw.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://git.code.sf.net/p/mingw-w64/mingw-w64.git\"",
+      "SCRIPT_COMMIT=\"a556c6943c442465dc9a051bc6d3a6d452df4a1d\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/10-xorg-macros.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/xorg/util/macros.git\"",
+      "SCRIPT_COMMIT=\"a9d71e3fd8e6758b70be31c586921bbbcd2a8449\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/15-base.sh",
+    "source_declarations": [],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/20-libiconv.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://git.savannah.gnu.org/git/libiconv.git\"",
+      "SCRIPT_COMMIT=\"9d19c66d0a1768cffcf497b2db70bf4018b578d7\"",
+      "SCRIPT_REPO2=\"https://git.savannah.gnu.org/git/gnulib.git\"",
+      "SCRIPT_COMMIT2=\"103c922f47f8b0fb0503024783bdaff5016eea82\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/20-zlib.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/madler/zlib.git\"",
+      "SCRIPT_COMMIT=\"e3dc0a85b7032e98380dec011bc8f2c2ee0d8fca\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/25-fftw3.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/FFTW/fftw3.git\"",
+      "SCRIPT_COMMIT=\"93ed4c786934aec9946f8dda4b4e3eb08f8be41c\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/25-fribidi.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/fribidi/fribidi.git\"",
+      "SCRIPT_COMMIT=\"069a7e3d31e6aa74f2068a8e0804106ce7906639\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/25-gmp.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/BtbN/gmplib.git\"",
+      "SCRIPT_COMMIT=\"9994908f090c694f8a152d660dc6852e0c48557a\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/25-libogg.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/xiph/ogg.git\"",
+      "SCRIPT_COMMIT=\"06a5e0262cdc28aa4ae6797627a783b5010440f0\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/25-libxml2.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/GNOME/libxml2.git\"",
+      "SCRIPT_COMMIT=\"c8eaf2236ff16667970f96f3f01e119c99d38ab2\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/25-openssl.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/openssl/openssl.git\"",
+      "SCRIPT_COMMIT=\"openssl-3.6.3\"",
+      "SCRIPT_TAGFILTER=\"openssl-3.6.*\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/25-xz.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/tukaani-project/xz.git\"",
+      "SCRIPT_COMMIT=\"f3b5688159c60495f48db3942a36509671dfce89\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-fonts/25-freetype.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/freetype/freetype.git\"",
+      "SCRIPT_COMMIT=\"5336c0d4da22a13dab3389eb153b12672fdf841c\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-fonts/35-fontconfig.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/fontconfig/fontconfig.git\"",
+      "SCRIPT_COMMIT=\"939e33ee473d70a790c89b624385c2c0a5875a51\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-fonts/45-harfbuzz.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/harfbuzz/harfbuzz.git\"",
+      "SCRIPT_COMMIT=\"fe9501b08d1bf40bf5c6285d336157aa82b29e40\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-fonts/50-freetype.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/freetype/freetype.git\"",
+      "SCRIPT_COMMIT=\"5336c0d4da22a13dab3389eb153b12672fdf841c\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-libsamplerate.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/libsndfile/libsamplerate.git\"",
+      "SCRIPT_COMMIT=\"2ccde9568cca73c7b32c97fefca2e418c16ae5e3\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-libudfread.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://code.videolan.org/videolan/libudfread.git\"",
+      "SCRIPT_COMMIT=\"139a2194525f2745b98a98e4d8fa627d07440176\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-libunibreak.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/adah1972/libunibreak.git\"",
+      "SCRIPT_COMMIT=\"3ce4bfa3129ff3738046a44a6db533d2ce25af2b\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-libvorbis.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/xiph/vorbis.git\"",
+      "SCRIPT_COMMIT=\"e3c9861ff096d52378e131ff8c334552e09cdffa\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-opencl.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/KhronosGroup/OpenCL-Headers.git\"",
+      "SCRIPT_COMMIT=\"a98488062f50c77c3e2edaf9c4f8dca7c41781ec\"",
+      "SCRIPT_REPO2=\"https://github.com/KhronosGroup/OpenCL-ICD-Loader.git\"",
+      "SCRIPT_COMMIT2=\"18fdcd58286376124f938948aa8ed156079c1c16\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-pulseaudio.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/pulseaudio/pulseaudio.git\"",
+      "SCRIPT_COMMIT=\"b096704c0d42c5e784deb781a07b23cfb5286a82\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-vmaf.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/Netflix/vmaf.git\"",
+      "SCRIPT_COMMIT=\"e9909adb89306a270d9c78207bd12acf730279ad\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-x11/10-xcbproto.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/xorg/proto/xcbproto.git\"",
+      "SCRIPT_COMMIT=\"cf7e2581b613802f2f8ec2a4b50a6a20aad4bf52\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-x11/10-xproto.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/xorg/proto/xorgproto.git\"",
+      "SCRIPT_COMMIT=\"fcb7e9a1a0b593a44740d83b0babddd331fea830\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-x11/10-xtrans.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/xorg/lib/libxtrans.git\"",
+      "SCRIPT_COMMIT=\"693d28a76024a2a0a28eef25037bcb7558b8bbfa\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-x11/20-libxau.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/xorg/lib/libxau.git\"",
+      "SCRIPT_COMMIT=\"14ba0f63c4ba2229dd17574134332767bded9018\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-x11/30-libxcb.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/xorg/lib/libxcb.git\"",
+      "SCRIPT_COMMIT=\"4d6e1c8fffaf811cf4d0e68ff3bc6f50e62c32c7\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-x11/40-libx11.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/xorg/lib/libx11.git\"",
+      "SCRIPT_COMMIT=\"b10abf6b99d5acf846c26f305f1a14a86360a96c\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-x11/50-libxext.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/xorg/lib/libxext.git\"",
+      "SCRIPT_COMMIT=\"2a694ba264ccdb205909909abfe8b136f9156ebe\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-x11/50-libxfixes.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/xorg/lib/libxfixes.git\"",
+      "SCRIPT_COMMIT=\"55bb2d1d57d43e0595ce45393f26eb433d75a7cc\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-x11/50-libxi.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/xorg/lib/libxi.git\"",
+      "SCRIPT_COMMIT=\"f00f7e9140b4707775331950dd67851e55058c40\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-x11/50-libxinerama.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/xorg/lib/libxinerama.git\"",
+      "SCRIPT_COMMIT=\"d7162b962710bc724b41cabab4e7cea303c4b541\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-x11/50-libxrender.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/xorg/lib/libxrender.git\"",
+      "SCRIPT_COMMIT=\"f32afe9f877ae032c6bc9c27b17b7978b1b4c856\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-x11/50-libxscrnsaver.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/xorg/lib/libxscrnsaver.git\"",
+      "SCRIPT_COMMIT=\"3f753e7a4050db083474444ae91cc17a849eaa4d\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-x11/50-libxxf86vm.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/xorg/lib/libxxf86vm.git\"",
+      "SCRIPT_COMMIT=\"c76fde6bffcc87e5dd98d8196bb01a299bdc3236\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-x11/60-libglvnd.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/glvnd/libglvnd.git\"",
+      "SCRIPT_COMMIT=\"c046a760d845416e98ac4128757b2b356c47fdaa\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-x11/60-libxcursor.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/xorg/lib/libxcursor.git\"",
+      "SCRIPT_COMMIT=\"15efad7ccd035f5d1ddc8d437e047569d1775fa7\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-x11/60-libxrandr.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/xorg/lib/libxrandr.git\"",
+      "SCRIPT_COMMIT=\"8a4ba1974bcf07057cf891128d86ae1ab5303574\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-x11/60-libxv.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/xorg/lib/libxv.git\"",
+      "SCRIPT_COMMIT=\"f315ec50fcad9bdbaed46c3e78dc5e7fe209f933\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/45-x11/99-finalize.sh",
+    "source_declarations": [],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/47-vulkan/40-vulkan-headers.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/KhronosGroup/Vulkan-Headers.git\"",
+      "SCRIPT_COMMIT=\"v1.4.356\"",
+      "SCRIPT_TAGFILTER=\"v?.*.*\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/47-vulkan/45-vulkan-loader.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/BtbN/Vulkan-Shim-Loader.git\"",
+      "SCRIPT_COMMIT=\"65b3936528cd92eb4ea3de485d03f858a3850484\"",
+      "SCRIPT_REPO2=\"https://github.com/KhronosGroup/Vulkan-Headers.git\"",
+      "SCRIPT_COMMIT2=\"v1.4.356\"",
+      "SCRIPT_TAGFILTER2=\"v?.*.*\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/47-vulkan/50-shaderc.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/google/shaderc.git\"",
+      "SCRIPT_COMMIT=\"49a8724d561c13db22b52f99f2a0e2707a9a9e3c\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/47-vulkan/55-spirv-cross.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/KhronosGroup/SPIRV-Cross.git\"",
+      "SCRIPT_COMMIT=\"81fc2ea76c2b8018d4427c380961a6886cb3ce7d\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/47-vulkan/60-spirv-headers.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/KhronosGroup/SPIRV-Headers.git\"",
+      "SCRIPT_COMMIT=\"02c0394e57af6dfdda7f68973df6aa20fc3f5def\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/47-vulkan/99-enable.sh",
+    "source_declarations": [],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-amf.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/GPUOpen-LibrariesAndSDKs/AMF.git\"",
+      "SCRIPT_COMMIT=\"6ec029531e356102aafe1e236cfd0ddf739939da\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-aom.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://aomedia.googlesource.com/aom\"",
+      "SCRIPT_COMMIT=\"43f2b6a99000057184332c8c2dd4bedc19fdec6f\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-aribb24/25-libpng.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/glennrp/libpng.git\"",
+      "SCRIPT_COMMIT=\"d1d0abeffede1cc898ddc3d0e600839cf026d749\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-aribb24/50-libaribb24.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/nkoriyama/aribb24.git\"",
+      "SCRIPT_COMMIT=\"5e9be272f96e00f15a2f3c5f8ba7e124862aec38\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-avisynth.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/AviSynth/AviSynthPlus.git\"",
+      "SCRIPT_COMMIT=\"fcb9c8a205c1b01ee1ea491adba50e2217594598\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-chromaprint.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/acoustid/chromaprint.git\"",
+      "SCRIPT_COMMIT=\"ab48115481c14873eb870e7a88334550c68d36c1\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-dav1d.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://code.videolan.org/videolan/dav1d.git\"",
+      "SCRIPT_COMMIT=\"c150ba6c9b9be0956330a9ddfee33ad88f2b1bc5\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-davs2.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/pkuvcl/davs2.git\"",
+      "SCRIPT_COMMIT=\"b41cf117452e2d73d827f02d3e30aa20f1c721ac\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-dvd/30-libdvdcss.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://code.videolan.org/videolan/libdvdcss.git\"",
+      "SCRIPT_COMMIT=\"891f8fb5c45baf70bfbd67d973d1d4f0b10fd0aa\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-dvd/40-libdvdread.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://code.videolan.org/videolan/libdvdread.git\"",
+      "SCRIPT_COMMIT=\"8c1c65fbbb2944cd0201c404cd72859a18a3bbf8\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-dvd/50-libdvdnav.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://code.videolan.org/videolan/libdvdnav.git\"",
+      "SCRIPT_COMMIT=\"9c5f2278eb5b23cdcd0575065f5d575c4e6602a4\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-fdk-aac.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/mstorsjo/fdk-aac.git\"",
+      "SCRIPT_COMMIT=\"d8e6b1a3aa606c450241632b64b703f21ea31ce3\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-ffnvcodec.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/FFmpeg/nv-codec-headers.git\"",
+      "SCRIPT_COMMIT=\"15ee32753c92faddbabbff11676779618fc6db7e\"",
+      "SCRIPT_REPO2=\"https://github.com/FFmpeg/nv-codec-headers.git\"",
+      "SCRIPT_COMMIT2=\"33a9ede8d9914299d9262539c576a15bd0a19621\"",
+      "SCRIPT_REPO3=\"https://github.com/FFmpeg/nv-codec-headers.git\"",
+      "SCRIPT_COMMIT3=\"afae1834257b919848c5deb21a17c7355616b1ee\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-frei0r.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/dyne/frei0r.git\"",
+      "SCRIPT_COMMIT=\"253addfd4bea3c90b0bf765589ca28ea18f3ddc0\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-gme.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/libgme/game-music-emu.git\"",
+      "SCRIPT_COMMIT=\"dd3182a8bdae3ff761438632aace418fbcaed439\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-kvazaar.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/ultravideo/kvazaar.git\"",
+      "SCRIPT_COMMIT=\"d6815293f34a094e26ba6c50b8644660ddc13e09\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-lcevcdec.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/v-novaltd/LCEVCdec.git\"",
+      "SCRIPT_COMMIT=\"a254bd474649e5dcd8182689ac414420bfe8d8c3\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-libaribcaption.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/xqq/libaribcaption.git\"",
+      "SCRIPT_COMMIT=\"f9d8c50fe5e51c98d101f69d74591295cb568036\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-libass.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/libass/libass.git\"",
+      "SCRIPT_COMMIT=\"4a05d8127f525943ebf45fdc6497c9e665947f0d\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-libbluray.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://code.videolan.org/videolan/libbluray.git\"",
+      "SCRIPT_COMMIT=\"8b4fb6e2562bb86601ea5a2c4140af6d8f3f1cf4\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-libcurl.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/curl/curl.git\"",
+      "SCRIPT_COMMIT=\"ecaa344a7a17874ff0c6e5717489e8f9033c4d5c\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-libjxl/45-brotli.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/google/brotli.git\"",
+      "SCRIPT_COMMIT=\"27cc9fe9a4aa8901be3b3ba29f2f09eaddb08f97\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-libjxl/45-lcms2.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/mm2/Little-CMS.git\"",
+      "SCRIPT_COMMIT=\"5cc0eec7ae8350dd0f6c4c07b077f78f18dfe970\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-libjxl/50-libjxl.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/libjxl/libjxl.git\"",
+      "SCRIPT_COMMIT=\"f0a1c5ff9dbba51ffa932433ffb80e5e6b6e22a7\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-libmp3lame.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://svn.code.sf.net/p/lame/svn/trunk/lame\"",
+      "SCRIPT_REV=\"6531\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-libopus.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/xiph/opus.git\"",
+      "SCRIPT_COMMIT=\"3da9f7a6db1c05c3996cb363a9d1931a978bf1be\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-libplacebo.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://code.videolan.org/videolan/libplacebo.git\"",
+      "SCRIPT_COMMIT=\"05ac2cca6571c04d06369a26825d207781b73f32\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-librist/40-mbedtls.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/ARMmbed/mbedtls.git\"",
+      "SCRIPT_COMMIT=\"v4.1.0\"",
+      "SCRIPT_TAGFILTER=\"v4.*\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-librist/50-librist.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://code.videolan.org/rist/librist.git\"",
+      "SCRIPT_COMMIT=\"6e2a5e341bbdbe4ca283f3f79e42db8be0f2e027\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-libssh.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.com/libssh/libssh-mirror.git\"",
+      "SCRIPT_COMMIT=\"689d7320644bbf06f77911a58d41a68e3e68675b\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-libtheora.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/xiph/theora.git\"",
+      "SCRIPT_COMMIT=\"28fd5ec77f0ad0e07a371cef1047828116f6bd8a\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-libvpx.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://chromium.googlesource.com/webm/libvpx\"",
+      "SCRIPT_COMMIT=\"8592391cdb3ef142c56d835788d71d6d4de36a63\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-libwebp.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://chromium.googlesource.com/webm/libwebp\"",
+      "SCRIPT_COMMIT=\"733c91e461c18cf1127c9ed0a80dccbcfed599d3\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-libzmq.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/zeromq/libzmq.git\"",
+      "SCRIPT_COMMIT=\"2e8a6ccb414ca79636392604893c79c3b0d00dc4\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-lilv/96-lv2.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/lv2/lv2.git\"",
+      "SCRIPT_COMMIT=\"3c57dae600a5ad8d05acd53ee3490f7d91cb7be6\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-lilv/96-serd.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/drobilla/serd.git\"",
+      "SCRIPT_COMMIT=\"b6053bb2a4533e6a8e3821c1061f140d5e666938\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-lilv/96-zix.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/drobilla/zix.git\"",
+      "SCRIPT_COMMIT=\"17d632393f5addb6fa24dda2927b96515407cca7\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-lilv/97-sord.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/drobilla/sord.git\"",
+      "SCRIPT_COMMIT=\"4b5232bb91e7f2f1b84df384494d073fabbcd312\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-lilv/98-sratom.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/lv2/sratom.git\"",
+      "SCRIPT_COMMIT=\"9e8ee84eed502e6030ce8bb49694fd28542b08fc\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-lilv/99-lilv.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/lv2/lilv.git\"",
+      "SCRIPT_COMMIT=\"4b8f30055fa5cb4134a2eb45fc1555bc04289314\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-onevpl.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/intel/libvpl.git\"",
+      "SCRIPT_COMMIT=\"d77f9195cf495b937631607333288fd917ae8939\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-openal.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/kcat/openal-soft.git\"",
+      "SCRIPT_COMMIT=\"93358135d92f3aa2672ed95f9c6bb04f8482d578\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-openapv.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/AcademySoftwareFoundation/openapv.git\"",
+      "SCRIPT_COMMIT=\"9f6fd2a7369db90acec67d99fc57724f1136fb84\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-opencore-amr.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://git.code.sf.net/p/opencore-amr/code\"",
+      "SCRIPT_COMMIT=\"7dba8c32238418ce0b316a852b2224df586ca896\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-openh264.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/cisco/openh264.git\"",
+      "SCRIPT_COMMIT=\"a8e04adb69c79757da014007d4694684a64c7b74\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-openjpeg.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/uclouvain/openjpeg.git\"",
+      "SCRIPT_COMMIT=\"9dd4b3c98a78f50a48fb08f27bf198d4ae1d8528\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-openmpt.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/OpenMPT/openmpt.git\"",
+      "SCRIPT_COMMIT=\"4c3ba47c7977fe3016b474f8ed192e619ae85f7d\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-rav1e.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/xiph/rav1e.git\"",
+      "SCRIPT_COMMIT=\"564ae3b0007ae2b06893fd7166bf88c5a84c5b63\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-rubberband.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/breakfastquay/rubberband.git\"",
+      "SCRIPT_COMMIT=\"e4296ac80b1170018a110bc326fd0d45a0eb27d6\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-schannel.sh",
+    "source_declarations": [],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-sdl.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/libsdl-org/SDL.git\"",
+      "SCRIPT_COMMIT=\"b8b3f5ef2001cbe7c11f62d41a9bf47d4a2d8b07\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-snappy.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/google/snappy.git\"",
+      "SCRIPT_COMMIT=\"3ac3722e1bee4b99860a282fb779e8e72fa18163\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-soxr.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://git.code.sf.net/p/soxr/code\"",
+      "SCRIPT_COMMIT=\"945b592b70470e29f917f4de89b4281fbbd540c0\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-srt.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/Haivision/srt.git\"",
+      "SCRIPT_COMMIT=\"c39196c9a568ae4e3289dd65cf54ba4154deb4a1\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-svtav1.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.com/AOMediaCodec/SVT-AV1.git\"",
+      "SCRIPT_COMMIT=\"d3c4cb3947a8bfed0aa5a2be996b37bb117fa1bd\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-twolame.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/njh/twolame.git\"",
+      "SCRIPT_COMMIT=\"6fced852d4d5cfad58cf9dbe3ea619b08e87d398\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-uavs3d.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/uavs3/uavs3d.git\"",
+      "SCRIPT_COMMIT=\"0e20d2c291853f196c68922a264bcd8471d75b68\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-vaapi/30-libpciaccess.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/xorg/lib/libpciaccess.git\"",
+      "SCRIPT_COMMIT=\"38e6f15f839fba2c49982e7ad61cde681fd5d4d6\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-vaapi/40-libdrm.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://gitlab.freedesktop.org/mesa/drm.git\"",
+      "SCRIPT_COMMIT=\"35c7c536d5d1c0124a416a531df4432508d7d2f1\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-vaapi/50-libva.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/intel/libva.git\"",
+      "SCRIPT_COMMIT=\"28388a091187e2ba9e99cb750ec7426f91f73cbb\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-vaapi/99-finalize.sh",
+    "source_declarations": [],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-vidstab.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/georgmartius/vid.stab.git\"",
+      "SCRIPT_COMMIT=\"92bc0b0f369f2a88aaacf25eac3a10f8415308fc\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-vvenc.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/fraunhoferhhi/vvenc.git\"",
+      "SCRIPT_COMMIT=\"7d60406c66fa1659b8df74dd8d62bc41d3c90157\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-whisper.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/ggml-org/whisper.cpp.git\"",
+      "SCRIPT_COMMIT=\"6fc7c33b4c3a2cec83e4b65abd5e96a890480375\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-x264.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://code.videolan.org/videolan/x264.git\"",
+      "SCRIPT_COMMIT=\"0480cb05fa188d37ae87e8f4fd8f1aea3711f7ee\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-x265.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://bitbucket.org/multicoreware/x265_git.git\"",
+      "SCRIPT_COMMIT=\"b81f650e21e8aacbe6a9ad04ce14aefc05b932c0\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-xavs2.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/pkuvcl/xavs2.git\"",
+      "SCRIPT_COMMIT=\"eae1e8b9d12468059bdd7dee893508e470fa83d8\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-xvid.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://svn.xvid.org/trunk/xvidcore\"",
+      "SCRIPT_REV=\"2204\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-zimg.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/sekrit-twc/zimg.git\"",
+      "SCRIPT_COMMIT=\"b3647572a01927e2aa8d0b7aaa917207c9c1ae5d\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/50-zvbi.sh",
+    "source_declarations": [
+      "SCRIPT_REPO=\"https://github.com/zapping-vbi/zvbi\"",
+      "SCRIPT_COMMIT=\"41477c97c8edf7a01f1594b2a95b94f0117eed21\""
+    ],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/99-rpath.sh",
+    "source_declarations": [],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  },
+  {
+    "recipe": "scripts.d/zz-final.sh",
+    "source_declarations": [],
+    "source_locally_present": false,
+    "note": "Recipe is not proof of exact static object inclusion or complete source closure."
+  }
+]

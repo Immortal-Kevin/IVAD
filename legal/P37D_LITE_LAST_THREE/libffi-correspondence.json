@@ -1,0 +1,41 @@
+{
+  "component": "CPython bundled libffi",
+  "source_url": "https://raw.githubusercontent.com/python/cpython-bin-deps/libffi-3.4.4/amd64/libffi-8.dll",
+  "whole_file_equal": false,
+  "payload_sha256": "9034f55feed4fd07c334b6ec77814bde51d8212ae3d71febe30592e1259ecce4",
+  "upstream_sha256": "eff52743773eb550fcc6ce3efc37c85724502233b6b002a35496d828bd7b280a",
+  "sections": [
+    {
+      "name": ".text",
+      "payload_sha256": "0e10b705b12df9f7b1cd28389ebae09a8a244c54eb73bf307d3bcde8d8b95e32",
+      "upstream_sha256": "65deb1e35fbc48fa64dbcd38ade7d4609e52fce5308d399eb812bd672e3e08fe",
+      "equal": false
+    },
+    {
+      "name": ".rdata",
+      "payload_sha256": "b98ee625b00452ff15d4215888bbae70ea5a990b6fd65b357185c9aad6eac382",
+      "upstream_sha256": "eca99e4ff893ed4ddde3cf22657b3e3dc636adb46c8d136e01b0fa0273cd73d5",
+      "equal": false
+    },
+    {
+      "name": ".data",
+      "payload_sha256": "f805b3bd5c2b9f63ecb3eaac422ee7fa51445d66e5964f7e1ef61ec33101bd29",
+      "upstream_sha256": "bfe75562396ecd9285e8e26cba1131cc5a65abe693ce2fba6ed03c9822af0a9d",
+      "equal": false
+    },
+    {
+      "name": ".pdata",
+      "payload_sha256": "e8aa1be35d5f35c45a87aabb2068b635fff45245cfdc65e7f44eeb934605017e",
+      "upstream_sha256": "4ce4771fa56ea5a76271e1b697dd6aae392eeff71461a8983dcdd90bbc9892b1",
+      "equal": false
+    },
+    {
+      "name": ".reloc",
+      "payload_sha256": "4fc377eda63b7b23cc0a375a3545d4fa75ddb686c4dbf83cb11aa868e6912a3d",
+      "upstream_sha256": "4fc377eda63b7b23cc0a375a3545d4fa75ddb686c4dbf83cb11aa868e6912a3d",
+      "equal": true
+    }
+  ],
+  "all_sections_equal": false,
+  "note": "Section equality supports same linked content; different signing/header bytes are not proof of identical complete files or a licence grant."
+}

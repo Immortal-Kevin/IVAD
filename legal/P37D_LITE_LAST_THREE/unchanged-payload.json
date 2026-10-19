@@ -1,0 +1,12 @@
+{
+  "scope": "Read-only equality against existing 384-file payload CSV; no functionality test or new SBOM audit",
+  "file_count": 384,
+  "changed": [],
+  "added": [],
+  "removed": [],
+  "all_unchanged": true,
+  "exe_sha256": "e0822ff177caad959283ba692362a510909a30c2645811172b52f82cf451b8f5",
+  "packaging_freeze": "TRUE",
+  "functional_passes": "Retained; no tests rerun",
+  "licence_outcome": "UNRESOLVED; not approved for sending"
+}

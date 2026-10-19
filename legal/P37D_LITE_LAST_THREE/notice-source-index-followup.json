@@ -1,0 +1,183 @@
+[
+  {
+    "file": "upstream-notices\\FFTW-COPYRIGHT",
+    "url": "https://raw.githubusercontent.com/FFTW/fftw3/93ed4c786934aec9946f8dda4b4e3eb08f8be41c/COPYRIGHT",
+    "sha256": "8a74b35d541d93fdf58a22a3d3baa48ae3edbf6d715edfeb6457c21968ae43ac",
+    "bytes": 844,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFTW-api-header",
+    "url": "https://raw.githubusercontent.com/FFTW/fftw3/93ed4c786934aec9946f8dda4b4e3eb08f8be41c/api/fftw3.h",
+    "status": "ACQUIRED",
+    "source_download_sha256": "c82bf45065551f8659748f9c77d8c9dee6783ea524d579e951757ac78a926d05",
+    "source_download_bytes": 32208,
+    "sha256": "dcb0ab086de1970c9d159ad26ebdb6a5dee39a59256d627db255928febf2cf4a",
+    "bytes": 1562,
+    "retention": "Only licence/copyright header retained; source code removed"
+  },
+  {
+    "file": "CPython-libmpdec-LICENSE",
+    "url": "https://raw.githubusercontent.com/python/cpython/v3.12.14/Modules/_decimal/libmpdec/LICENSE",
+    "status": "UNRESOLVED",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "file": "CPython-HACL-LICENSE",
+    "url": "https://raw.githubusercontent.com/python/cpython/v3.12.14/Modules/_hacl/LICENSE.txt",
+    "status": "UNRESOLVED",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "file": "upstream-notices\\CPython-external-pins",
+    "url": "https://raw.githubusercontent.com/python/cpython/v3.12.14/PCbuild/get_externals.bat",
+    "sha256": "32c8c7862a6c29b72aa4ff4a0e233b4882991b1f83c391748e3b6aad60742abb",
+    "bytes": 4391,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "libpng-LICENSE",
+    "url": "https://raw.githubusercontent.com/glennrp/libpng/d1d0abeffede1cc898ddc3d0e600839cf026d749/LICENSE",
+    "status": "UNRESOLVED",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "file": "upstream-notices\\lcms2-LICENSE",
+    "url": "https://raw.githubusercontent.com/mm2/Little-CMS/5cc0eec7ae8350dd0f6c4c07b077f78f18dfe970/LICENSE",
+    "sha256": "6dbd60437f8ef91d8de1f08ad75882547fd4931bfcc3566a0735f28db1484d31",
+    "bytes": 1080,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\uavs3d-COPYING",
+    "url": "https://raw.githubusercontent.com/uavs3/uavs3d/0e20d2c291853f196c68922a264bcd8471d75b68/COPYING",
+    "sha256": "5a8dcb7da222df8a81b6e334000f859248196335e2d28e1db9f3c552827d7cdf",
+    "bytes": 1690,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "zvbi-COPYING",
+    "url": "https://raw.githubusercontent.com/zapping-vbi/zvbi/41477c97c8edf7a01f1594b2a95b94f0117eed21/COPYING",
+    "status": "UNRESOLVED",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "file": "upstream-notices\\aribb24-COPYING",
+    "url": "https://raw.githubusercontent.com/nkoriyama/aribb24/5e9be272f96e00f15a2f3c5f8ba7e124862aec38/COPYING",
+    "sha256": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+    "bytes": 7651,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\Vulkan-Shim-LICENSE",
+    "url": "https://raw.githubusercontent.com/BtbN/Vulkan-Shim-Loader/65b3936528cd92eb4ea3de485d03f858a3850484/LICENSE",
+    "sha256": "8d4d279343d72e5b9e06bbe38c1ad8660fa8eabc217164a5b482ddf4ab0dba9d",
+    "bytes": 1074,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\OpenCL-Loader-LICENSE",
+    "url": "https://raw.githubusercontent.com/KhronosGroup/OpenCL-ICD-Loader/18fdcd58286376124f938948aa8ed156079c1c16/LICENSE",
+    "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+    "bytes": 11357,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\OpenCL-Headers-LICENSE",
+    "url": "https://raw.githubusercontent.com/KhronosGroup/OpenCL-Headers/a98488062f50c77c3e2edaf9c4f8dca7c41781ec/LICENSE",
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "bytes": 11358,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\freetype-FTL",
+    "url": "https://gitlab.freedesktop.org/freetype/freetype/-/raw/5336c0d4da22a13dab3389eb153b12672fdf841c/docs/FTL.TXT",
+    "sha256": "5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f",
+    "bytes": 6743,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\fontconfig-COPYING",
+    "url": "https://gitlab.freedesktop.org/fontconfig/fontconfig/-/raw/939e33ee473d70a790c89b624385c2c0a5875a51/COPYING",
+    "sha256": "51a51aa9823704fd90bccc616cdd17ebabb5b2b3e9cbde886ca02c7002288067",
+    "bytes": 8616,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\dav1d-COPYING",
+    "url": "https://code.videolan.org/videolan/dav1d/-/raw/c150ba6c9b9be0956330a9ddfee33ad88f2b1bc5/COPYING",
+    "sha256": "dd92c3c2247c5651606fc23a5e2d6a1ebc5ace9a3e49cbde0e12f05ad1cb1ee5",
+    "bytes": 1317,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\libbluray-COPYING",
+    "url": "https://code.videolan.org/videolan/libbluray/-/raw/8b4fb6e2562bb86601ea5a2c4140af6d8f3f1cf4/COPYING",
+    "sha256": "b3aa400aca6d2ba1f0bd03bd98d03d1fe7489a3bbb26969d72016360af8a5c9d",
+    "bytes": 24478,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\libudfread-COPYING",
+    "url": "https://code.videolan.org/videolan/libudfread/-/raw/139a2194525f2745b98a98e4d8fa627d07440176/COPYING",
+    "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+    "bytes": 26530,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\librist-COPYING",
+    "url": "https://code.videolan.org/rist/librist/-/raw/6e2a5e341bbdbe4ca283f3f79e42db8be0f2e027/COPYING",
+    "sha256": "b9841591a3452ee30033d8e3586c7b1244a0b2fc1dc6cb04576957c313cb2792",
+    "bytes": 1319,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\libplacebo-LICENSE",
+    "url": "https://code.videolan.org/videolan/libplacebo/-/raw/05ac2cca6571c04d06369a26825d207781b73f32/LICENSE",
+    "sha256": "b3aa400aca6d2ba1f0bd03bd98d03d1fe7489a3bbb26969d72016360af8a5c9d",
+    "bytes": 24478,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\libssh-COPYING",
+    "url": "https://gitlab.com/libssh/libssh-mirror/-/raw/689d7320644bbf06f77911a58d41a68e3e68675b/COPYING",
+    "sha256": "1656186e951db1c010a8485481fa94587f7e53a26d24976bef97945ad0c4df5a",
+    "bytes": 25008,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\svtav1-LICENSE",
+    "url": "https://gitlab.com/AOMediaCodec/SVT-AV1/-/raw/d3c4cb3947a8bfed0aa5a2be996b37bb117fa1bd/LICENSE.md",
+    "sha256": "0acc2fcb27472bdc9aaf8b71f37055bbdac4f54671b7d922f241bd7fcd0dd3e6",
+    "bytes": 1709,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\libvpx-LICENSE",
+    "url": "https://chromium.googlesource.com/webm/libvpx/+/8592391cdb3ef142c56d835788d71d6d4de36a63/LICENSE?format=TEXT",
+    "sha256": "8267348d5af1262c11d1a08de2f5afc77457755f1ac658627dd9acf71011d615",
+    "bytes": 1537,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\libwebp-COPYING",
+    "url": "https://chromium.googlesource.com/webm/libwebp/+/733c91e461c18cf1127c9ed0a80dccbcfed599d3/COPYING?format=TEXT",
+    "sha256": "5aec868f669e384a22372a4e8a1a6cd7d44c64cd451f960ca69cc170d1e13acf",
+    "bytes": 1496,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\libvpx-PATENTS",
+    "url": "https://chromium.googlesource.com/webm/libvpx/+/8592391cdb3ef142c56d835788d71d6d4de36a63/PATENTS?format=TEXT",
+    "sha256": "cc3273e0694ea5896145e0677699b53471b03ea43021ddc50e7923fbb9f5023c",
+    "bytes": 1436,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\libwebp-PATENTS",
+    "url": "https://chromium.googlesource.com/webm/libwebp/+/733c91e461c18cf1127c9ed0a80dccbcfed599d3/PATENTS?format=TEXT",
+    "sha256": "cc3273e0694ea5896145e0677699b53471b03ea43021ddc50e7923fbb9f5023c",
+    "bytes": 1436,
+    "status": "ACQUIRED"
+  }
+]

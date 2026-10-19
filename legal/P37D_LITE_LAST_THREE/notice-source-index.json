@@ -1,0 +1,487 @@
+[
+  {
+    "file": "upstream-notices\\Microsoft-VC-Runtime-2015-2022.docx",
+    "url": "https://visualstudio.microsoft.com/wp-content/uploads/2021/09/Visual-C-Runtime-2015-2022-License-1.docx",
+    "final_url": "https://visualstudio.microsoft.com/wp-content/uploads/2021/09/Visual-C-Runtime-2015-2022-License-1.docx",
+    "sha256": "f1e3d56ceb2ad68aae0711b910375009e651ac5530fa0760f0dea6e81e54fae1",
+    "bytes": 39644,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\Microsoft-BuildTools-2022.docx",
+    "url": "https://visualstudio.microsoft.com/wp-content/uploads/2024/03/Visual-Studio-2022-Diagnostic-Build-Tools-Agent-License_Update-March-2024_EN.docx",
+    "final_url": "https://visualstudio.microsoft.com/wp-content/uploads/2024/03/Visual-Studio-2022-Diagnostic-Build-Tools-Agent-License_Update-March-2024_EN.docx",
+    "sha256": "2f66b86a00e8d9833789897ce23d05a4a2dbea370cf39c8c1098dbc17d0e7bdc",
+    "bytes": 34395,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\Microsoft-REDIST-2022.html",
+    "url": "https://learn.microsoft.com/en-us/visualstudio/releases/2022/redistribution",
+    "final_url": "https://learn.microsoft.com/en-us/visualstudio/releases/2022/redistribution",
+    "sha256": "eb1a4b15c81e6d5621971565e0ba93eb7aad36acb72318036e87b37131b5cb7e",
+    "bytes": 62996,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\GNU-internal-copying.html",
+    "url": "https://www.gnu.org/licenses/gpl-faq.en.html",
+    "final_url": "https://www.gnu.org/licenses/gpl-faq.en.html",
+    "sha256": "5053fe23f1da3b76245b17c416640cde37ce21b8175effc0c6619d6673a25d2e",
+    "bytes": 197518,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\CPython-v3.12.14-LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/python/cpython/v3.12.14/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/python/cpython/v3.12.14/LICENSE",
+    "sha256": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf",
+    "bytes": 13936,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\CPython-v3.12.14-license.rst",
+    "url": "https://raw.githubusercontent.com/python/cpython/v3.12.14/Doc/license.rst",
+    "final_url": "https://raw.githubusercontent.com/python/cpython/v3.12.14/Doc/license.rst",
+    "sha256": "341832873fd316a37927e79385093fbbfd40a467428480835fe435a80cadf4e5",
+    "bytes": 54130,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\CPython-v3.12.14-python.props",
+    "url": "https://raw.githubusercontent.com/python/cpython/v3.12.14/PCbuild/python.props",
+    "final_url": "https://raw.githubusercontent.com/python/cpython/v3.12.14/PCbuild/python.props",
+    "sha256": "fee5e3735ab0dbf3d4929453697d82d16e7c9f114877b8ef791d99ba9922787f",
+    "bytes": 16374,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\CPython-expat.txt",
+    "url": "https://raw.githubusercontent.com/python/cpython/v3.12.14/Modules/expat/COPYING",
+    "final_url": "https://raw.githubusercontent.com/python/cpython/v3.12.14/Modules/expat/COPYING",
+    "sha256": "31b15de82aa19a845156169a17a5488bf597e561b2c318d159ed583139b25e87",
+    "bytes": 1144,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "CPython-libmpdec.txt",
+    "url": "https://raw.githubusercontent.com/python/cpython/v3.12.14/Modules/_decimal/libmpdec/LICENSE.txt",
+    "status": "UNRESOLVED",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "file": "CPython-HACL.txt",
+    "url": "https://raw.githubusercontent.com/python/cpython/v3.12.14/Modules/_hacl/LICENSE",
+    "status": "UNRESOLVED",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "file": "CPython-sha3.txt",
+    "url": "https://raw.githubusercontent.com/python/cpython/v3.12.14/Modules/_sha3/LICENSE",
+    "status": "UNRESOLVED",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "file": "upstream-notices\\CPython-siphash.txt",
+    "url": "https://raw.githubusercontent.com/python/cpython/v3.12.14/Python/pyhash.c",
+    "final_url": "https://raw.githubusercontent.com/python/cpython/v3.12.14/Python/pyhash.c",
+    "status": "ACQUIRED",
+    "source_download_sha256": "7f18429290df0726669cbd6d8b5a8b48b843efff648fe8863d48da5db4745628",
+    "source_download_bytes": 15480,
+    "sha256": "c4ee8f6cf16e8d53103d45535e85372ed9ff0e45cd9454357d97fa88d07c6d04",
+    "bytes": 191,
+    "retention": "Only licence/copyright header retained; source code removed"
+  },
+  {
+    "file": "upstream-notices\\libffi-v3.4.4-LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/libffi/libffi/v3.4.4/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/libffi/libffi/v3.4.4/LICENSE",
+    "sha256": "2c9c2acb9743e6b007b91350475308aee44691d96aa20eacef8e199988c8c388",
+    "bytes": 1132,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\zlib-v1.3.2-LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/madler/zlib/v1.3.2/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/madler/zlib/v1.3.2/LICENSE",
+    "sha256": "e32ff4e00d9d94930537635291da39e7e612703334bf6fde8c7f1686fe8a45a2",
+    "bytes": 1002,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-mingw-std-threads-LICENSE",
+    "url": "https://raw.githubusercontent.com/meganz/mingw-std-threads/c931bac289dd431f1dd30fc4a5d1a7be36668073/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/meganz/mingw-std-threads/c931bac289dd431f1dd30fc4a5d1a7be36668073/LICENSE",
+    "sha256": "86c148320eb0acc26607ed347e0fde9f49a236d0ec5291d36dc6a7e0e1d26b9f",
+    "bytes": 1296,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-zlib-LICENSE",
+    "url": "https://raw.githubusercontent.com/madler/zlib/e3dc0a85b7032e98380dec011bc8f2c2ee0d8fca/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/madler/zlib/e3dc0a85b7032e98380dec011bc8f2c2ee0d8fca/LICENSE",
+    "sha256": "e32ff4e00d9d94930537635291da39e7e612703334bf6fde8c7f1686fe8a45a2",
+    "bytes": 1002,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-fftw3-COPYING",
+    "url": "https://raw.githubusercontent.com/FFTW/fftw3/93ed4c786934aec9946f8dda4b4e3eb08f8be41c/COPYING",
+    "final_url": "https://raw.githubusercontent.com/FFTW/fftw3/93ed4c786934aec9946f8dda4b4e3eb08f8be41c/COPYING",
+    "sha256": "231f7edcc7352d7734a96eef0b8030f77982678c516876fcb81e25b32d68564c",
+    "bytes": 18002,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-fribidi-COPYING",
+    "url": "https://raw.githubusercontent.com/fribidi/fribidi/069a7e3d31e6aa74f2068a8e0804106ce7906639/COPYING",
+    "final_url": "https://raw.githubusercontent.com/fribidi/fribidi/069a7e3d31e6aa74f2068a8e0804106ce7906639/COPYING",
+    "sha256": "32434afcc8666ba060e111d715bfdb6c2d5dd8a35fa4d3ab8ad67d8f850d2f2b",
+    "bytes": 26440,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-gmp-COPYING.LESSERv3",
+    "url": "https://raw.githubusercontent.com/BtbN/gmplib/9994908f090c694f8a152d660dc6852e0c48557a/COPYING.LESSERv3",
+    "final_url": "https://raw.githubusercontent.com/BtbN/gmplib/9994908f090c694f8a152d660dc6852e0c48557a/COPYING.LESSERv3",
+    "sha256": "a853c2ffec17057872340eee242ae4d96cbf2b520ae27d903e1b2fef1a5f9d1c",
+    "bytes": 7639,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-libogg-COPYING",
+    "url": "https://raw.githubusercontent.com/xiph/ogg/06a5e0262cdc28aa4ae6797627a783b5010440f0/COPYING",
+    "final_url": "https://raw.githubusercontent.com/xiph/ogg/06a5e0262cdc28aa4ae6797627a783b5010440f0/COPYING",
+    "sha256": "d2ab5758336489da61c12cc5bb757da5339c4ae9001f9bb0562b4370249af814",
+    "bytes": 1466,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-libxml2-Copyright",
+    "url": "https://raw.githubusercontent.com/GNOME/libxml2/c8eaf2236ff16667970f96f3f01e119c99d38ab2/Copyright",
+    "final_url": "https://raw.githubusercontent.com/GNOME/libxml2/c8eaf2236ff16667970f96f3f01e119c99d38ab2/Copyright",
+    "sha256": "5d4873884a890122a4b9b20ad56ac6f7da1d796a5bfcf04a427970ac96217626",
+    "bytes": 1314,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-openssl-LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/openssl/openssl/openssl-3.6.3/LICENSE.txt",
+    "final_url": "https://raw.githubusercontent.com/openssl/openssl/openssl-3.6.3/LICENSE.txt",
+    "sha256": "7d5450cb2d142651b8afa315b5f238efc805dad827d91ba367d8516bc9d49e7a",
+    "bytes": 10175,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-xz-COPYING",
+    "url": "https://raw.githubusercontent.com/tukaani-project/xz/f3b5688159c60495f48db3942a36509671dfce89/COPYING",
+    "final_url": "https://raw.githubusercontent.com/tukaani-project/xz/f3b5688159c60495f48db3942a36509671dfce89/COPYING",
+    "sha256": "616a3ad264ce29b8f1cb97e53037b139d406899ca8d1f799651e17bfa09830b8",
+    "bytes": 3119,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-harfbuzz-COPYING",
+    "url": "https://raw.githubusercontent.com/harfbuzz/harfbuzz/fe9501b08d1bf40bf5c6285d336157aa82b29e40/COPYING",
+    "final_url": "https://raw.githubusercontent.com/harfbuzz/harfbuzz/fe9501b08d1bf40bf5c6285d336157aa82b29e40/COPYING",
+    "sha256": "ba8f810f2455c2f08e2d56bb49b72f37fcf68f1f4fade38977cfd7372050ad64",
+    "bytes": 1971,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-libsamplerate-COPYING",
+    "url": "https://raw.githubusercontent.com/libsndfile/libsamplerate/2ccde9568cca73c7b32c97fefca2e418c16ae5e3/COPYING",
+    "final_url": "https://raw.githubusercontent.com/libsndfile/libsamplerate/2ccde9568cca73c7b32c97fefca2e418c16ae5e3/COPYING",
+    "sha256": "2c1f76ce2effdddb425018405d5690c0b1ab4e6976e35296b0a6db65c5e1a55d",
+    "bytes": 1334,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-libunibreak-LICENCE",
+    "url": "https://raw.githubusercontent.com/adah1972/libunibreak/3ce4bfa3129ff3738046a44a6db533d2ce25af2b/LICENCE",
+    "final_url": "https://raw.githubusercontent.com/adah1972/libunibreak/3ce4bfa3129ff3738046a44a6db533d2ce25af2b/LICENCE",
+    "sha256": "0c57e2ec42ece17791a75d2f9b2f8e0663181be008667a507f765b3ef22522db",
+    "bytes": 1045,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-libvorbis-COPYING",
+    "url": "https://raw.githubusercontent.com/xiph/vorbis/e3c9861ff096d52378e131ff8c334552e09cdffa/COPYING",
+    "final_url": "https://raw.githubusercontent.com/xiph/vorbis/e3c9861ff096d52378e131ff8c334552e09cdffa/COPYING",
+    "sha256": "ec1815db59fcd302846df949d7424876cb2e2dc5ed1606c5fb0b36787b1cf43a",
+    "bytes": 1470,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-vmaf-LICENSE",
+    "url": "https://raw.githubusercontent.com/Netflix/vmaf/e9909adb89306a270d9c78207bd12acf730279ad/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/Netflix/vmaf/e9909adb89306a270d9c78207bd12acf730279ad/LICENSE",
+    "sha256": "a6fdb51d02b9dfe198e55534bb8047fe6d756eda117f4ff83de98f92c1952710",
+    "bytes": 2833,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-shaderc-LICENSE",
+    "url": "https://raw.githubusercontent.com/google/shaderc/49a8724d561c13db22b52f99f2a0e2707a9a9e3c/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/google/shaderc/49a8724d561c13db22b52f99f2a0e2707a9a9e3c/LICENSE",
+    "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+    "bytes": 11357,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-spirv-cross-LICENSE",
+    "url": "https://raw.githubusercontent.com/KhronosGroup/SPIRV-Cross/81fc2ea76c2b8018d4427c380961a6886cb3ce7d/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/KhronosGroup/SPIRV-Cross/81fc2ea76c2b8018d4427c380961a6886cb3ce7d/LICENSE",
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "bytes": 11358,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-spirv-headers-LICENSE",
+    "url": "https://raw.githubusercontent.com/KhronosGroup/SPIRV-Headers/02c0394e57af6dfdda7f68973df6aa20fc3f5def/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/KhronosGroup/SPIRV-Headers/02c0394e57af6dfdda7f68973df6aa20fc3f5def/LICENSE",
+    "sha256": "ea43b1de38a6f90c488800d66dec1ed671e68cda530266bc96951fb5b6307613",
+    "bytes": 23503,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "FFmpeg-static-libpng-LICENSE",
+    "url": "https://raw.githubusercontent.com/glennrp/libpng/d1d0abeffede1cc898ddc3d0e600839cf026d749/LICENSE",
+    "status": "UNRESOLVED",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-chromaprint-LICENSE.md",
+    "url": "https://raw.githubusercontent.com/acoustid/chromaprint/ab48115481c14873eb870e7a88334550c68d36c1/LICENSE.md",
+    "final_url": "https://raw.githubusercontent.com/acoustid/chromaprint/ab48115481c14873eb870e7a88334550c68d36c1/LICENSE.md",
+    "sha256": "562cfe59627e0c4e8e3b066f3ff2e9736f83811ffe4c6c2c7796595aa7595ebd",
+    "bytes": 1801,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-gme-license.txt",
+    "url": "https://raw.githubusercontent.com/libgme/game-music-emu/dd3182a8bdae3ff761438632aace418fbcaed439/license.txt",
+    "final_url": "https://raw.githubusercontent.com/libgme/game-music-emu/dd3182a8bdae3ff761438632aace418fbcaed439/license.txt",
+    "sha256": "d2efc89fbb7533572a472d34e07964951810a3a4f8d3159ecc2dcaa1452c5c26",
+    "bytes": 26938,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-kvazaar-LICENSE",
+    "url": "https://raw.githubusercontent.com/ultravideo/kvazaar/d6815293f34a094e26ba6c50b8644660ddc13e09/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/ultravideo/kvazaar/d6815293f34a094e26ba6c50b8644660ddc13e09/LICENSE",
+    "sha256": "3c1dc3d7f8a3d08c14f4fbe9942f45764d8a21a3296e8d83446f33fd65f21c38",
+    "bytes": 1549,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-libaribcaption-LICENSE",
+    "url": "https://raw.githubusercontent.com/xqq/libaribcaption/f9d8c50fe5e51c98d101f69d74591295cb568036/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/xqq/libaribcaption/f9d8c50fe5e51c98d101f69d74591295cb568036/LICENSE",
+    "sha256": "5149f1ce4fe89190d86bfb440456701a3a7406fc2b19ef0d8b57661f62b32c04",
+    "bytes": 1065,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-libass-COPYING",
+    "url": "https://raw.githubusercontent.com/libass/libass/4a05d8127f525943ebf45fdc6497c9e665947f0d/COPYING",
+    "final_url": "https://raw.githubusercontent.com/libass/libass/4a05d8127f525943ebf45fdc6497c9e665947f0d/COPYING",
+    "sha256": "f7e30699d02798351e7f839e3d3bfeb29ce65e44efa7735c225464c4fd7dfe9c",
+    "bytes": 755,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-brotli-LICENSE",
+    "url": "https://raw.githubusercontent.com/google/brotli/27cc9fe9a4aa8901be3b3ba29f2f09eaddb08f97/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/google/brotli/27cc9fe9a4aa8901be3b3ba29f2f09eaddb08f97/LICENSE",
+    "sha256": "3d180008e36922a4e8daec11c34c7af264fed5962d07924aea928c38e8663c94",
+    "bytes": 1084,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "FFmpeg-static-lcms2-COPYING",
+    "url": "https://raw.githubusercontent.com/mm2/Little-CMS/5cc0eec7ae8350dd0f6c4c07b077f78f18dfe970/COPYING",
+    "status": "UNRESOLVED",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-libjxl-LICENSE",
+    "url": "https://raw.githubusercontent.com/libjxl/libjxl/f0a1c5ff9dbba51ffa932433ffb80e5e6b6e22a7/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/libjxl/libjxl/f0a1c5ff9dbba51ffa932433ffb80e5e6b6e22a7/LICENSE",
+    "sha256": "8405932022a556380c2d8c272eff154a923feb197233f348ce5f7334fb0a5ede",
+    "bytes": 1508,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-libopus-COPYING",
+    "url": "https://raw.githubusercontent.com/xiph/opus/3da9f7a6db1c05c3996cb363a9d1931a978bf1be/COPYING",
+    "final_url": "https://raw.githubusercontent.com/xiph/opus/3da9f7a6db1c05c3996cb363a9d1931a978bf1be/COPYING",
+    "sha256": "01e1167d54a096d123cf6dfbbeb19587278845c6481d2d66d545669846079551",
+    "bytes": 1945,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-mbedtls-LICENSE",
+    "url": "https://raw.githubusercontent.com/ARMmbed/mbedtls/v4.1.0/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/ARMmbed/mbedtls/v4.1.0/LICENSE",
+    "sha256": "9b405ef4c89342f5eae1dd828882f931747f71001cfba7d114801039b52ad09b",
+    "bytes": 29852,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-libtheora-COPYING",
+    "url": "https://raw.githubusercontent.com/xiph/theora/28fd5ec77f0ad0e07a371cef1047828116f6bd8a/COPYING",
+    "final_url": "https://raw.githubusercontent.com/xiph/theora/28fd5ec77f0ad0e07a371cef1047828116f6bd8a/COPYING",
+    "sha256": "8417fad7da775735564e209484a2e011e0fa201e94f01fdbee6e4977e478e6fc",
+    "bytes": 1470,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-libzmq-LICENSE",
+    "url": "https://raw.githubusercontent.com/zeromq/libzmq/2e8a6ccb414ca79636392604893c79c3b0d00dc4/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/zeromq/libzmq/2e8a6ccb414ca79636392604893c79c3b0d00dc4/LICENSE",
+    "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+    "bytes": 16725,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-lv2-COPYING",
+    "url": "https://raw.githubusercontent.com/lv2/lv2/3c57dae600a5ad8d05acd53ee3490f7d91cb7be6/COPYING",
+    "final_url": "https://raw.githubusercontent.com/lv2/lv2/3c57dae600a5ad8d05acd53ee3490f7d91cb7be6/COPYING",
+    "sha256": "1e6bb175e193608b767ff25a4ed68b82c4db599491cf0d2694435cf60e9a4841",
+    "bytes": 827,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-serd-COPYING",
+    "url": "https://raw.githubusercontent.com/drobilla/serd/b6053bb2a4533e6a8e3821c1061f140d5e666938/COPYING",
+    "final_url": "https://raw.githubusercontent.com/drobilla/serd/b6053bb2a4533e6a8e3821c1061f140d5e666938/COPYING",
+    "sha256": "ae223adebe7cc1ee0716e0f926d1ecc8e42c6e4da7e1d7418c9c07fae244bbde",
+    "bytes": 751,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-zix-COPYING",
+    "url": "https://raw.githubusercontent.com/drobilla/zix/17d632393f5addb6fa24dda2927b96515407cca7/COPYING",
+    "final_url": "https://raw.githubusercontent.com/drobilla/zix/17d632393f5addb6fa24dda2927b96515407cca7/COPYING",
+    "sha256": "1314cc14fb947491491c517c533ac7de4f6798585f922a472358082c25ac1881",
+    "bytes": 752,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-sord-COPYING",
+    "url": "https://raw.githubusercontent.com/drobilla/sord/4b5232bb91e7f2f1b84df384494d073fabbcd312/COPYING",
+    "final_url": "https://raw.githubusercontent.com/drobilla/sord/4b5232bb91e7f2f1b84df384494d073fabbcd312/COPYING",
+    "sha256": "ae223adebe7cc1ee0716e0f926d1ecc8e42c6e4da7e1d7418c9c07fae244bbde",
+    "bytes": 751,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-sratom-COPYING",
+    "url": "https://raw.githubusercontent.com/lv2/sratom/9e8ee84eed502e6030ce8bb49694fd28542b08fc/COPYING",
+    "final_url": "https://raw.githubusercontent.com/lv2/sratom/9e8ee84eed502e6030ce8bb49694fd28542b08fc/COPYING",
+    "sha256": "1d968c655ecad113e128dbf4d4deabd9e30b931b42943b6a681c9cf11d7da5d4",
+    "bytes": 751,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-lilv-COPYING",
+    "url": "https://raw.githubusercontent.com/lv2/lilv/4b8f30055fa5cb4134a2eb45fc1555bc04289314/COPYING",
+    "final_url": "https://raw.githubusercontent.com/lv2/lilv/4b8f30055fa5cb4134a2eb45fc1555bc04289314/COPYING",
+    "sha256": "ae223adebe7cc1ee0716e0f926d1ecc8e42c6e4da7e1d7418c9c07fae244bbde",
+    "bytes": 751,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-onevpl-LICENSE",
+    "url": "https://raw.githubusercontent.com/intel/libvpl/d77f9195cf495b937631607333288fd917ae8939/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/intel/libvpl/d77f9195cf495b937631607333288fd917ae8939/LICENSE",
+    "sha256": "bf1cfac2e2792b6e1e995ce103d70796aecaf2ec7e4c5fe5474f7acec7b4a677",
+    "bytes": 1074,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-openal-COPYING",
+    "url": "https://raw.githubusercontent.com/kcat/openal-soft/93358135d92f3aa2672ed95f9c6bb04f8482d578/COPYING",
+    "final_url": "https://raw.githubusercontent.com/kcat/openal-soft/93358135d92f3aa2672ed95f9c6bb04f8482d578/COPYING",
+    "sha256": "d808ce217e5b611854da622b57ec29fe545584c48bc5352fae72a4b6e5074a15",
+    "bytes": 23330,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-openh264-LICENSE",
+    "url": "https://raw.githubusercontent.com/cisco/openh264/a8e04adb69c79757da014007d4694684a64c7b74/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/cisco/openh264/a8e04adb69c79757da014007d4694684a64c7b74/LICENSE",
+    "sha256": "dd5c1c9668512530fa5a96e4c29ac4033d70a7eeb0eed7a42fddb6dd794ebdbb",
+    "bytes": 1295,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-openjpeg-LICENSE",
+    "url": "https://raw.githubusercontent.com/uclouvain/openjpeg/9dd4b3c98a78f50a48fb08f27bf198d4ae1d8528/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/uclouvain/openjpeg/9dd4b3c98a78f50a48fb08f27bf198d4ae1d8528/LICENSE",
+    "sha256": "a6af136f3e15038a666b61f376612a07d9a4e48cb7c01adbf3e33b3f14ab49b6",
+    "bytes": 2112,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-openmpt-LICENSE",
+    "url": "https://raw.githubusercontent.com/OpenMPT/openmpt/4c3ba47c7977fe3016b474f8ed192e619ae85f7d/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/OpenMPT/openmpt/4c3ba47c7977fe3016b474f8ed192e619ae85f7d/LICENSE",
+    "sha256": "2c999e99533c10a347916a72e075bacf10fcedeff793bd90d41d812b46161da2",
+    "bytes": 1621,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-rav1e-LICENSE",
+    "url": "https://raw.githubusercontent.com/xiph/rav1e/564ae3b0007ae2b06893fd7166bf88c5a84c5b63/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/xiph/rav1e/564ae3b0007ae2b06893fd7166bf88c5a84c5b63/LICENSE",
+    "sha256": "2dd0a109751e939dec3f80ddcfbc1ba91553f18c574399e85c159632182a2c0a",
+    "bytes": 1332,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-sdl-LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/libsdl-org/SDL/b8b3f5ef2001cbe7c11f62d41a9bf47d4a2d8b07/LICENSE.txt",
+    "final_url": "https://raw.githubusercontent.com/libsdl-org/SDL/b8b3f5ef2001cbe7c11f62d41a9bf47d4a2d8b07/LICENSE.txt",
+    "sha256": "1c040b8271b37e5076359f8fd54240e371114112924d2df81ef87c7d6a1dfdfd",
+    "bytes": 884,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-snappy-COPYING",
+    "url": "https://raw.githubusercontent.com/google/snappy/3ac3722e1bee4b99860a282fb779e8e72fa18163/COPYING",
+    "final_url": "https://raw.githubusercontent.com/google/snappy/3ac3722e1bee4b99860a282fb779e8e72fa18163/COPYING",
+    "sha256": "55172044f7e241207117448a4d9d6ba1d0925c8ad66b5d4c08c70adfa9cc3de6",
+    "bytes": 2645,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-twolame-COPYING",
+    "url": "https://raw.githubusercontent.com/njh/twolame/6fced852d4d5cfad58cf9dbe3ea619b08e87d398/COPYING",
+    "final_url": "https://raw.githubusercontent.com/njh/twolame/6fced852d4d5cfad58cf9dbe3ea619b08e87d398/COPYING",
+    "sha256": "257a842724705950b07da76ce0e22ffa80ec77b3e9dfc6702522ac342409da0f",
+    "bytes": 26428,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "FFmpeg-static-uavs3d-LICENSE",
+    "url": "https://raw.githubusercontent.com/uavs3/uavs3d/0e20d2c291853f196c68922a264bcd8471d75b68/LICENSE",
+    "status": "UNRESOLVED",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "file": "upstream-notices\\FFmpeg-static-zimg-COPYING",
+    "url": "https://raw.githubusercontent.com/sekrit-twc/zimg/b3647572a01927e2aa8d0b7aaa917207c9c1ae5d/COPYING",
+    "final_url": "https://raw.githubusercontent.com/sekrit-twc/zimg/b3647572a01927e2aa8d0b7aaa917207c9c1ae5d/COPYING",
+    "sha256": "7637386b5f81e8a719ca336233149005e5fa28b5e6054ea7b67de49355b0ad40",
+    "bytes": 484,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "FFmpeg-static-zvbi-COPYING.LIB",
+    "url": "https://raw.githubusercontent.com/zapping-vbi/zvbi/41477c97c8edf7a01f1594b2a95b94f0117eed21/COPYING.LIB",
+    "status": "UNRESOLVED",
+    "error": "HTTP Error 404: Not Found"
+  }
+]

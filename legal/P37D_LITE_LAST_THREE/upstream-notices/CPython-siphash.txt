@@ -1,0 +1,5 @@
+/* Set of hash utility functions to help maintaining the invariant that
+    if a==b then hash(a)==hash(b)
+
+   All the utility functions (_Py_Hash*()) return "-1" to signify an error.
+*/

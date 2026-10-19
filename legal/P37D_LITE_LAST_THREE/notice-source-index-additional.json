@@ -1,0 +1,49 @@
+[
+  {
+    "file": "upstream-notices\\aom-LICENSE",
+    "url": "https://aomedia.googlesource.com/aom/+/43f2b6a99000057184332c8c2dd4bedc19fdec6f/LICENSE?format=TEXT",
+    "sha256": "4764a286d8b2faeaf42f4418e7d7a28d58fc8fd4d00a3d0a7f44b0a4099de7f2",
+    "bytes": 1316,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\aom-PATENTS",
+    "url": "https://aomedia.googlesource.com/aom/+/43f2b6a99000057184332c8c2dd4bedc19fdec6f/PATENTS?format=TEXT",
+    "sha256": "661fb8e504744e95587b556b94a58343448300606a41bea8c7a9b97125696e61",
+    "bytes": 5701,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\srt-LICENSE",
+    "url": "https://raw.githubusercontent.com/Haivision/srt/c39196c9a568ae4e3289dd65cf54ba4154deb4a1/LICENSE",
+    "sha256": "fab3dd6bdab226f1c08630b1dd917e11fcb4ec5e1e020e2c16f83a0a13863e85",
+    "bytes": 16726,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\vvenc-LICENSE",
+    "url": "https://raw.githubusercontent.com/fraunhoferhhi/vvenc/7d60406c66fa1659b8df74dd8d62bc41d3c90157/LICENSE.txt",
+    "sha256": "88330a2cc59b9dd90674f8759900bc9c06e9efc8799dadda067609addefb49d1",
+    "bytes": 1768,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "upstream-notices\\opencore-amr-LICENSE",
+    "url": "https://sourceforge.net/p/opencore-amr/code/ci/7dba8c32238418ce0b316a852b2224df586ca896/tree/LICENSE?format=raw",
+    "sha256": "8b3f1762349248d444ab9acbafe73941254e36e1064954da56bb9ddbd5873ddb",
+    "bytes": 10271,
+    "status": "ACQUIRED"
+  },
+  {
+    "file": "soxr-COPYING",
+    "url": "https://sourceforge.net/p/soxr/code/ci/945b592b70470e29f917f4de89b4281fbbd540c0/tree/COPYING?format=raw",
+    "error": "HTTP Error 404: Not Found",
+    "status": "UNRESOLVED"
+  },
+  {
+    "file": "libiconv-COPYING.LIB",
+    "url": "https://git.savannah.gnu.org/cgit/libiconv.git/plain/COPYING.LIB?id=9d19c66d0a1768cffcf497b2db70bf4018b578d7",
+    "error": "HTTP Error 502: Bad Gateway",
+    "status": "UNRESOLVED"
+  }
+]
