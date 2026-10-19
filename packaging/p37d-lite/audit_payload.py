@@ -8,6 +8,7 @@ from pathlib import Path
 import sys
 import types
 import zipfile
+import pefile
 from PyInstaller.archive.readers import CArchiveReader
 
 ROOT=Path(__file__).resolve().parents[2]
@@ -29,6 +30,19 @@ def constants(code):
     for value in code.co_consts:
         if isinstance(value,str):yield value
         elif isinstance(value,types.CodeType):yield from constants(value)
+
+def file_version(path):
+    try:
+        pe=pefile.PE(str(path),fast_load=True)
+        pe.parse_data_directories(directories=[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_RESOURCE']])
+        for group in getattr(pe,'FileInfo',[]):
+            for info in group:
+                for table in getattr(info,'StringTable',[]):
+                    if b'FileVersion' in table.entries:
+                        value=table.entries[b'FileVersion'].decode('utf8',errors='replace');pe.close();return value
+        pe.close()
+    except pefile.PEFormatError:pass
+    return ''
 
 def main():
     assert CANDIDATE.is_dir() and EXE.is_file()
@@ -78,7 +92,7 @@ def main():
         else:origin='locally prepared public notices/sources' if rel.startswith('licenses/') else 'prepared application document'
         digest=sha(path)
         row=dict(path=rel,bytes=path.stat().st_size,sha256=digest,component=component,version=version,
-                 file_version=cached_versions.get(digest) or '',source=origin)
+                 file_version=cached_versions.get(digest) or (file_version(path) if path.suffix.lower() in {'.dll','.pyd','.exe'} else ''),source=origin)
         records.append(row)
         # Verified upstream source archives are separately indexed and inspected;
         # these bytes must match public official archives, not private additions.
