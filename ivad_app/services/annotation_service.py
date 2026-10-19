@@ -18,7 +18,8 @@ class AnnotationService:
         with self.store.open(root) as (_,db,_),db.transaction() as session:
             rows=list(session.scalars(select(LabelCategory).order_by(LabelCategory.name)))
             if not rows and initialize:
-                for name in TEMPLATES: session.add(LabelCategory(id=str(uuid4()),name=name,description='可编辑模板；没有对应已发布模型',device_type='',parent_id=None,annotation_type='box',enabled=1,revision=1))
+                from ivad_app.core.demo_policy import enabled
+                for name in ([] if enabled() else TEMPLATES): session.add(LabelCategory(id=str(uuid4()),name=name,description='可编辑模板；没有对应已发布模型',device_type='',parent_id=None,annotation_type='box',enabled=1,revision=1))
                 session.flush(); rows=list(session.scalars(select(LabelCategory).order_by(LabelCategory.name)))
             return [row_dict(r) for r in rows]
 

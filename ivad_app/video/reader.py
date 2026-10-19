@@ -18,6 +18,13 @@ class VideoFrame:
 
 def micros(value, base): return int(round(Fraction(value) * base * 1000000))
 
+def open_local_video(path):
+    from ivad_app.core.demo_policy import enabled
+    # Python socket hooks cannot see native FFmpeg protocol handlers. Restrict
+    # nested playlist/media references too, rather than only checking the path.
+    options = {'protocol_whitelist': 'file'} if enabled() else {}
+    return av.open(str(path), timeout=(5, 10), options=options)
+
 def image_of(frame, rotation):
     image = frame.to_image().convert('RGB')
     angle = int(round(rotation)) % 360
@@ -35,7 +42,7 @@ class FileVideoSource:
     @staticmethod
     def probe(path: Path) -> dict:
         try:
-            with av.open(str(path), timeout=(5, 10)) as container:
+            with open_local_video(path) as container:
                 if not container.streams.video: raise AppError('NO_VIDEO', '文件没有可解码的视频轨道。')
                 stream = container.streams.video[0]
                 frame = next(container.decode(stream), None)
@@ -58,7 +65,7 @@ class FileVideoSource:
             raise AppError('VIDEO_DECODE', '视频损坏、无法读取或编码不受支持；扩展名不能保证可解码。') from exc
 
     def iter_frames(self, start_us: int = 0, end_us: int | None = None):
-        with av.open(str(self.path), timeout=(5, 10)) as container:
+        with open_local_video(self.path) as container:
             stream = container.streams.video[0]
             indexed_seek=start_us>0 and not {'mpeg','mpegts'}.intersection(container.format.name.split(','))
             if indexed_seek:
@@ -101,7 +108,7 @@ class FileVideoSource:
                 if previous:return previous
                 return self._before_sequential(time_us)
             # 从前一个关键帧到目标顺序解码，返回严格早于目标的实际显示帧。
-            with av.open(str(self.path), timeout=(5, 10)) as container:
+            with open_local_video(self.path) as container:
                 stream = container.streams.video[0]
                 target = Fraction(max(0, time_us) + self.metadata['origin_us'], 1000000) / stream.time_base
                 container.seek(int(target), stream=stream, backward=True, any_frame=False)

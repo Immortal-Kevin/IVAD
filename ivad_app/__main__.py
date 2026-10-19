@@ -15,9 +15,12 @@ def main():
     root = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parent.parent))
     QGuiApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
     app = QApplication(sys.argv[:1]); app.setApplicationName('IVAD Platform'); app.setOrganizationName('IVAD')
-    if getattr(sys, 'frozen', False):
+    from ivad_app.core.demo_policy import enabled
+    if enabled():
+        app.setApplicationName('IVAD Internal Demo')
+    elif getattr(sys, 'frozen', False):
         app.setApplicationName('IVAD P2 Beta')
-    data_dir = args.data_dir or (Path(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppLocalDataLocation)) / 'P2Beta' if getattr(sys, 'frozen', False) else root / 'runtime')
+    data_dir = args.data_dir or (Path(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppLocalDataLocation)) / ('P37DLite' if enabled() else 'P2Beta') if getattr(sys, 'frozen', False) else root / 'runtime')
     services = None
     try:
         data_dir.mkdir(parents=True, exist_ok=True)

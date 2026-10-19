@@ -1,0 +1,21 @@
+IVAD P3.7-D Lite — 本机候选第三方通知
+
+当前PAYLOAD_LICENSE_STATUS=BLOCKED。本通知和附带资料不是完整发行合规批准，不能发送候选目录。
+IVAD自研代码本轮仍保持私有，未授权开源发布。第三方代码及版权归各自权利人，本次使用不转移第三方所有权。
+
+PySide6、Shiboken6、Qt 6.8.3：采用适用LGPLv3免费路径，不采用Qt Commercial。运行子集为QtCore/Gui/Widgets/Svg和白名单Windows/图像/样式插件，不提供未用GPL-only Addons。
+原始版权/许可及对应Qt6.8.3源码已放在licenses/components、licenses/qt-source-notices和licenses/sources；完整GPL/LGPL文本位于licenses/。
+主候选中的Qt/PySide/Shiboken库未修改；不得限制适用LGPL库的合法替换、修改、重新链接或为调试修改库所需的逆向。源码归档含构建说明，可使用匹配Windows x64 ABI及接口的自行构建库。
+退出软件并备份完整候选副本后，可在_internal/PySide6和_internal/shiboken6替换兼容DLL/绑定及相关插件；不设置哈希校验锁。兼容性取决于替换库，不能保证任意版本都能工作。
+
+PyAV 15.1.0：BSD-3-Clause，原Authors和LICENSE保留在licenses/components/av。此候选对36个PyAV扩展的PE导入表作了本地重新链接，使用七个不同的LGPL共享FFmpeg实现DLL；没有只改旧x264/x265文件名称。发行RECORD已更新为实际修改文件/依赖哈希，详情见licenses/PyAV_LOCAL_MODIFICATIONS.json。
+FFmpeg：BtbN固定autobuild-2026-07-31-14-10，n7.1.5-12-g1fdbca85aa，原共享DLL未修改，构建禁用x264/x265及GPL/nonfree，运行许可返回LGPLv3+。来源及准确SHA位于licenses/FFmpeg_SOURCE_INDEX.json。
+重要未闭合项：已取得固定FFmpeg主源码和构建脚本并保存在本地工程证据中，但静态依赖的准确源码、补丁和完整通知尚未收齐；未形成完整可交付源码安排。不能以LGPL字符串代替履约，也不能据此批准发送。开源版权与H.264/H.265等可能涉及的独立专利条件应分开审阅。
+
+其它实际运行组件的原文见licenses/components：SQLAlchemy/Alembic/Mako/PyYAML等MIT，Greenlet的MIT/PSF，MarkupSafe的BSD，Pillow的MIT-CMU及捆绑库，NumPy的BSD/OpenBLAS与GCC runtime例外等完整复合文本，typing_extensions的PSF许可。
+CPython 3.12.14及SQLite：保留Python完整许可，SQLite为适用的公有领域声明；不把PSF许可当作所有捆绑第三方DLL的授权。
+OpenSSL 3.5.8：适用Apache-2.0文本单独保留。Microsoft VC Runtime随原wheel/解释器进入候选，逐文件来源和SHA已列清单，但准确再分发条款链尚待闭合，不从“内部使用”推导豁免。
+PyInstaller 6.22.3：保留工具原许可和bootloader例外；例外不免除运行依赖义务，也不自动要求IVAD自研代码开源。
+
+没有携带Torch、RF-DETR、Ultralytics、CUDA/cuDNN、NVIDIA驱动或任何模型权重，不需要为未来GPU Worker先处理许可。系统Windows/驱动组件不随本目录分发。
+不存在额外商业许可购买批准；当前也没有证据说明必须购买商业许可。剩余问题应继续通过免费、准确来源和履约材料整改。
