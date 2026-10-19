@@ -12,13 +12,13 @@ from ivad_app.services.media_service import MediaService
 from ivad_app.services.annotation_service import AnnotationService
 from ivad_app.services.dataset_service import DatasetService
 from ivad_app.services.camera_service import CameraService
-from ivad_app.services.model_service import ModelService
-from ivad_app.services.training_router import TrainingService
 
 class ApplicationServices:
     def __init__(self, root: Path, data_dir: Path | None = None, *, step_seconds: float = 0.1, lite: bool | None = None):
         self.root = Path(root)
-        self.lite = bool(getattr(sys, 'frozen', False)) if lite is None else lite
+        from ivad_app.core.demo_policy import enabled, DisabledAI
+        self.demo_lite = enabled()
+        self.lite = self.demo_lite or (bool(getattr(sys, 'frozen', False)) if lite is None else lite)
         self.data_dir = Path(data_dir) if data_dir else self.root / 'runtime'
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.db = Database(self.data_dir / 'catalog.sqlite', create=not (self.data_dir / 'catalog.sqlite').exists())
@@ -32,13 +32,18 @@ class ApplicationServices:
         self.annotations = AnnotationService(self.store, self.media, self.logs)
         self.cameras = CameraService(self.store,self.logs)
         self.datasets = DatasetService(self.store, self.logs)
-        self.models = ModelService(self.store,self.logs)
-        self.training = TrainingService(self.store,self.datasets,self.models,self.devices,self.logs,self.root,self.settings)
-        from ivad_app.services.offline_demo_service import OfflineDemoService
-        self.offline = OfflineDemoService(self)
+        if self.demo_lite:
+            self.models = DisabledAI(); self.training = DisabledAI(); self.offline = DisabledAI()
+        else:
+            from ivad_app.services.model_service import ModelService
+            from ivad_app.services.training_router import TrainingService
+            from ivad_app.services.offline_demo_service import OfflineDemoService
+            self.models = ModelService(self.store,self.logs)
+            self.training = TrainingService(self.store,self.datasets,self.models,self.devices,self.logs,self.root,self.settings)
+            self.offline = OfflineDemoService(self)
         self.jobs.register('p2_import', self.media.import_batch)
         self.jobs.register('p2_extract', self.media.extract)
-        self.jobs.register('p2_clip', self.media.save_video_clip)
+        if not self.demo_lite:self.jobs.register('p2_clip', self.media.save_video_clip)
         self.jobs.register('p2_freeze', self.datasets.freeze)
         self.jobs.register('p2_export', self.datasets.export)
         if not self.lite:

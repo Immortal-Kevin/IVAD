@@ -16,6 +16,10 @@ class P2Controller(QObject):
     def __init__(self,window):
         super().__init__(window);self.window=window;self.s=window.s;self.runner=window.runner;self.root=None;self.refreshing=False;self.refresh_pending=False;self.tracked={};self.jobs_checking=False
         self.media=MediaPage();self.annotation=AnnotationPage(self.s,self.runner);self.dataset=DatasetPage()
+        if self.s.demo_lite:
+            self.media.tabs.setTabEnabled(3,False)
+            self.media.tabs.setTabToolTip(3,'Lite版不提供片段重新编码；原视频读取、播放和抽帧可用。')
+            self.media.save_video_button.setEnabled(False)
         for key,page in [('media',self.media),('annotation',self.annotation),('dataset',self.dataset)]:
             old=window.pages[key];window.stack.removeWidget(old);old.deleteLater();window.pages[key]=page;window.stack.addWidget(page);page.setEnabled(False)
         self.media.import_requested.connect(lambda p:self.submit('p2_import',p));self.media.extract_requested.connect(lambda p:self.submit('p2_extract',p));self.media.capture_requested.connect(self.capture)

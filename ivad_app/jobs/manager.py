@@ -38,10 +38,16 @@ class JobService:
         self.thread.start()
 
     def register(self, kind: str, handler):
+        from ivad_app.core.demo_policy import require
+        if kind.startswith(('p3_', 'p35_')):require('ai')
+        if kind=='p2_clip':require('reencode')
         if not kind.startswith('p2_') and kind not in {'p3_train','p3_validate','p35_offline'}: raise AppError('JOB_UNSUPPORTED', '不支持的业务任务类型。')
         self.handlers[kind] = handler
 
     def submit(self, kind: str = 'diagnostic', project_id: str | None = None, payload: dict | None = None) -> str:
+        from ivad_app.core.demo_policy import require
+        if kind.startswith(('p3_', 'p35_')):require('ai')
+        if kind=='p2_clip':require('reencode')
         from ivad_app.services.backend_policy import require_rf_request,MIGRATION_PENDING
         if kind in {'p3_train','p3_validate'}:
             require_rf_request(payload or {})

@@ -101,15 +101,27 @@ class MainWindow(QMainWindow):
         self.timer = QTimer(self); self.timer.setInterval(600); self.timer.timeout.connect(self.refresh); self.timer.start()
         from ivad_app.gui.p2_controller import P2Controller
         self.p2=P2Controller(self)
-        from ivad_app.gui.training_page import TrainingPage,ModelsPage
-        for key,page in [('training',TrainingPage(self)),('models',ModelsPage(self))]:
-            old=self.pages[key];self.stack.removeWidget(old);old.deleteLater();self.pages[key]=page;self.stack.addWidget(page)
-        from ivad_app.gui.offline_demo_page import OfflineDemoPage
-        self.pages['offline']=OfflineDemoPage(self);self.stack.addWidget(self.pages['offline'])
+        if not self.s.demo_lite:
+            from ivad_app.gui.training_page import TrainingPage,ModelsPage
+            for key,page in [('training',TrainingPage(self)),('models',ModelsPage(self))]:
+                old=self.pages[key];self.stack.removeWidget(old);old.deleteLater();self.pages[key]=page;self.stack.addWidget(page)
+            from ivad_app.gui.offline_demo_page import OfflineDemoPage
+            self.pages['offline']=OfflineDemoPage(self)
+        else:
+            from ivad_app.core.demo_policy import NOTICE
+            self.pages['offline']=Placeholder('Lite功能范围','内部演示',NOTICE)
+        self.stack.addWidget(self.pages['offline'])
         self.switch_workspace(0); self.load_settings(); self.refresh()
         self.pages['projects'].set_project(self.s.projects.current)
         self.update_project_summary();self.p2.set_project(self.s.projects.current)
-        if self.s.lite:
+        if self.s.demo_lite:
+            from ivad_app.core.demo_policy import NOTICE
+            self.setWindowTitle('IVAD Platform · 研发部内部 Lite 演示（本机候选）')
+            self.notice.setText(NOTICE)
+            self.statusBar().showMessage('P3.7-D Lite · 本机候选 · 未获分发批准')
+            self.workspace.setEnabled(False)
+            self.pages['settings'].worker.setEnabled(False)
+        elif self.s.lite:
             self.notice.setText('P2 Beta · Lite测试模式：视频和人工标注可用；未安装AI Worker，CUDA/训练/推理未启用。可选设备检查只枚举硬件。')
             self.pages['dashboard'].layout.addWidget(QLabel('受控 Beta 测试版 · P2 Lite · AI Worker 未提供'))
             self.pages['devices'].refresh_button.setText('检测NVIDIA硬件（不验证AI）')
@@ -128,7 +140,8 @@ class MainWindow(QMainWindow):
 
     def switch_workspace(self, mode):
         self.nav.blockSignals(True); self.nav.clear()
-        self.navigation = DEV if mode == 0 else PRODUCTION
+        self.navigation = ([item for item in DEV if item[1] not in {'training','models','offline'}]
+                           if self.s.demo_lite else (DEV if mode == 0 else PRODUCTION))
         for title, _ in self.navigation: self.nav.addItem(tr(title))
         self.nav.blockSignals(False); self.nav.setCurrentRow(0)
         self.s.logs.write('gui', '切换工作空间：' + ('开发模式' if mode == 0 else '生产监控模式'))
@@ -306,7 +319,9 @@ class MainWindow(QMainWindow):
         self.centralWidget().setEnabled(False)
         def shutdown():
             try:
-                self.pages['offline'].preview.shutdown();self.pages['offline'].player.shutdown();self.p2.shutdown();self.runner.stop(); self.s.close(); self.shutdown_done.emit('')
+                if not self.s.demo_lite:
+                    self.pages['offline'].preview.shutdown();self.pages['offline'].player.shutdown()
+                self.p2.shutdown();self.runner.stop(); self.s.close(); self.shutdown_done.emit('')
             except Exception:
                 try: self.s.logs.exception('application', '后台关闭失败，保留数据库等待重试。')
                 except OSError: pass

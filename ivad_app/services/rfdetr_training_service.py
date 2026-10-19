@@ -29,6 +29,8 @@ class RFDETRTrainingService:
         self.store,self.datasets,self.models,self.devices,self.logs,self.root,self.settings=store,datasets,models,devices,logs,Path(root),settings
         self._devices=None;self._probe_lock=threading.Lock()
     def python(self):
+        from ivad_app.core.demo_policy import require
+        require('ai')
         value=Path(self.settings.preferences().get('rfdetr_worker_python') or self.root/'.venv-rfdetr/Scripts/python.exe').resolve()
         if not value.is_file() or value.parent.parent.name in {'.venv-nvidia','.venv-p1'}:raise AppError('RF_ENV','请选择独立RF-DETR环境，不允许使用旧YOLO/GUI解释器。')
         return value

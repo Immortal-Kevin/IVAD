@@ -202,6 +202,8 @@ class MediaService(MediaLifecycle):
             return self._save_frame(folder, db, media_id, frame, 'manual', {'mode':'manual','format':'PNG','rotation':frame.rotation}, 'manual')
 
     def save_video_clip(self, context, payload):
+        from ivad_app.core.demo_policy import require
+        require('reencode')
         """Re-encode displayed frames in [start,end), preserving actual VFR PTS."""
         import av
         from fractions import Fraction

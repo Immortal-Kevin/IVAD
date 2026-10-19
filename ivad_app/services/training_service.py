@@ -28,6 +28,8 @@ def validate_parameters(values):
 class TrainingService:
     def __init__(self,store,datasets,models,devices,logs,root,settings):self.store,self.datasets,self.models,self.devices,self.logs,self.root,self.settings=store,datasets,models,devices,logs,Path(root),settings
     def configuration_preflight(self,payload):
+        from ivad_app.core.demo_policy import require
+        require('ai')
         """Validate a proposed job without creating a run or launching a worker."""
         raise AppError('LEGACY_READ_ONLY','旧训练后端仅保留历史源码，不允许新任务。')
         if payload.get('model')=='rfdetr-nano':raise AppError('TRAIN_MODEL','RF-DETR必须使用独立Adapter，禁止通过旧YOLO服务执行。')
