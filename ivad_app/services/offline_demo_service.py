@@ -13,6 +13,9 @@ from ivad_app.services.offline_cache import OfflineCache
 class OfflineDemoService(OfflineCache):
     def __init__(self,services):self.s=services
     def choices(self,root):
+        # Historical complete caches are read through OfflineCache.load, never an engine.
+        return self.s.media.list(root),[],[]
+    def legacy_choices(self,root):
         media=self.s.media.list(root);models=[];versions={v['id']:v for v in self.s.datasets.versions(root)};configured=self.s.models.camera_configurations(root=root)
         for r in self.s.models.versions(root):
             if r.get('state') not in {'EXPERIMENTAL','CANDIDATE','PRODUCTION'} or r.get('model') not in {'yolo11n','yolo26n'} or r.get('task')!='detect':continue
@@ -35,6 +38,12 @@ class OfflineDemoService(OfflineCache):
             x1,y1,x2,y2,c,k=b
             if not (0<=x1<x2<=width+.01 and 0<=y1<y2<=height+.01 and 0<=c<=1 and int(k)==k and 0<=k<nc):raise AppError('DEMO_OUTPUT','检测框坐标/类别/置信度无效。')
     def run(self,context,payload):
+        from ivad_app.services.backend_policy import MIGRATION_PENDING
+        raise AppError('DEMO_MIGRATION_PENDING',MIGRATION_PENDING)
+    def legacy_run(self,context,payload):
+        from ivad_app.services.backend_policy import MIGRATION_PENDING
+        raise AppError('DEMO_MIGRATION_PENDING',MIGRATION_PENDING)
+        # Unreachable historical implementation retained for provenance only.
         root=payload['root'];mid=payload['media_id'];modelid=payload['model_id'];confidence=float(payload.get('confidence',.25));iou=.45
         if not .01<=confidence<=1:raise AppError('DEMO_CONFIDENCE','置信度须为0.01–1。')
         device=self.s.devices.require_gpu(payload['device_id'])

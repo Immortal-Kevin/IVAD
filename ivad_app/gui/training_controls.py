@@ -33,7 +33,7 @@ class TrainingControls:
         self.initial.setToolTip('选已有模型作为微调起点：创建新训练和独立模型版本，不覆盖旧实验；与恢复中断训练不同。')
         self.resume.setToolTip('恢复同数据版本、同架构的失败/取消训练检查点，沿用原参数和优化器进度；保留原任务，写入独立续训记录及目录。已完成模型应选择初始权重微调。')
         self.dataset.setToolTip('只能选择冻结版本；新草稿或新增样本不会改变此版本。')
-        self.model.setToolTip('RF-DETR Nano采用独立环境和专属参数。旧YOLO选项仅保留历史路径，其授权另行核验。')
+        self.model.setToolTip('RF-DETR Nano：已验证目标检测，采用独立环境与专属参数。')
         self.gpu.setToolTip('仅显示已通过设备后端检查的NVIDIA GPU。资源使用现有GPU队列。')
         tips=['刷新可用数据集、模型及GPU设备，不会启动训练。','验证当前数据集版本、模型权重、训练参数、GPU后端和文件完整性。','使用当前冻结数据集版本和训练配置创建GPU训练任务；必须先通过训练前检查。','检查所选初始权重的模型加载及验证能力，不等于验证新训练模型的最终效果。','请求取消当前选定的训练任务。已完成任务不会被删除，历史记录予以保留。']
         for b,tip in zip(self.action_buttons,tips):b.setToolTip(tip);b.setAttribute(Qt.WidgetAttribute.WA_AlwaysShowToolTips,True)
@@ -131,14 +131,14 @@ class TrainingControls:
 
     def cancel(self):
         row=next((r for r in self.rows if r['id']==self.selected_run),None)
-        if (not row or row['state'] not in {'PREPARING','RUNNING'}) and self.job_id:
+        if (not row or row['state'] not in {'QUEUED','PREPARING','RUNNING'}) and self.job_id:
             job=self.s.jobs.get(self.job_id)
             if job['state'] in {'QUEUED','RUNNING'}:
                 jid=self.job_id
                 if QMessageBox.question(self,'确认取消训练','取消当前已提交任务？历史与已有检查点保留。',QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No,QMessageBox.StandardButton.No)==QMessageBox.StandardButton.Yes:
                     self.runner.run(lambda:self.s.jobs.cancel(jid),lambda _,e:self.info.setText(e or '已请求取消。'))
                 return
-        if not row or row['state'] not in {'PREPARING','RUNNING'}:self.info.setText('请选择正在执行的训练；完成记录不会删除。');return
+        if not row or row['state'] not in {'QUEUED','PREPARING','RUNNING'}:self.info.setText('请选择正在执行或排队的训练；完成记录不会删除。');return
         jid=row.get('job_id')
         if jid and QMessageBox.question(self,'确认取消训练','取消TrainingRun '+row['id']+'？历史及已有检查点保留。',QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No,QMessageBox.StandardButton.No)==QMessageBox.StandardButton.Yes:
             self.runner.run(lambda:self.s.jobs.cancel(jid),lambda _,e:self.info.setText(e or '已请求取消，历史与检查点保留。'))

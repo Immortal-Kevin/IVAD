@@ -7,12 +7,14 @@ from ivad_app.core.contracts import AppError,utc_now
 from ivad_app.storage.models import ModelVersion,Camera,LabelCategory,SettingRecord,RegionOfInterest,MediaAsset,TrainingRun
 from ivad_app.storage.project_store import safe_path,file_hash
 from ivad_app.storage.project_store import atomic_json
+from ivad_app.services.backend_policy import classification,require_active
 
 class ModelService:
     def __init__(self,store,logs):self.store,self.logs=store,logs
-    def versions(self,root=None):
+    def versions(self,root=None,*,include_archived=False):
         with self.store.open(root) as (_,db,_),db.transaction() as s:
-            return [dict(id=r.id,revision=r.revision,**r.details) for r in s.scalars(select(ModelVersion))]
+            rows=[dict(r.details,id=r.id,revision=r.revision,archive_classification=classification(r.details)) for r in s.scalars(select(ModelVersion))]
+        return rows if include_archived else [r for r in rows if r['archive_classification']=='ACTIVE_RFDETR']
     def camera_configurations(self,camera_id=None,root=None):
         with self.store.open(root) as (_,db,_),db.transaction() as session:
             row=session.get(SettingRecord,'camera_detector_configurations')
@@ -22,7 +24,9 @@ class ModelService:
         """Configuration metadata only. No inference, scheduling or production release."""
         with self.store.open(root) as (_,db,_),db.transaction(camera_write=True) as session:
             if not session.get(Camera,camera_id):raise AppError('CAMERA_MISSING','当前项目摄像头不存在。')
-            if not session.get(ModelVersion,model_version_id):raise AppError('MODEL_MISSING','当前项目模型版本不存在。')
+            model=session.get(ModelVersion,model_version_id)
+            if not model:raise AppError('MODEL_MISSING','当前项目模型版本不存在。')
+            require_active(model.details)
             faults=sorted(set(fault_ids))
             if any(not session.get(LabelCategory,f) for f in faults):raise AppError('LABEL_MISSING','故障类型不存在。')
             if roi_scope:
@@ -37,6 +41,7 @@ class ModelService:
             return record
     def register(self,path,details,root=None,*,trusted=False,training_completion=None):
         source=Path(path)
+        require_active(details)
         if not trusted:raise AppError('MODEL_TRUST','仅导入可信权重；PT文件可能执行代码，请明确确认来源可信。')
         allowed={'.pt','.onnx'}
         if details.get('backend')=='rfdetr':
@@ -76,14 +81,14 @@ class ModelService:
         manifest=dict(data,model_version_id=mid,files={p.name:file_hash(p) for p in stage.iterdir()},note='模型工件导出，不含应用程序。工业准确率与商业部署许可未验收。')
         atomic_json(stage/'model_manifest.json',manifest);stage.rename(target);return str(target)
     def record_validation(self,mid,result,version_id,root=None):
-        self.verify(mid,root)
+        _,details=self.verify(mid,root);require_active(details)
         with self.store.open(root) as (_,db,_),db.transaction() as s:
             row=s.get(ModelVersion,mid);data=copy.deepcopy(row.details)
             data.setdefault('validations',[]).append({'at':utc_now(),'dataset_version':version_id,'result':result})
             if data['state']=='EXPERIMENTAL':data.update(metrics=result['metrics'],validation_passed=True,gpu_evidence=dict(data.get('gpu_evidence',{}),**result['evidence']),validation_dataset=version_id)
             row.details=data;row.revision+=1
     def transition(self,mid,state,expected_revision,root=None,*,approved=False,rollback=False,thresholds=None):
-        self.verify(mid,root)
+        _,details=self.verify(mid,root);require_active(details)
         with self.store.open(root) as (_,db,_),db.transaction() as s:
             row=s.get(ModelVersion,mid)
             if row.revision!=expected_revision:raise AppError('MODEL_CONFLICT','模型状态已更新，请刷新。')

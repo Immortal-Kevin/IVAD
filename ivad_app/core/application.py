@@ -43,6 +43,7 @@ class ApplicationServices:
         self.jobs.register('p2_export', self.datasets.export)
         if not self.lite:
             self.jobs.register('p3_train', self.training.train);self.jobs.register('p3_validate',self.training.validate)
+            self.training.jobs=self.jobs
             self.jobs.register('p35_offline',self.offline.run)
         self.logs.write('application', 'IVAD源码模式P3训练基础设施；P4–P6尚未实现。' if not self.lite else 'Lite不启用AI Worker。')
         self.closed = False
