@@ -44,6 +44,7 @@ class RFDETRTrainingService:
             return self._devices
     def snapshot(self,version_id,root):
         folder,snapshot=self.datasets.snapshot(version_id,root);admission=snapshot.get('admission',{});classes=snapshot['classes'];counts={s:0 for s in ['train','val','test']}
+        seen_hashes=set();groups={}
         if not classes or len({c['uuid'] for c in classes})!=len(classes) or len({c['class_id'] for c in classes})!=len(classes):raise AppError('RF_CLASSES','类别映射为空或重复。')
         experimental=admission.get('policy')=='human-auto-v1' and admission.get('scope')=='EXPERIMENT_ONLY'
         if experimental and (admission.get('validation_level')!='AUTO_CHECKED_HUMAN' or admission.get('independent_review') is not False or admission.get('split_status') not in {'PASS','LIMITED'} or (admission.get('split_status')=='LIMITED' and not admission.get('allow_limited'))):raise AppError('RF_ADMISSION','实验准入或LIMITED确认缺失。')
@@ -60,10 +61,19 @@ class RFDETRTrainingService:
                     validate_geometry(obj['kind'],obj['geometry'],item['width'],item['height'])
                 image=safe_path(folder,item['image'])
                 if not image.is_file() or file_hash(image)!=item['sha256']:raise AppError('RF_IMAGE','冻结图像缺失或SHA256改变。')
+                if item['sha256'] in seen_hashes:raise AppError('RF_LEAKAGE','重复图片，拒绝跨集合泄漏。')
+                seen_hashes.add(item['sha256'])
+                split=item['split']
+                if split not in counts:raise AppError('RF_SPLIT','不支持的数据划分。')
+                group=(item.get('source_group_id') or item['media_id']) if experimental and snapshot['strategy']=='source' else (item.get('camera_id') or item.get('camera') or item.get('source_group_id') or item['media_id'])
+                if group in groups and groups[group]!=split and not (experimental and snapshot['strategy']=='random' and admission.get('allow_limited')):raise AppError('RF_LEAKAGE','同摄像头或源录像跨集合，拒绝数据泄漏。')
+                groups[group]=split
                 counts[item['split']]+=1
         if not counts['train'] or not counts['val']:raise AppError('RF_SPLIT','须保留非空训练与验证划分，不会自动重新划分。')
         return folder,snapshot,counts
     def configuration_preflight(self,payload):
+        from ivad_app.services.backend_policy import require_rf_request
+        require_rf_request(payload)
         p=parameters(payload.get('parameters',{}));python=self.python();root=payload['root'];folder,snapshot,counts=self.snapshot(payload['version_id'],root)
         if payload.get('resume_run_id'):raise AppError('RF_RESUME','RF优化器断点恢复尚未验收；检查点保留，请用可信权重创建新实验。')
         gpu=next((d for d in self.devices_snapshot() if d.id==payload['device_id'] and d.backend_available),None)

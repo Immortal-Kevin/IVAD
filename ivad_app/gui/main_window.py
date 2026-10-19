@@ -261,14 +261,16 @@ class MainWindow(QMainWindow):
         if self.refresh_busy or self.is_closing: return
         self.refresh_busy = True
         log_filter = self.log_filter
+        project_id=self.s.projects.current.id if self.s.projects.current else None
         def collect():
-            return self.s.jobs.history(), self.s.logs.recent(log_filter), self.s.settings.recent_projects()
+            return self.s.jobs.operator_history(project_id), self.s.logs.recent(log_filter), self.s.settings.recent_projects()
         def done(result, error):
             self.refresh_busy = False
             if error: return
+            if project_id!=(self.s.projects.current.id if self.s.projects.current else None):self.refresh();return
             jobs, logs, recent = result
             names={'diagnostic':'非AI诊断','diagnostic_failure':'可控异常测试','p2_import':'视频批量导入','p2_extract':'PTS抽帧','p2_clip':'人工视频片段保存','p2_freeze':'数据集冻结','p2_export':'数据集导出'}
-            fill_table(self.pages['jobs'].jobs, [[j['id'], names.get(j['kind'],j['kind']), j['state'], str(j['progress']) + '%', local_time(j['updated_at']), j['error']] for j in jobs])
+            fill_table(self.pages['jobs'].jobs, [[j['id'], names.get(j['kind'],j['kind'])+(' · '+j['archive_classification'] if j.get('archive_classification') not in {None,'NON_AI'} else ''), j['state'], str(j['progress']) + '%', local_time(j['updated_at']), j['error']] for j in jobs])
             self.pages['jobs'].show_detail()
             self.global_tasks.setText(f"任务：运行{sum(j['state']=='RUNNING' for j in jobs)} / 排队{sum(j['state']=='QUEUED' for j in jobs)} / 历史{len(jobs)}")
             if log_filter == self.log_filter:

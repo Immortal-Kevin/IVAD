@@ -42,6 +42,11 @@ class JobService:
         self.handlers[kind] = handler
 
     def submit(self, kind: str = 'diagnostic', project_id: str | None = None, payload: dict | None = None) -> str:
+        from ivad_app.services.backend_policy import require_rf_request,MIGRATION_PENDING
+        if kind in {'p3_train','p3_validate'}:
+            require_rf_request(payload or {})
+            payload=dict(payload,backend='rfdetr')
+        if kind=='p35_offline':raise AppError('DEMO_MIGRATION_PENDING',MIGRATION_PENDING)
         if kind not in {'diagnostic', 'diagnostic_failure'} and kind not in self.handlers:
             raise AppError('JOB_UNSUPPORTED', '不支持该任务；AI训练/推理尚未实现。')
         with self.lock:
@@ -118,6 +123,20 @@ class JobService:
         with self.db.transaction() as session:
             rows = session.scalars(select(JobRecord).order_by(JobRecord.created_at.desc()).limit(200))
             return [{key: getattr(row, key) for key in ['id', 'kind', 'state', 'progress', 'created_at', 'updated_at', 'error']} for row in rows]
+
+    def operator_history(self,project_id):
+        """All live tasks remain visible; completed AI history is project/backend scoped."""
+        from ivad_app.services.backend_policy import classification
+        with self.db.transaction() as session:
+            rows=session.scalars(select(JobRecord).order_by(JobRecord.created_at.desc()))
+            result=[]
+            for r in rows:
+                active=r.state in {'QUEUED','RUNNING'}
+                if not active and r.project_id!=project_id:continue
+                kind=classification(r.payload) if r.kind in {'p3_train','p3_validate','p35_offline'} else 'NON_AI'
+                if not active and kind in {'LEGACY_READ_ONLY','UNKNOWN'}:continue
+                result.append({key:getattr(r,key) for key in ['id','kind','project_id','state','progress','created_at','updated_at','error','payload']}|{'archive_classification':kind})
+            return result
 
     def request_shutdown(self):
         with self.lock:

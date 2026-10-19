@@ -29,6 +29,7 @@ class TrainingService:
     def __init__(self,store,datasets,models,devices,logs,root,settings):self.store,self.datasets,self.models,self.devices,self.logs,self.root,self.settings=store,datasets,models,devices,logs,Path(root),settings
     def configuration_preflight(self,payload):
         """Validate a proposed job without creating a run or launching a worker."""
+        raise AppError('LEGACY_READ_ONLY','旧训练后端仅保留历史源码，不允许新任务。')
         if payload.get('model')=='rfdetr-nano':raise AppError('TRAIN_MODEL','RF-DETR必须使用独立Adapter，禁止通过旧YOLO服务执行。')
         root=payload['root'];name=payload['model'];adapter(name,payload.get('operation','train'))
         parameters=validate_parameters(payload.get('parameters',{}));device=self.devices.require_gpu(payload['device_id'])
@@ -82,6 +83,7 @@ class TrainingService:
             if row:row.details=copy.deepcopy(data);row.revision+=1
             else:s.add(TrainingRun(id=rid,details=copy.deepcopy(data),revision=1))
     def train(self,context,payload):
+        raise AppError('LEGACY_READ_ONLY','旧训练后端仅保留历史源码，不允许新任务。')
         root=payload['root'];parameters=validate_parameters(payload.get('parameters',{}));name=payload.get('model','yolo26n')
         operation=payload.get('operation','train')
         if name not in MODELS:raise AppError('TRAIN_MODEL','该模型适配器尚不支持训练。')

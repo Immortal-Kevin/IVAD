@@ -17,7 +17,7 @@ class TrainingPage(TrainingControls,QWidget):
         self.mode=QComboBox();self.mode.addItems(['简易训练','高级训练']);form.addRow('训练模式',self.mode)
         self.dataset_group=QComboBox();self.dataset_group.setObjectName('training_dataset_group');form.addRow('所属数据集',self.dataset_group);self.frozen_versions=[];self.dataset_group.currentIndexChanged.connect(self.filter_dataset_versions)
         self.dataset=QComboBox();self.dataset.setObjectName('training_dataset');form.addRow('冻结数据集版本',self.dataset)
-        self.model=QComboBox();self.model.setObjectName('training_model');self.model.addItems([RF_MODEL,'yolo26n','yolo11n']);form.addRow('基础模型',self.model)
+        self.model=QComboBox();self.model.setObjectName('training_model');self.model.addItems([RF_MODEL]);form.addRow('基础模型',self.model)
         self.gpu=QComboBox();self.gpu.setObjectName('training_gpu');form.addRow('NVIDIA GPU',self.gpu)
         self.initial=QComboBox();form.addRow('初始权重',self.initial)
         self.resume=QComboBox();self.resume.setToolTip('同数据版本与架构，使用原训练参数和已完成epoch的优化器状态；写入新的训练目录，不覆盖原实验。');form.addRow('条件恢复（沿用原参数）',self.resume)
@@ -161,13 +161,7 @@ class ModelsPage(QWidget):
             self.busy=False;self.info.setText(error or '注册状态已记录。');self.refresh()
         self.w.runner.run(lambda:self.w.s.models.transition(r['id'],state,r['revision'],root,approved=approved,rollback=rollback,thresholds=thresholds),done)
     def import_model(self):
-        path,_=QFileDialog.getOpenFileName(self,'选择可信模型','','模型 (*.pt *.onnx)')
-        if not path:return
-        if QMessageBox.question(self,'确认模型来源','确认此模型来源可信？PT加载可能执行代码。仅登记不等于已验证，不可信模型请取消。',QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No,QMessageBox.StandardButton.No)!=QMessageBox.StandardButton.Yes:return
-        architecture,ok=QInputDialog.getItem(self,'声明模型架构','选择可信权重的实际架构（能力仍待GPU验证）',['yolo26n','yolo11n','unverified'],0,False)
-        if not ok:return
-        root=self.root
-        self.w.runner.run(lambda:self.w.s.models.register(path,{'model':architecture,'task':'detect' if architecture!='unverified' else 'unverified','source':'user confirmed trusted; architecture declared, not verified'},root,trusted=True),lambda _,e:(self.info.setText(e or '已登记EXPERIMENTAL，训练/验证能力尚未确认。'),self.refresh()))
+        self.info.setText('当前仅支持通过已验证的 RF-DETR 训练链路自动登记模型；手工导入尚未开放。')
     def export_model(self):
         row=self.selected()
         if not row:return

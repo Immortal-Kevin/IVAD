@@ -67,7 +67,7 @@ class OfflineDemoPage(OfflineDemoInteraction,OfflineDemoLayout,QWidget):
         self.w.runner.run(collect,done);self.configuration_changed()
     def show_model(self):
         r=next((r for r in self.model_rows if r['id']==self.model.currentData()),None)
-        if not r:self.model_info.setText('没有可用实验模型；先检查模型仓库及冻结版本。');return
+        if not r:self.model_info.setText('TEMPORARILY UNAVAILABLE — RF-DETR MIGRATION PENDING\n可从历史列表只读回放已完成缓存。');return
         self.model_info.setText(r['model']+' · '+r['id'][:8]+' · '+r['state']+'\n故障：'+ '、'.join(c['name'] for c in r['class_map'])+' · '+r.get('dataset_display','DatasetVersion')+' · '+r.get('split_status','历史审核')+'\n工程实验，未完成独立工业验证。');self.model_info.setToolTip('ModelVersion '+r['id']+'\nDatasetVersion '+r['dataset_version'])
     def import_video(self):
         if self.job or not self.root:return
@@ -89,6 +89,8 @@ class OfflineDemoPage(OfflineDemoInteraction,OfflineDemoLayout,QWidget):
         if self.job:self.w.runner.run(lambda:self.s.jobs.cancel(self.job))
     def watch(self):
         active=bool(self.job or self.busy);self.refresh_button.setEnabled(not active);self.history.setEnabled(not active);self.start_button.setEnabled(bool(self.root) and self.source_ready and not active);self.select_button.setEnabled(not active);self.reuse_button.setEnabled(not active);self.cancel_button.setEnabled(bool(self.job));self.export_button.setEnabled(bool(self.run_path) and self.player.loaded and not active);self.shot_button.setEnabled(bool(self.run_path) and self.player.loaded and not active)
+        self.start_button.setEnabled(False);self.reuse_button.setEnabled(False)
+        self.start_button.setToolTip('TEMPORARILY UNAVAILABLE — RF-DETR MIGRATION PENDING')
         for control in [self.model,self.media,self.gpu,self.confidence,self.start_time,self.end_time,self.range_slider,self.camera,self.other_models]:control.setEnabled(not active)
         if not self.job:return
         r=self.s.jobs.get(self.job);

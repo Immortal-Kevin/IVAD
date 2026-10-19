@@ -30,3 +30,12 @@
 ## 后续正式迁移需批准的工作
 
 独立训练/推理 Worker 路由、后端能力与模型元数据、非 YOLO 输出处理、P3.5 缓存版本/身份、取消与 GPU 调度、全链路回归及 C/D/E 来源复核。不能仅改 import、换权重或使用旧 YOLO ONNX 宣称授权问题消失。
+## 2026-10-19 收尾补充
+
+本补充替代上文“正式GUI仍可启动旧训练”的当前状态描述，历史审计原文保留。
+
+正式GUI→training_router→RFDETRTrainingService→.venv-rfdetr -I→独立RF Worker。旧路由封禁，业务查询隐藏3旧训练/3旧模型；旧模型register/transition/configure_camera/record_validation拒绝，verify和文件复制导出仍可只读审计。P3.5新任务在JobService和OfflineDemoService双重拒绝，历史成品缓存可读。
+
+本轮当前代码真实CUDA重载Job `8da15e9d-d101-482f-a529-d3a689bbb5cf`成功；主进程装配使用禁止Ultralytics导入的Finder，Worker保留其模块轨迹；旧PYTHONPATH污染探针通过。原始旧环境、YOLO权重、源码、通知和构建清单仍保留，不能声称全产品零依赖或版权链全部闭合。详细逐文件分类见 `reports/P37_LEGACY_YOLO_RETIREMENT.md`。
+
+本轮未改依赖版本，不重新出具法律认证。沿用固定版本的P37_FREE_PROPRIETARY_LICENSE_AUDIT中未闭合项：Qt对应源码和可替换实测；FFmpeg/PyAV构建/codec对应；OpenCV捆绑视频库；NVIDIA逐DLL可分发清单/通知；部分包缺失通知、产权来源及最终payload审查。公司专有源码策略保持，未购买许可。`DISTRIBUTION_STATUS=BLOCKED`，`PACKAGING_FREEZE=TRUE`。

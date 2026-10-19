@@ -64,7 +64,7 @@ class DatasetPage(DatasetLifecyclePage,Page):
         row=QHBoxLayout();versions.addLayout(row);row.addWidget(button('检查候选数据',lambda:self.preview_requested.emit(self.draft_frames())));row.addWidget(button('冻结新版本',self.freeze,True,'freeze_dataset'));row.addWidget(button('检查选中版本完整性 / 来源',self.check_version,name='dataset_check_version'))
         self.versions=table(['数据集','版本','图片数','目标数','划分','版本UUID']);self.versions.setObjectName('dataset_versions');self.versions.setMinimumHeight(200);self.versions.itemSelectionChanged.connect(self.show_version);versions.addWidget(self.versions,1)
         row=QHBoxLayout();self.format=QComboBox()
-        for text,value in [('YOLO Detection','yolo_detect'),('YOLO Segmentation','yolo_segment'),('COCO JSON','coco'),('IVAD Native（完整）','ivad_native')]:self.format.addItem(text,value)
+        for text,value in [('IVAD Native（完整）','ivad_native'),('COCO JSON','coco')]:self.format.addItem(text,value)
         row.addWidget(self.format);row.addWidget(button('导出选中冻结版本…',self.export,True,'export_dataset'));versions.addLayout(row)
         self.detail=QPlainTextEdit();self.detail.setReadOnly(True);self.detail.setMaximumHeight(160);versions.addWidget(self.detail)
         self.summary=QLabel();self.summary.setWordWrap(True);self.layout.addWidget(self.summary);self.data_error_text='';self.init_lifecycle(creation,splitting,versions);self.update_counts()
