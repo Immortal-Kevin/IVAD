@@ -47,7 +47,7 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout(outer); layout.setContentsMargins(16, 14, 16, 12)
         header = QHBoxLayout()
         brand = QLabel('IVAD Platform'); brand.setObjectName('brand'); header.addWidget(brand)
-        header.addWidget(QLabel(f'{__version__}  /  数据与GPU训练')); header.addStretch()
+        header.addWidget(QLabel(f'{__version__}  /  '+('内部视频与数据集演示' if self.s.demo_lite else '数据与GPU训练'))); header.addStretch()
         self.project_label = QLabel('当前项目：未打开'); self.project_label.setMinimumWidth(200); self.project_label.setMaximumWidth(280)
         header.addWidget(self.project_label)
         self.workspace = QComboBox(); self.workspace.setObjectName('workspace_mode')
@@ -61,7 +61,7 @@ class MainWindow(QMainWindow):
         self.nav = QListWidget(); self.nav.setMinimumWidth(170); self.nav.setObjectName('navigation'); self.nav.currentRowChanged.connect(self.navigate); side.addWidget(self.nav, 1)
         for title, key in [('任务中心', 'jobs'), ('设备与后端', 'devices'), ('诊断日志', 'logs')]:
             side.addWidget(button(title, lambda _=False, key=key: self.show_page(key)))
-        side.addWidget(QLabel('P3源码模式 · 打包冻结\n本地运行 · 不启动网络服务'))
+        side.addWidget(QLabel('P3.7-D Lite · 本机候选\n本地运行 · 不提供AI功能' if self.s.demo_lite else 'P3源码模式 · 打包冻结\n本地运行 · 不启动网络服务'))
         splitter.addWidget(sidebar)
         self.stack = QStackedWidget(); self.stack.setMinimumWidth(610); splitter.addWidget(self.stack)
         self.pages = {'dashboard': Dashboard(), 'projects': ProjectsPage(), 'jobs': JobsPage(), 'devices': DevicesPage(), 'logs': LogsPage(), 'settings': SettingsPage()}
