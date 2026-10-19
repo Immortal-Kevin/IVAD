@@ -110,7 +110,12 @@ def test_four_tabs_filter_sort_draft_batch_freeze_and_export(qtbot,services,trut
                 d.tabs.setCurrentIndex(tab);qtbot.wait(50);assert w.grab().save(str(output/f'dataset-{width}-tab{tab+1}.png'))
         monkeypatch.setattr(QMessageBox,'question',lambda *a,**k:QMessageBox.StandardButton.Yes)
         d.tabs.setCurrentIndex(3);click(qtbot,d,'freeze_dataset');qtbot.waitUntil(lambda:len(services.datasets.versions())==1,timeout=15000);qtbot.waitUntil(lambda:bool(d.version_rows),timeout=10000)
-        d.versions.selectRow(0);click(qtbot,d,'dataset_check_version');qtbot.waitUntil(lambda:'source_trace' in d.detail.toPlainText(),timeout=10000);monkeypatch.setattr(QFileDialog,'getExistingDirectory',lambda *a,**k:str(tmp_path));click(qtbot,d,'export_dataset');qtbot.waitUntil(lambda:bool(list(tmp_path.glob('IVAD-*-yolo_detect-*'))),timeout=15000)
+        d.versions.selectRow(0);click(qtbot,d,'dataset_check_version');qtbot.waitUntil(lambda:'source_trace' in d.detail.toPlainText(),timeout=10000)
+        version_id=d.version_rows[0]['id'];folder,snapshot=services.datasets.snapshot(version_id);frozen_before=(folder/'manifest.json').read_bytes()
+        monkeypatch.setattr(QFileDialog,'getExistingDirectory',lambda *a,**k:str(tmp_path))
+        from tests.test_p37a_export_contract import gui_export_both
+        gui_export_both(qtbot,w,d,snapshot,tmp_path,(5,3,2))
+        assert (folder/'manifest.json').read_bytes()==frozen_before and services.datasets.snapshot(version_id)[1]==snapshot
         # Restore the excluded frame using real controller action; old payload remains.
         d.tabs.setCurrentIndex(0);d.exclusion.setCurrentIndex(1)
         for i in range(d.candidates.rowCount()):d.candidates.item(i,0).setCheckState(Qt.CheckState.Checked)

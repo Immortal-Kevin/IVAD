@@ -1,5 +1,13 @@
 # P3.7-A Final Acceptance Closure
 
+## 最新状态：测试契约已获授权更新
+
+2026-10-19，基线 `b0d56b7ea12b071f7e1a7f51182f1dc84e0adf2c`。现行契约复验 **88 PASS、1既有条件SKIP、0失败**；此前默认YOLO断言失败已按用户本轮授权更新为Native默认与显式COCO，并通过真实200图/402目标/16正常GUI验证及来源保护。原完整四页流程和恢复剔除帧断言保留且通过，没有修改产品功能。
+
+当前结论拆分为：**P3.7-A功能与迁移PASS、Qt历史异常PARTIAL、整体Ultralytics迁移PARTIAL、发行合规BLOCKED**。原生崩溃本轮未复现，原始根因仍未确定；[独立问题IVAD-QT-001](P37_QT_NATIVE_ISSUE.md)保持OPEN。详见 [最终技术验收](P37_A_FINAL_TECHNICAL_ACCEPTANCE.md)。不重训、不进入B/P4、不打包或push，继续 `PACKAGING_FREEZE=TRUE`、`DISTRIBUTION_STATUS=BLOCKED`。
+
+## 以下为上一轮收尾历史
+
 日期：2026-10-19。基线 `1f1db7d338903d93a4add4f600dda11a5db5de00`，分支 `feature/p37a-rfdetr-training`。总体 **PARTIAL**，未认定Qt原始异常彻底解决。
 
 `PACKAGING_FREEZE=TRUE`；`DISTRIBUTION_STATUS=BLOCKED`。无打包、push、环境安装、系统Python/驱动修改、YOLO重训或P3.7-B/P4实施。IVAD自研源码继续内部专有。
