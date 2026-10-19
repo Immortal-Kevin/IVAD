@@ -1,0 +1,9 @@
+# NOTICE 草案（不为IVAD授予公开许可）
+
+RF-DETR由Roboflow提供；所用开源包及Apache指定Nano资产适用Apache License 2.0。保留上游许可、适用版权和NOTICE；本草案不取代原样文件。准确文件/版本索引见P37L_THIRD_PARTY_NOTICES_DRAFT.md与licenses/p37l/NOTICE_INDEX.json。
+
+所用RF文件头实际包含Roboflow、Baidu、Microsoft、Facebook及其关联方版权声明；各文件原样索引见licenses/p37l/RF_SOURCE_ATTRIBUTIONS.json。致谢DINOv2、LW-DETR、Conditional DETR、DETR和Deformable DETR等上游研究与实现，非表示这些机构背书IVAD。不能将不同项目全部重新许可为Apache。
+
+未在所采RF wheel发现独立NOTICE；固定commit根NOTICE返回404，不能据此声称其所有子目录/依赖都无NOTICE义务。任何实际存在且适用于payload的NOTICE必须继续提供。
+
+公司自研部分的版权主体与公开许可证待真实著作权人书面确认，本文件不作授权。工业视频、图片、标注、数据集、模型权重和真实配置不属于拟公开代码交付清单；其保密和访问权限由独立资产政策控制，第三方已授予的权利不被本声明收回。

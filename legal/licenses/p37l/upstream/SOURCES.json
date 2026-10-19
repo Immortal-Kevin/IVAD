@@ -1,0 +1,196 @@
+[
+  {
+    "file": "Apache-2.0.txt",
+    "url": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+    "final_url": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "bytes": 11358,
+    "status": "FETCHED"
+  },
+  {
+    "file": "RFDETR-LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/roboflow/rf-detr/7433d5919d0f7e72cc6cb78663e0a731afd499e0/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/roboflow/rf-detr/7433d5919d0f7e72cc6cb78663e0a731afd499e0/LICENSE",
+    "sha256": "8cabf52c61130fc97a7e5da5e3685ccf44841c0c53d6f881189369b136603cca",
+    "bytes": 11345,
+    "status": "FETCHED"
+  },
+  {
+    "file": "RFDETR-README.md",
+    "url": "https://raw.githubusercontent.com/roboflow/rf-detr/7433d5919d0f7e72cc6cb78663e0a731afd499e0/README.md",
+    "final_url": "https://raw.githubusercontent.com/roboflow/rf-detr/7433d5919d0f7e72cc6cb78663e0a731afd499e0/README.md",
+    "sha256": "2626e785682875b615fbf95f36a29f74495cc543a18ae62c266312e3de50d0e8",
+    "bytes": 26774,
+    "status": "FETCHED"
+  },
+  {
+    "file": "RFDETR-NOTICE.txt",
+    "url": "https://raw.githubusercontent.com/roboflow/rf-detr/7433d5919d0f7e72cc6cb78663e0a731afd499e0/NOTICE",
+    "status": "UNRESOLVED",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "file": "RFDETR-licensing.html",
+    "url": "https://rfdetr.roboflow.com/latest/learn/licensing/",
+    "status": "UNRESOLVED",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "file": "DINOv2-LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/facebookresearch/dinov2/main/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/facebookresearch/dinov2/main/LICENSE",
+    "sha256": "600cc67cc4cb2f5ea317dcfc687ad1c74dc4bec8782bbe9db0afd83513b935b7",
+    "bytes": 11359,
+    "status": "FETCHED"
+  },
+  {
+    "file": "DINOv2-NOTICE.txt",
+    "url": "https://raw.githubusercontent.com/facebookresearch/dinov2/main/NOTICE",
+    "status": "UNRESOLVED",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "file": "LWDETR-LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/Atten4Vis/LW-DETR/master/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/Atten4Vis/LW-DETR/master/LICENSE",
+    "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+    "bytes": 11357,
+    "status": "FETCHED"
+  },
+  {
+    "file": "DeformableDETR-LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/fundamentalvision/Deformable-DETR/main/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/fundamentalvision/Deformable-DETR/main/LICENSE",
+    "sha256": "068413f8cf5e42e34d6e171e45a779df6dbea0a18249c0a223a3878e6de3cb27",
+    "bytes": 11963,
+    "status": "FETCHED"
+  },
+  {
+    "file": "AGPL-3.0.txt",
+    "url": "https://raw.githubusercontent.com/ultralytics/ultralytics/v8.4.176/LICENSE",
+    "final_url": "https://raw.githubusercontent.com/ultralytics/ultralytics/v8.4.176/LICENSE",
+    "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+    "bytes": 34523,
+    "status": "FETCHED"
+  },
+  {
+    "file": "Ultralytics-license.html",
+    "url": "https://www.ultralytics.com/license",
+    "final_url": "https://www.ultralytics.com/license",
+    "sha256": "993da2f06030d2374049821306d5877461965e56593198d351494e996ea7285d",
+    "bytes": 362622,
+    "status": "FETCHED"
+  },
+  {
+    "file": "GPL-FAQ.html",
+    "url": "https://www.gnu.org/licenses/gpl-faq.en.html",
+    "final_url": "https://www.gnu.org/licenses/gpl-faq.en.html",
+    "sha256": "5053fe23f1da3b76245b17c416640cde37ce21b8175effc0c6619d6673a25d2e",
+    "bytes": 197518,
+    "status": "FETCHED"
+  },
+  {
+    "file": "Qt-obligations.html",
+    "url": "https://www.qt.io/development/open-source-lgpl-obligations",
+    "final_url": "https://www.qt.io/development/open-source-lgpl-obligations",
+    "sha256": "9382486be9db38dd2813c5235b3b55573cabbfd2045ab894c14c690a9fd82d9e",
+    "bytes": 174495,
+    "status": "FETCHED"
+  },
+  {
+    "file": "Qt-modules.html",
+    "url": "https://doc.qt.io/qt-6.8/licensing.html",
+    "final_url": "https://doc.qt.io/qt-6.8/licensing.html",
+    "sha256": "facfbc4e35b0d901e072027e5f8604030be1febd7e6b0ae39b61e169610f521c",
+    "bytes": 32341,
+    "status": "FETCHED"
+  },
+  {
+    "file": "PySide6-license.html",
+    "url": "https://doc.qt.io/qtforpython-6.8/licenses.html",
+    "final_url": "https://doc.qt.io/qtforpython-6.8/licenses.html",
+    "sha256": "1ebd223c6c3389d10c845029584cf1ae8515ecc68d7e4791645222ee4f09a39b",
+    "bytes": 117247,
+    "status": "FETCHED"
+  },
+  {
+    "file": "LGPL-3.0.txt",
+    "url": "https://raw.githubusercontent.com/qt/qtbase/v6.8.3/LICENSES/LGPL-3.0-only.txt",
+    "final_url": "https://raw.githubusercontent.com/qt/qtbase/v6.8.3/LICENSES/LGPL-3.0-only.txt",
+    "sha256": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+    "bytes": 7651,
+    "status": "FETCHED"
+  },
+  {
+    "file": "GPL-3.0.txt",
+    "url": "https://raw.githubusercontent.com/qt/qtbase/v6.8.3/LICENSES/GPL-3.0-only.txt",
+    "final_url": "https://raw.githubusercontent.com/qt/qtbase/v6.8.3/LICENSES/GPL-3.0-only.txt",
+    "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+    "bytes": 35147,
+    "status": "FETCHED"
+  },
+  {
+    "file": "FFmpeg-legal.html",
+    "url": "https://ffmpeg.org/legal.html",
+    "final_url": "https://ffmpeg.org/legal.html",
+    "sha256": "cd51dc25f9e3200b1e3953aee036f499ed51f01f7ba30563873186cb3f870eda",
+    "bytes": 10686,
+    "status": "FETCHED"
+  },
+  {
+    "file": "PyAV-license.html",
+    "url": "https://pyav.org/docs/stable/overview/installation.html",
+    "final_url": "https://pyav.org/docs/stable/overview/installation.html",
+    "sha256": "b9c4a63d10bf91513d18015a3cd053a41a096f053c4afc7ad61343870b943dda",
+    "bytes": 14925,
+    "status": "FETCHED"
+  },
+  {
+    "file": "OpenCV-license.html",
+    "url": "https://opencv.org/license/",
+    "final_url": "https://opencv.org/license/",
+    "sha256": "a61658fa6d8ef57d215f7a2bfb933233d81679c527655431c4aa0fc55a2f3ee1",
+    "bytes": 107465,
+    "status": "FETCHED"
+  },
+  {
+    "file": "CUDA-12.8.1-EULA.html",
+    "url": "https://docs.nvidia.com/cuda/archive/12.8.1/eula/index.html",
+    "final_url": "https://docs.nvidia.com/cuda/archive/12.8.1/eula/index.html",
+    "sha256": "6722d4c310a2ec9ad869ede3371a648fe2cfc2baaf8e1ece2c35e1dccc05752c",
+    "bytes": 103460,
+    "status": "FETCHED"
+  },
+  {
+    "file": "cuDNN-9.10.2-EULA.html",
+    "url": "https://docs.nvidia.com/deeplearning/cudnn/backend/v9.10.2/reference/eula.html",
+    "final_url": "https://docs.nvidia.com/deeplearning/cudnn/backend/v9.10.2/reference/eula.html",
+    "sha256": "f3763a5ae20aa135e6f0186ac64c22f61c049e5ef5b81122ea06dd4b9ce58707",
+    "bytes": 43905,
+    "status": "FETCHED"
+  },
+  {
+    "file": "MPL-2.0.html",
+    "url": "https://www.mozilla.org/en-US/MPL/2.0/",
+    "final_url": "https://www.mozilla.org/en-US/MPL/2.0/",
+    "sha256": "79fefbb5ce750421056e8639e83b055fa97deb02407617d4c0f9d50cfa0cfd32",
+    "bytes": 17329,
+    "status": "FETCHED"
+  },
+  {
+    "file": "SQLite-copyright.html",
+    "url": "https://sqlite.org/copyright.html",
+    "final_url": "https://sqlite.org/copyright.html",
+    "sha256": "44ca9f793055c8e32fc65f65a4f5bcf813a33f5bdaaa084067dd617a4ed3cc70",
+    "bytes": 8351,
+    "status": "FETCHED"
+  },
+  {
+    "file": "MediaFoundation.html",
+    "url": "https://learn.microsoft.com/en-us/windows/win32/medfound/about-the-media-foundation-sdk",
+    "final_url": "https://learn.microsoft.com/en-us/windows/win32/medfound/about-the-media-foundation-sdk",
+    "sha256": "d50bf7b34c74526128f68f9974305ad637cf2d01a9dae1cc44e056a0000df64a",
+    "bytes": 51671,
+    "status": "FETCHED"
+  }
+]

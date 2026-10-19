@@ -1,0 +1,2132 @@
+[
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/config.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/config.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/detr.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/detr.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/inference.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/inference.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/variants.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/variants.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/_namespace.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/_namespace.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/__main__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/__main__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/assets/coco_classes.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/assets/coco_classes.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/assets/model_weights.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/assets/model_weights.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/assets/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/assets/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/cli/webdataset.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/cli/webdataset.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/cli/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/cli/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/aug_config.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/aug_config.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/aug_configs.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/aug_configs.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/coco.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/coco.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/coco.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/coco.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/coco.py",
+    "line": 9,
+    "text": "# Modified from Conditional DETR (https://github.com/Atten4Vis/ConditionalDETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/coco.py",
+    "line": 10,
+    "text": "# Copyright (c) 2021 Microsoft. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/coco.py",
+    "line": 12,
+    "text": "# Copied from DETR (https://github.com/facebookresearch/detr)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/coco.py",
+    "line": 13,
+    "text": "# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/io_utils.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/io_utils.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/kornia_transforms.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/kornia_transforms.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/o365.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/o365.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/o365.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/o365.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/save_grids.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/save_grids.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/transforms.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/transforms.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/transforms.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/transforms.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/transforms.py",
+    "line": 9,
+    "text": "# Modified from Conditional DETR (https://github.com/Atten4Vis/ConditionalDETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/transforms.py",
+    "line": 10,
+    "text": "# Copyright (c) 2021 Microsoft. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/transforms.py",
+    "line": 12,
+    "text": "# Copied from DETR (https://github.com/facebookresearch/detr)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/transforms.py",
+    "line": 13,
+    "text": "# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/yolo.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/yolo.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/_aug_utils.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/_aug_utils.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/_develop.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/_develop.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/_keypoint_schema.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/_keypoint_schema.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/_torchvision.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/_torchvision.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/_yolo_yaml.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/_yolo_yaml.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/__init__.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/__init__.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/__init__.py",
+    "line": 8,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/__init__.py",
+    "line": 10,
+    "text": "# Modified from Conditional DETR (https://github.com/Atten4Vis/ConditionalDETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/__init__.py",
+    "line": 11,
+    "text": "# Copyright (c) 2021 Microsoft. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/__init__.py",
+    "line": 13,
+    "text": "# Copied from DETR (https://github.com/facebookresearch/detr)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/__init__.py",
+    "line": 14,
+    "text": "# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/coco_eval.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/coco_eval.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/coco_eval.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/coco_eval.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/coco_eval.py",
+    "line": 9,
+    "text": "# Copied from Conditional DETR (https://github.com/Atten4Vis/ConditionalDETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/coco_eval.py",
+    "line": 10,
+    "text": "# Copyright (c) 2021 Microsoft. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/coco_eval.py",
+    "line": 12,
+    "text": "# Copied from DETR (https://github.com/facebookresearch/detr)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/coco_eval.py",
+    "line": 13,
+    "text": "# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/f1_sweep.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/f1_sweep.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/keypoint_oks.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/keypoint_oks.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/matching.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/matching.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/matching.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/matching.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/matching.py",
+    "line": 10,
+    "text": "# Copyright (c) 2021 Microsoft. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/matching.py",
+    "line": 11,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/matching.py",
+    "line": 13,
+    "text": "# Copied from DETR (https://github.com/facebookresearch/detr)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/matching.py",
+    "line": 14,
+    "text": "# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/evaluation/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/base.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/base.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/benchmark.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/benchmark.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/benchmark.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/benchmark.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/inference.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/inference.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/prepare.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/prepare.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/prepare.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/prepare.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/registry.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/registry.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_backend.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_backend.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_benchmark.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_benchmark.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_class_layout.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_class_layout.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_naming.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_naming.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_resize.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_resize.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_topk.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_topk.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/criterion.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/criterion.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/lwdetr.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/lwdetr.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/lwdetr.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/lwdetr.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/lwdetr.py",
+    "line": 9,
+    "text": "# Modified from Conditional DETR (https://github.com/Atten4Vis/ConditionalDETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/lwdetr.py",
+    "line": 10,
+    "text": "# Copyright (c) 2021 Microsoft. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/lwdetr.py",
+    "line": 12,
+    "text": "# Modified from DETR (https://github.com/facebookresearch/detr)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/lwdetr.py",
+    "line": 13,
+    "text": "# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/lwdetr.py",
+    "line": 15,
+    "text": "# Modified from Deformable DETR (https://github.com/fundamentalvision/Deformable-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/lwdetr.py",
+    "line": 16,
+    "text": "# Copyright (c) 2020 SenseTime. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/matcher.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/matcher.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/matcher.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/matcher.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/matcher.py",
+    "line": 9,
+    "text": "# Modified from Conditional DETR (https://github.com/Atten4Vis/ConditionalDETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/matcher.py",
+    "line": 10,
+    "text": "# Copyright (c) 2021 Microsoft. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/matcher.py",
+    "line": 12,
+    "text": "# Modified from DETR (https://github.com/facebookresearch/detr)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/matcher.py",
+    "line": 13,
+    "text": "# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/matcher.py",
+    "line": 15,
+    "text": "# Modified from Deformable DETR (https://github.com/fundamentalvision/Deformable-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/matcher.py",
+    "line": 16,
+    "text": "# Copyright (c) 2020 SenseTime. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/math.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/math.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/position_encoding.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/position_encoding.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/position_encoding.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/position_encoding.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/position_encoding.py",
+    "line": 9,
+    "text": "# Modified from Conditional DETR (https://github.com/Atten4Vis/ConditionalDETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/position_encoding.py",
+    "line": 10,
+    "text": "# Copyright (c) 2021 Microsoft. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/position_encoding.py",
+    "line": 12,
+    "text": "# Copied from DETR (https://github.com/facebookresearch/detr)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/position_encoding.py",
+    "line": 13,
+    "text": "# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/postprocess.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/postprocess.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/transformer.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/transformer.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/transformer.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/transformer.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/transformer.py",
+    "line": 9,
+    "text": "# Modified from Conditional DETR (https://github.com/Atten4Vis/ConditionalDETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/transformer.py",
+    "line": 10,
+    "text": "# Copyright (c) 2021 Microsoft. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/transformer.py",
+    "line": 12,
+    "text": "# Modified from DETR (https://github.com/facebookresearch/detr)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/transformer.py",
+    "line": 13,
+    "text": "# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/weights.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/weights.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/_assignment.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/_assignment.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/_defaults.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/_defaults.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/_types.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/_types.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/__init__.py",
+    "line": 6,
+    "text": "# Copied from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/__init__.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/__init__.py",
+    "line": 9,
+    "text": "# Copied from Conditional DETR (https://github.com/Atten4Vis/ConditionalDETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/__init__.py",
+    "line": 10,
+    "text": "# Copyright (c) 2021 Microsoft. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/__init__.py",
+    "line": 12,
+    "text": "# Copied from DETR (https://github.com/facebookresearch/detr)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/__init__.py",
+    "line": 13,
+    "text": "# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/platform/downloads.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/platform/downloads.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/platform/models.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/platform/models.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/platform/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/platform/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/auto_batch.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/auto_batch.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/checkpoint.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/checkpoint.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/cli.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/cli.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/coco_map.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/coco_map.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/cuda_graph_step.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/cuda_graph_step.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/drop_schedule.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/drop_schedule.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/drop_schedule.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/drop_schedule.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/drop_schedule.py",
+    "line": 8,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/model_ema.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/model_ema.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/module_data.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/module_data.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/module_model.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/module_model.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/param_groups.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/param_groups.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/param_groups.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/param_groups.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/trainer.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/trainer.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/box_ops.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/box_ops.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/box_ops.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/box_ops.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/box_ops.py",
+    "line": 8,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/box_ops.py",
+    "line": 11,
+    "text": "# Copyright (c) 2021 Microsoft. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/box_ops.py",
+    "line": 12,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/box_ops.py",
+    "line": 14,
+    "text": "# Copied from DETR (https://github.com/facebookresearch/detr)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/box_ops.py",
+    "line": 15,
+    "text": "# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/compiler.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/compiler.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/console.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/console.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/decorators.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/decorators.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/distributed.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/distributed.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/distributed.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/distributed.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/distributed.py",
+    "line": 8,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/distributed.py",
+    "line": 10,
+    "text": "# Copied from DETR (https://github.com/facebookresearch/detr)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/distributed.py",
+    "line": 11,
+    "text": "# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/files.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/files.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/io.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/io.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/keypoints.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/keypoints.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/logger.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/logger.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/package.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/package.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/reproducibility.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/reproducibility.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/state_dict.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/state_dict.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/tensors.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/tensors.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/tensors.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/tensors.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/tensors.py",
+    "line": 8,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/tensors.py",
+    "line": 10,
+    "text": "# Copied from DETR (https://github.com/facebookresearch/detr)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/tensors.py",
+    "line": 11,
+    "text": "# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/utilities/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/visualize/data.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/visualize/data.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/visualize/keypoints.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/visualize/keypoints.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/visualize/training.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/visualize/training.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/visualize/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/visualize/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/webdataset/index.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/webdataset/index.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/webdataset/load.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/webdataset/load.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/webdataset/pack.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/webdataset/pack.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/webdataset/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/datasets/webdataset/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_coreai/decompositions.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_coreai/decompositions.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_coreai/exporter.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_coreai/exporter.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_coreai/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_coreai/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_coreml/exporter.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_coreml/exporter.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_coreml/op_coverage.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_coreml/op_coverage.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_coreml/torch_ops.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_coreml/torch_ops.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_coreml/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_coreml/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_executorch/exporter.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_executorch/exporter.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_executorch/inference.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_executorch/inference.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_executorch/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_executorch/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_litert/exporter.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_litert/exporter.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_litert/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_litert/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_onnx/exporter.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_onnx/exporter.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_onnx/exporter.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_onnx/exporter.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_onnx/inference.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_onnx/inference.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_onnx/symbolic.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_onnx/symbolic.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_onnx/symbolic.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_onnx/symbolic.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_onnx/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_onnx/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_onnx/__init__.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_onnx/__init__.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_onnx/__init__.py",
+    "line": 8,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_openvino/exporter.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_openvino/exporter.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_openvino/inference.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_openvino/inference.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_openvino/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_openvino/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_runtime/decode.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_runtime/decode.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_runtime/preprocess.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_runtime/preprocess.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_runtime/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_runtime/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_tensorrt/exporter.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_tensorrt/exporter.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_tensorrt/exporter.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_tensorrt/exporter.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_tensorrt/inference.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_tensorrt/inference.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_tensorrt/inference.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_tensorrt/inference.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_tensorrt/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_tensorrt/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_tflite/exporter.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_tflite/exporter.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_tflite/inference.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_tflite/inference.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_tflite/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/export/_tflite/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/backbone.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/backbone.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/backbone.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/backbone.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/backbone.py",
+    "line": 9,
+    "text": "# Modified from Conditional DETR (https://github.com/Atten4Vis/ConditionalDETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/backbone.py",
+    "line": 10,
+    "text": "# Copyright (c) 2021 Microsoft. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/backbone.py",
+    "line": 12,
+    "text": "# Copied from DETR (https://github.com/facebookresearch/detr)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/backbone.py",
+    "line": 13,
+    "text": "# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/base.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/base.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/base.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/base.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/dinov2.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/dinov2.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/dinov2_with_windowed_attn.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/dinov2_with_windowed_attn.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/dinov2_with_windowed_attn.py",
+    "line": 6,
+    "text": "# Modified from HuggingFace Transformers (https://github.com/huggingface/transformers)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/dinov2_with_windowed_attn.py",
+    "line": 7,
+    "text": "# Copyright 2022 The HuggingFace Team. All rights reserved.        (pytorch_utils.py)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/dinov2_with_windowed_attn.py",
+    "line": 8,
+    "text": "# Copyright 2023 The HuggingFace Inc. team. All rights reserved.   (backbone_utils.py)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/dinov2_with_windowed_attn.py",
+    "line": 9,
+    "text": "# Copyright 2024 Meta Inc. and the HuggingFace Inc. team. All rights reserved. (DINOv2)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/dinov2_with_windowed_attn.py",
+    "line": 10,
+    "text": "# Licensed under the Apache License, Version 2.0"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/dinov2_with_windowed_attn.py",
+    "line": 77,
+    "text": "\"Copyright 2022 The HuggingFace Team\" line in the file header accordingly."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/dinov2_with_windowed_attn.py",
+    "line": 125,
+    "text": "\"Copyright 2023 The HuggingFace Inc. team\" line in the file header accordingly."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/projector.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/projector.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/projector.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/projector.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/projector.py",
+    "line": 9,
+    "text": "# Modified from ViTDet (https://github.com/facebookresearch/detectron2/tree/main/projects/ViTDet)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/projector.py",
+    "line": 10,
+    "text": "# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/__init__.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/backbone/__init__.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/heads/keypoints.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/heads/keypoints.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/heads/segmentation.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/heads/segmentation.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/heads/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/heads/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/functions/ms_deform_attn_func.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/functions/ms_deform_attn_func.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/functions/ms_deform_attn_func.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/functions/ms_deform_attn_func.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/functions/ms_deform_attn_func.py",
+    "line": 9,
+    "text": "# Modified from Deformable DETR"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/functions/ms_deform_attn_func.py",
+    "line": 10,
+    "text": "# Copyright (c) 2020 SenseTime. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/functions/ms_deform_attn_func.py",
+    "line": 12,
+    "text": "# Modified from https://github.com/chengdazhi/Deformable-Convolution-V2-PyTorch/tree/pytorch_1.0.0"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/functions/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/functions/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/functions/__init__.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/functions/__init__.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/functions/__init__.py",
+    "line": 9,
+    "text": "# Modified from Deformable DETR"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/functions/__init__.py",
+    "line": 10,
+    "text": "# Copyright (c) 2020 SenseTime. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/functions/__init__.py",
+    "line": 12,
+    "text": "# Modified from https://github.com/chengdazhi/Deformable-Convolution-V2-PyTorch/tree/pytorch_1.0.0"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/modules/ms_deform_attn.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/modules/ms_deform_attn.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/modules/ms_deform_attn.py",
+    "line": 6,
+    "text": "# Copied and modified from LW-DETR (https://github.com/Atten4Vis/LW-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/modules/ms_deform_attn.py",
+    "line": 7,
+    "text": "# Copyright (c) 2024 Baidu. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/modules/ms_deform_attn.py",
+    "line": 9,
+    "text": "# Modified from Deformable DETR"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/modules/ms_deform_attn.py",
+    "line": 10,
+    "text": "# Copyright (c) 2020 SenseTime. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/modules/ms_deform_attn.py",
+    "line": 12,
+    "text": "# Modified from https://github.com/chengdazhi/Deformable-Convolution-V2-PyTorch/tree/pytorch_1.0.0"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/modules/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/modules/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/modules/__init__.py",
+    "line": 6,
+    "text": "# Copied and modified from Deformable DETR (https://github.com/fundamentalvision/Deformable-DETR)"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/modules/__init__.py",
+    "line": 7,
+    "text": "# Copyright (c) 2020 SenseTime. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/modules/__init__.py",
+    "line": 8,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/models/ops/modules/__init__.py",
+    "line": 10,
+    "text": "# Modified from https://github.com/chengdazhi/Deformable-Convolution-V2-PyTorch/tree/pytorch_1.0.0"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/callbacks/best_model.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/callbacks/best_model.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/callbacks/coco_eval.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/callbacks/coco_eval.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/callbacks/drop_schedule.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/callbacks/drop_schedule.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/callbacks/ema.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/callbacks/ema.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/callbacks/gpu_memory_progress_bar.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/callbacks/gpu_memory_progress_bar.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/callbacks/__init__.py",
+    "line": 3,
+    "text": "# Copyright (c) 2025 Roboflow. All Rights Reserved."
+  },
+  {
+    "file": ".venv-rfdetr/Lib/site-packages/rfdetr/training/callbacks/__init__.py",
+    "line": 4,
+    "text": "# Licensed under the Apache License, Version 2.0 [see LICENSE for details]"
+  }
+]

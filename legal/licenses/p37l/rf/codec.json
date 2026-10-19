@@ -1,0 +1,87 @@
+{
+  "environment": ".venv-rfdetr",
+  "av": "19.0.1",
+  "versions": {
+    "libavutil": [
+      61,
+      1,
+      102
+    ],
+    "libavcodec": [
+      63,
+      1,
+      102
+    ],
+    "libavformat": [
+      63,
+      1,
+      102
+    ],
+    "libavdevice": [
+      63,
+      1,
+      102
+    ],
+    "libavfilter": [
+      12,
+      1,
+      102
+    ],
+    "libswscale": [
+      10,
+      1,
+      102
+    ],
+    "libswresample": [
+      7,
+      1,
+      102
+    ]
+  },
+  "libraries": [
+    {
+      "name": "avcodec-63-2756d4fffb772585dcdece87427716a4.dll",
+      "configuration": "--disable-static --enable-shared --libdir=/c/cibw/vendor/lib --prefix=/c/cibw/vendor --disable-programs --disable-doc --disable-libxml2 --disable-lzma --disable-libtheora --disable-libfreetype --disable-libfontconfig --disable-libbluray --disable-libopenjpeg --enable-mediafoundation --enable-version3 --disable-alsa --disable-gnutls --enable-libdav1d --enable-libmp3lame --enable-libopus --enable-libsvtav1 --enable-libvmaf --enable-libvpx --enable-libwebp --disable-libxcb --enable-zlib --enable-libx265 --enable-libx264 --enable-nvenc --enable-nvdec --enable-amf --enable-libvpl --disable-encoder='avui,dca,mlp,opus,s302m,sonic,sonic_ls,truehd' --disable-decoder=sonic --disable-libjack --disable-indev=jack --disable-filter=gfxcapture",
+      "license": "LGPL version 3 or later",
+      "sha256": "8e13fdedbeefb6a8b5d22b567122ec3c00384add569de9e589e53a86bd08422c"
+    },
+    {
+      "name": "avdevice-63-2b26d22512639c049532c0bc6f6c022f.dll",
+      "configuration": "--disable-static --enable-shared --libdir=/c/cibw/vendor/lib --prefix=/c/cibw/vendor --disable-programs --disable-doc --disable-libxml2 --disable-lzma --disable-libtheora --disable-libfreetype --disable-libfontconfig --disable-libbluray --disable-libopenjpeg --enable-mediafoundation --enable-version3 --disable-alsa --disable-gnutls --enable-libdav1d --enable-libmp3lame --enable-libopus --enable-libsvtav1 --enable-libvmaf --enable-libvpx --enable-libwebp --disable-libxcb --enable-zlib --enable-libx265 --enable-libx264 --enable-nvenc --enable-nvdec --enable-amf --enable-libvpl --disable-encoder='avui,dca,mlp,opus,s302m,sonic,sonic_ls,truehd' --disable-decoder=sonic --disable-libjack --disable-indev=jack --disable-filter=gfxcapture",
+      "license": "LGPL version 3 or later",
+      "sha256": "43247c1bdaaec40977738037fdea7e8b779b3e93213dd529b1d25735b3099d8c"
+    },
+    {
+      "name": "avfilter-12-87c7677b784d3ea4ecceb3e6cae9c9f1.dll",
+      "configuration": "--disable-static --enable-shared --libdir=/c/cibw/vendor/lib --prefix=/c/cibw/vendor --disable-programs --disable-doc --disable-libxml2 --disable-lzma --disable-libtheora --disable-libfreetype --disable-libfontconfig --disable-libbluray --disable-libopenjpeg --enable-mediafoundation --enable-version3 --disable-alsa --disable-gnutls --enable-libdav1d --enable-libmp3lame --enable-libopus --enable-libsvtav1 --enable-libvmaf --enable-libvpx --enable-libwebp --disable-libxcb --enable-zlib --enable-libx265 --enable-libx264 --enable-nvenc --enable-nvdec --enable-amf --enable-libvpl --disable-encoder='avui,dca,mlp,opus,s302m,sonic,sonic_ls,truehd' --disable-decoder=sonic --disable-libjack --disable-indev=jack --disable-filter=gfxcapture",
+      "license": "LGPL version 3 or later",
+      "sha256": "a9b9e84178dd73162f47a3a531c321fad955ca3a7ff04a9517db7e7c78bf9ab2"
+    },
+    {
+      "name": "avformat-63-e8c4f8fc30664f2b7e85dcc683bd4b0d.dll",
+      "configuration": "--disable-static --enable-shared --libdir=/c/cibw/vendor/lib --prefix=/c/cibw/vendor --disable-programs --disable-doc --disable-libxml2 --disable-lzma --disable-libtheora --disable-libfreetype --disable-libfontconfig --disable-libbluray --disable-libopenjpeg --enable-mediafoundation --enable-version3 --disable-alsa --disable-gnutls --enable-libdav1d --enable-libmp3lame --enable-libopus --enable-libsvtav1 --enable-libvmaf --enable-libvpx --enable-libwebp --disable-libxcb --enable-zlib --enable-libx265 --enable-libx264 --enable-nvenc --enable-nvdec --enable-amf --enable-libvpl --disable-encoder='avui,dca,mlp,opus,s302m,sonic,sonic_ls,truehd' --disable-decoder=sonic --disable-libjack --disable-indev=jack --disable-filter=gfxcapture",
+      "license": "LGPL version 3 or later",
+      "sha256": "49759edae5286f10e4b11a442f51fb70bacde1f92b7b876038231c4d8140c506"
+    },
+    {
+      "name": "avutil-61-e540ec7976bbd26a4a94dc737be3001c.dll",
+      "configuration": "--disable-static --enable-shared --libdir=/c/cibw/vendor/lib --prefix=/c/cibw/vendor --disable-programs --disable-doc --disable-libxml2 --disable-lzma --disable-libtheora --disable-libfreetype --disable-libfontconfig --disable-libbluray --disable-libopenjpeg --enable-mediafoundation --enable-version3 --disable-alsa --disable-gnutls --enable-libdav1d --enable-libmp3lame --enable-libopus --enable-libsvtav1 --enable-libvmaf --enable-libvpx --enable-libwebp --disable-libxcb --enable-zlib --enable-libx265 --enable-libx264 --enable-nvenc --enable-nvdec --enable-amf --enable-libvpl --disable-encoder='avui,dca,mlp,opus,s302m,sonic,sonic_ls,truehd' --disable-decoder=sonic --disable-libjack --disable-indev=jack --disable-filter=gfxcapture",
+      "license": "LGPL version 3 or later",
+      "sha256": "ff2ba1b0d884336d53f1aee7b05873c5a3bbb987d0ffc79a49b92ed77579cd19"
+    },
+    {
+      "name": "swresample-7-4f9462a1fb73b949ccad2774dd941624.dll",
+      "configuration": "--disable-static --enable-shared --libdir=/c/cibw/vendor/lib --prefix=/c/cibw/vendor --disable-programs --disable-doc --disable-libxml2 --disable-lzma --disable-libtheora --disable-libfreetype --disable-libfontconfig --disable-libbluray --disable-libopenjpeg --enable-mediafoundation --enable-version3 --disable-alsa --disable-gnutls --enable-libdav1d --enable-libmp3lame --enable-libopus --enable-libsvtav1 --enable-libvmaf --enable-libvpx --enable-libwebp --disable-libxcb --enable-zlib --enable-libx265 --enable-libx264 --enable-nvenc --enable-nvdec --enable-amf --enable-libvpl --disable-encoder='avui,dca,mlp,opus,s302m,sonic,sonic_ls,truehd' --disable-decoder=sonic --disable-libjack --disable-indev=jack --disable-filter=gfxcapture",
+      "license": "LGPL version 3 or later",
+      "sha256": "a8bfee136c4c4e49d95b4439b1b80136504b2783cf93638f64bd3ad7de8e0ebe"
+    },
+    {
+      "name": "swscale-10-9af0a10ad7003982e48548ff39e98465.dll",
+      "configuration": "--disable-static --enable-shared --libdir=/c/cibw/vendor/lib --prefix=/c/cibw/vendor --disable-programs --disable-doc --disable-libxml2 --disable-lzma --disable-libtheora --disable-libfreetype --disable-libfontconfig --disable-libbluray --disable-libopenjpeg --enable-mediafoundation --enable-version3 --disable-alsa --disable-gnutls --enable-libdav1d --enable-libmp3lame --enable-libopus --enable-libsvtav1 --enable-libvmaf --enable-libvpx --enable-libwebp --disable-libxcb --enable-zlib --enable-libx265 --enable-libx264 --enable-nvenc --enable-nvdec --enable-amf --enable-libvpl --disable-encoder='avui,dca,mlp,opus,s302m,sonic,sonic_ls,truehd' --disable-decoder=sonic --disable-libjack --disable-indev=jack --disable-filter=gfxcapture",
+      "license": "LGPL version 3 or later",
+      "sha256": "f2956978470b3ed26c4f5db80b45d4c3a9188a4a8622133f73ded71504df85d6"
+    }
+  ],
+  "opencv": "5.0.0",
+  "opencv_build": "\nGeneral configuration for OpenCV 5.0.0 =====================================\n  Version control:               5.0.0\n\n  Platform:\n    Timestamp:                   2026-07-01T09:07:40Z\n    Host:                        Windows 10.0.20348 AMD64\n    CMake:                       4.3.2\n    CMake generator:             Visual Studio 17 2022\n    CMake build tool:            C:/Program Files/Microsoft Visual Studio/2022/Enterprise/MSBuild/Current/Bin/amd64/MSBuild.exe\n    MSVC:                        1944\n    Configuration:               Debug Release\n    Algorithm Hint:              ALGO_HINT_ACCURATE\n\n  CPU/HW features:\n    Baseline:                    SSE SSE2 SSE3\n      requested:                 SSE3\n    Dispatched code generation:  SSE4_1 SSE4_2 AVX FP16 AVX2 AVX512_SKX\n      SSE4_1 (18 files):         + SSSE3 SSE4_1\n      SSE4_2 (1 files):          + SSSE3 SSE4_1 POPCNT SSE4_2\n      AVX (17 files):            + SSSE3 SSE4_1 POPCNT SSE4_2 AVX\n      FP16 (0 files):            + SSSE3 SSE4_1 POPCNT SSE4_2 AVX FP16\n      AVX2 (49 files):           + SSSE3 SSE4_1 POPCNT SSE4_2 AVX FP16 AVX2 FMA3\n      AVX512_SKX (9 files):      + SSSE3 SSE4_1 POPCNT SSE4_2 AVX FP16 AVX2 FMA3 AVX_512F AVX512_COMMON AVX512_SKX\n\n  C/C++:\n    Built as dynamic libs?:      NO\n    C++ standard:                17\n    C++ Compiler:                C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe  (ver 19.44.35228.0)\n    C++ flags (Release):         /DWIN32 /D_WINDOWS /W4 /GR  /D _CRT_SECURE_NO_DEPRECATE /D _CRT_NONSTDC_NO_DEPRECATE /D _SCL_SECURE_NO_WARNINGS /Gy /bigobj /Oi  /fp:precise    /EHa /wd4127 /wd4251 /wd4324 /wd4275 /wd4512 /wd4589 /wd4819 /MP  /O2 /Ob2 /DNDEBUG \n    C++ flags (Debug):           /DWIN32 /D_WINDOWS /W4 /GR  /D _CRT_SECURE_NO_DEPRECATE /D _CRT_NONSTDC_NO_DEPRECATE /D _SCL_SECURE_NO_WARNINGS /Gy /bigobj /Oi  /fp:precise    /EHa /wd4127 /wd4251 /wd4324 /wd4275 /wd4512 /wd4589 /wd4819 /MP  /Zi /Ob0 /Od /RTC1 \n    C Compiler:                  C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe\n    C flags (Release):           /DWIN32 /D_WINDOWS /W3  /D _CRT_SECURE_NO_DEPRECATE /D _CRT_NONSTDC_NO_DEPRECATE /D _SCL_SECURE_NO_WARNINGS /Gy /bigobj /Oi  /fp:precise    /MP   /O2 /Ob2 /DNDEBUG \n    C flags (Debug):             /DWIN32 /D_WINDOWS /W3  /D _CRT_SECURE_NO_DEPRECATE /D _CRT_NONSTDC_NO_DEPRECATE /D _SCL_SECURE_NO_WARNINGS /Gy /bigobj /Oi  /fp:precise    /MP /Zi /Ob0 /Od /RTC1 \n    Linker flags (Release):      /machine:x64  /NODEFAULTLIB:atlthunk.lib /INCREMENTAL:NO  /NODEFAULTLIB:libcmtd.lib /NODEFAULTLIB:libcpmtd.lib /NODEFAULTLIB:msvcrtd.lib\n    Linker flags (Debug):        /machine:x64  /NODEFAULTLIB:atlthunk.lib /debug /INCREMENTAL  /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcpmt.lib /NODEFAULTLIB:msvcrt.lib\n    ccache:                      NO\n    Precompiled headers:         YES\n    Extra dependencies:          comctl32 gdi32 ole32 setupapi ws2_32\n    3rdparty dependencies:       ittnotify libprotobuf libjpeg-turbo libwebp libpng libtiff libopenjp2 zlib libclapack ipphal ippiw ippicv\n\n  OpenCV modules:\n    To be built:                 calib core dnn features flann geometry highgui imgcodecs imgproc objdetect photo ptcloud python3 stereo stitching video videoio\n    Disabled:                    java world\n    Disabled by dependency:      -\n    Unavailable:                 ts\n    Applications:                -\n    Documentation:               NO\n    Non-free algorithms:         NO\n\n  Windows RT support:            NO\n\n  GUI:                           NONE\n    VTK support:                 NO\n    Built-in Unicode font:       YES\n\n  Media I/O: \n    ZLib:                        build (ver 1.3.2)\n    JPEG:                        build-libjpeg-turbo (ver 3.1.2-70)\n      SIMD Support Request:      YES\n      SIMD Support:              YES\n    WEBP:                        build (ver decoder: 0x0210, encoder: 0x0210, demux: 0x0107)\n    AVIF:                        NO\n    PNG:                         build (ver 1.6.57)\n      SIMD Support Request:      YES\n      SIMD Support:              YES (Intel SSE)\n      Metadata Support:          EXIF XMP ICC cICP\n    TIFF:                        build (ver 42 - 4.7.1)\n    JPEG 2000:                   build (ver 2.5.3)\n    OpenEXR:                     NO\n    GIF:                         YES\n    HDR:                         YES\n    SUNRASTER:                   YES\n    PXM:                         YES\n    PFM:                         YES\n\n  Video I/O:\n    FFMPEG:                      YES (prebuilt binaries)\n      avcodec:                   YES (61.19.100)\n      avformat:                  YES (61.7.100)\n      avutil:                    YES (59.39.100)\n      swscale:                   YES (8.3.100)\n      avdevice:                  NO\n    GStreamer:                   NO\n    DirectShow:                  YES\n    Orbbec:                      NO\n\n  Parallel framework:            Concurrency\n\n  Trace:                         YES (with Intel ITT(3.25.4))\n\n  Other third-party libraries:\n    Intel IPP:                   2026.0.0 [2026.0.0]\n           at:                   D:/a/opencv-python/opencv-python/_skbuild/win-amd64-3.9/cmake-build/3rdparty/ippicv/ippicv_win/icv\n    Intel IPP IW:                sources (2026.0.0)\n              at:                D:/a/opencv-python/opencv-python/_skbuild/win-amd64-3.9/cmake-build/3rdparty/ippicv/ippicv_win/iw\n    Lapack:                      YES (Built-In libclapack)\n    DNN MLAS:                    NO (no ASM compiler available for AMD64)\n    Eigen:                       NO\n    Custom HAL:                  YES (ipp (ver 0.0.1))\n    Protobuf:                    build (3.19.1)\n    Flatbuffers:                 builtin/3rdparty (25.9.23)\n\n  OpenCL:                        YES (NVD3D11)\n    Include path:                D:/a/opencv-python/opencv-python/opencv/3rdparty/include/opencl/1.2\n    Link libraries:              Dynamic load\n\n  ONNX Runtime:                  NO\n\n  Python 3:\n    Interpreter:                 C:/hostedtoolcache/windows/Python/3.9.13/x64/python.exe (ver 3.9.13)\n    Libraries:                   C:/hostedtoolcache/windows/Python/3.9.13/x64/libs/python39.lib (ver 3.9.13)\n    Limited API:                 YES (ver 0x03060000)\n    numpy:                       C:/hostedtoolcache/windows/Python/3.9.13/x64/lib/site-packages/numpy/_core/include (ver 2.0.2)\n    install path:                python/cv2/python-3\n\n  Python (for build):            C:\\hostedtoolcache\\windows\\Python\\3.9.13\\x64\\python.exe\n\n  Java:                          \n    ant:                         NO\n    Java:                        YES (ver 1.8.0.492)\n    JNI:                         C:/hostedtoolcache/windows/Java_Temurin-Hotspot_jdk/8.0.492-9/x64/include C:/hostedtoolcache/windows/Java_Temurin-Hotspot_jdk/8.0.492-9/x64/include/win32 C:/hostedtoolcache/windows/Java_Temurin-Hotspot_jdk/8.0.492-9/x64/include\n    Java wrappers:               NO\n    Java tests:                  NO\n\n  Install to:                    D:/a/opencv-python/opencv-python/_skbuild/win-amd64-3.9/cmake-install\n-----------------------------------------------------------------\n\n"
+}

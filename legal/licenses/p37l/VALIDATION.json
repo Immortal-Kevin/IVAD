@@ -1,0 +1,39 @@
+{
+  "status": "PASS-audit-materials-validation-only",
+  "environments": [
+    {
+      "environment": "gui",
+      "packages": 21,
+      "native": 562,
+      "metadata_notices_native_unchanged": true
+    },
+    {
+      "environment": "rf",
+      "packages": 96,
+      "native": 415,
+      "metadata_notices_native_unchanged": true
+    },
+    {
+      "environment": "legacy",
+      "packages": 48,
+      "native": 160,
+      "metadata_notices_native_unchanged": true
+    },
+    {
+      "environment": "lite-build",
+      "packages": 22,
+      "native": 550,
+      "metadata_notices_native_unchanged": true
+    }
+  ],
+  "package_records": 187,
+  "native_records": 1687,
+  "notice_records": 329,
+  "official_sources_fetched": 22,
+  "official_sources_unresolved": 3,
+  "required_reports": 9,
+  "broken_local_links": [],
+  "prior_tracked_files_unchanged": true,
+  "user_planning_and_qt_evidence_unchanged": true,
+  "licenses_fully_certified": false
+}

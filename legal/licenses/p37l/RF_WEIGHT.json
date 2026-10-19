@@ -1,0 +1,10 @@
+{
+  "file": "artifacts/p36-rfdetr-20261016/weights/rf-detr-nano.pth",
+  "sha256": "d8d6b9ee57d4d0ed2b1f305163624712a0532cb7bce0c747317984fc5457440d",
+  "md5": "fb6504cce7fbdc783f7a46991f07639f",
+  "expected_md5": "fb6504cce7fbdc783f7a46991f07639f",
+  "source": "https://storage.googleapis.com/rfdetr/nano_coco/checkpoint_best_regular.pth",
+  "asset_index": ".venv-rfdetr/Lib/site-packages/rfdetr/assets/model_weights.py:216",
+  "license_evidence": "upstream/RFDETR-README.md Apache-designated Nano; RFDETR-LICENSE.txt",
+  "new_download": false
+}

@@ -1,0 +1,1056 @@
+{
+  "head": "deff3667233e0fcb938c9b94bfeafc96a112d87e",
+  "commits": 37,
+  "reachable_blobs": 661,
+  "tracked_files": 359,
+  "current_tracked_assets": [
+    "reports/P37_A_CLOSURE_assets/dataset.png",
+    "reports/P37_A_CLOSURE_assets/models.png",
+    "reports/P37_A_CLOSURE_assets/offline-history.png",
+    "reports/P37_A_CLOSURE_assets/training.png",
+    "reports/P37_A_assets/01-training-advanced.jpg",
+    "reports/P37_A_assets/02-model-registry.jpg",
+    "reports/P37_A_assets/03-reopened-training.jpg",
+    "reports/P37_A_assets/04-final-gui-training-success.jpg",
+    "reports/P37_A_assets/05-final-registry-after-restart.jpg"
+  ],
+  "historical_asset_blobs": [
+    {
+      "path": "docs/IVAD_P2_指南截图/图01.png",
+      "oid": "9305969c7be1bdee2b6dfd464263eb94c80d6c5a",
+      "bytes": 19941
+    },
+    {
+      "path": "docs/IVAD_P2_指南截图/图02.png",
+      "oid": "195f23a3ba2d2d1528db3ab6ab015532e404915e",
+      "bytes": 34543
+    },
+    {
+      "path": "docs/IVAD_P2_指南截图/图03.png",
+      "oid": "fa3c752d6757307943da97ff726a218f36c533e4",
+      "bytes": 9690
+    },
+    {
+      "path": "docs/IVAD_P2_指南截图/图04.png",
+      "oid": "61760cfef72413330b03b9fd5e83cfc2412e2336",
+      "bytes": 31208
+    },
+    {
+      "path": "docs/IVAD_P2_指南截图/图05.png",
+      "oid": "85dd671960b9907cc60ab5cdce313b7e4b4c68db",
+      "bytes": 48249
+    },
+    {
+      "path": "docs/IVAD_P2_指南截图/图06.png",
+      "oid": "358ab3fdfc69381367f7a4e9b57b04b6af4d02c3",
+      "bytes": 21806
+    },
+    {
+      "path": "docs/IVAD_P2_指南截图/图07.png",
+      "oid": "5ba122fabfc0dfb037460bddaf053fc74dc1a9a3",
+      "bytes": 85028
+    },
+    {
+      "path": "docs/IVAD_P2_指南截图/图08.png",
+      "oid": "ba55cc8ad9b1bf77f9985c1fb28a2e12c46fc40f",
+      "bytes": 17815
+    },
+    {
+      "path": "docs/IVAD_P2_指南截图/图09.png",
+      "oid": "0bbe2d00fab8f66beb142cfa49f32df737f5407b",
+      "bytes": 91143
+    },
+    {
+      "path": "docs/IVAD_P2_指南截图/图10.png",
+      "oid": "fa92fba97a0804a502f968888d4ff5f3fe962bcc",
+      "bytes": 3194
+    },
+    {
+      "path": "docs/IVAD_P2_指南截图/图11.png",
+      "oid": "8bcb1062f64f26f1d348261513e81bca33b1646d",
+      "bytes": 34233
+    },
+    {
+      "path": "docs/IVAD_P2_指南截图/图12.png",
+      "oid": "b5805835d8476a027c08adc5f3c622b9cea76530",
+      "bytes": 19366
+    },
+    {
+      "path": "docs/IVAD_P2_指南截图/图13.png",
+      "oid": "4ff2850a006febe9d678d8581816dc9e14987d51",
+      "bytes": 5818
+    },
+    {
+      "path": "reports/P37_A_CLOSURE_assets/dataset.png",
+      "oid": "1d808cc33ebe1cb4fe973340144ca9ebd09c598b",
+      "bytes": 180653
+    },
+    {
+      "path": "reports/P37_A_CLOSURE_assets/models.png",
+      "oid": "1979682e3303a874c8cd3a07e32ab10524764a1d",
+      "bytes": 153103
+    },
+    {
+      "path": "reports/P37_A_CLOSURE_assets/offline-history.png",
+      "oid": "dbf024e93189b6f3dbce75e62cdd564a27a7245d",
+      "bytes": 1098339
+    },
+    {
+      "path": "reports/P37_A_CLOSURE_assets/training.png",
+      "oid": "6740b58641601f6efc2dd565d61168b8a703ed5b",
+      "bytes": 205015
+    },
+    {
+      "path": "reports/P37_A_assets/01-training-advanced.jpg",
+      "oid": "fb1c1c2577eda0b8f63bdbb84c8caedc9d852e09",
+      "bytes": 139164
+    },
+    {
+      "path": "reports/P37_A_assets/02-model-registry.jpg",
+      "oid": "6b0d18792575889c2af0a801620429887a247103",
+      "bytes": 142814
+    },
+    {
+      "path": "reports/P37_A_assets/03-reopened-training.jpg",
+      "oid": "eb0f01340046fe5b5161e758b6e49dc86a280979",
+      "bytes": 133335
+    },
+    {
+      "path": "reports/P37_A_assets/04-final-gui-training-success.jpg",
+      "oid": "10903391ffcea02fdb6cfee9ff067d98be743f27",
+      "bytes": 138950
+    },
+    {
+      "path": "reports/P37_A_assets/05-final-registry-after-restart.jpg",
+      "oid": "b32d798a46a50b1724d16fe6cd628d693017a4aa",
+      "bytes": 150714
+    }
+  ],
+  "findings": [
+    {
+      "path": "AGENTS.md",
+      "oid": "c790a744fc8a8ce49375d1578c38b67b4732db81",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 3
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "oid": "7de128cf1e1f244cee34d921915ad68873bc5785",
+      "category": "WINDOWS_PATH",
+      "count": 7
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "oid": "7de128cf1e1f244cee34d921915ad68873bc5785",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "docs/IVAD_P2_测试员操作指南.md",
+      "oid": "e65da4afbc27b1bfabf9318d772d6639be25e54a",
+      "category": "WINDOWS_PATH",
+      "count": 3
+    },
+    {
+      "path": "docs/P2_DEPENDENCIES.md",
+      "oid": "462d11674dd41000631ea528c02aedcf84621495",
+      "category": "WINDOWS_PATH",
+      "count": 4
+    },
+    {
+      "path": "docs/P2_GPU_COMPATIBILITY_MATRIX.md",
+      "oid": "76a41a5584348f0f827a8975dda9164c4c204922",
+      "category": "WINDOWS_PATH",
+      "count": 3
+    },
+    {
+      "path": "docs/P37_A_RFDETR_TRAINING_GUIDE.md",
+      "oid": "4eb7154fd4e9eb7c59a3196b6e753828be70c45b",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "docs/P3_5_OFFLINE_AI_DEMO_GUIDE.md",
+      "oid": "eb0f53809fe4f22c732cd1f8c700e7890d9a2dc1",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "docs/P3_DATASET_USER_GUIDE.md",
+      "oid": "a4b641ecb22f14cb2a13b8add22b97f49c3a1221",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "docs/SRS.md",
+      "oid": "32a89b860f66acadaba7405a0f7cad147caf62da",
+      "category": "WINDOWS_PATH",
+      "count": 5
+    },
+    {
+      "path": "experiments/p36_rfdetr/requirements.lock.txt",
+      "oid": "6448eb9e6dc9844eb2891262ed0e71e4acd5241a",
+      "category": "WINDOWS_PATH",
+      "count": 2
+    },
+    {
+      "path": "experiments/p36_rfdetr/seal_dependencies.py",
+      "oid": "c0cdda9bcab005c21a2f4ce173dfb4ab39250c16",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "ivad_app/gui/dataset_page.py",
+      "oid": "cf1c4cc1713f401e646e7cb060ac30be41516f1f",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "ivad_app/gui/icons/checked.svg",
+      "oid": "7cdd76f8fddfe166519270aecae58b17c3c978f0",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "ivad_app/services/logging_service.py",
+      "oid": "47eb0b5b7b3baf4cce82b6b031b2fdee5a63631b",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "ivad_app/services/logging_service.py",
+      "oid": "47eb0b5b7b3baf4cce82b6b031b2fdee5a63631b",
+      "category": "RTSP_URI",
+      "count": 1
+    },
+    {
+      "path": "ivad_app/services/offline_demo_service.py",
+      "oid": "f36bd3961d4271f85fc2312959e92fda5107eea6",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "legal/LICENSE_POLICY.md",
+      "oid": "b531cf469227b572e7bcbae5846790882bb49d2c",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "legal/P37_DEPENDENCY_SBOM.md",
+      "oid": "22b0da4ac992f349297f260553fd244e59b634cf",
+      "category": "WINDOWS_PATH",
+      "count": 117
+    },
+    {
+      "path": "legal/P37_DEPENDENCY_SBOM.md",
+      "oid": "22b0da4ac992f349297f260553fd244e59b634cf",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "legal/P37_FREE_PROPRIETARY_LICENSE_AUDIT.md",
+      "oid": "cecf9b1ff1c08b69424212282ac832a784786fd9",
+      "category": "WINDOWS_PATH",
+      "count": 4
+    },
+    {
+      "path": "legal/P37_GUI_NATIVE_BINARY_INVENTORY.json",
+      "oid": "3dbdf2d042880813c165af9b1194ea18a981cac7",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "legal/RFDETR_DEPENDENCY_INVENTORY.md",
+      "oid": "ae9ac020115d81778452bcc29d361c77c72f18e4",
+      "category": "WINDOWS_PATH",
+      "count": 95
+    },
+    {
+      "path": "legal/THIRD_PARTY_NOTICES.md",
+      "oid": "451d6393079a83f9a241a82faea519a8e9fcf4ba",
+      "category": "WINDOWS_PATH",
+      "count": 8
+    },
+    {
+      "path": "legal/licenses/Apache-2.0.txt",
+      "oid": "d645695673349e3947e8e5ae42332d0ac3164cd7",
+      "category": "WINDOWS_PATH",
+      "count": 2
+    },
+    {
+      "path": "legal/licenses/RF-DETR-1.11.2.LICENSE.txt",
+      "oid": "56db37c53b61c7976042682a83d85383a6bf6007",
+      "category": "WINDOWS_PATH",
+      "count": 2
+    },
+    {
+      "path": "legal/licenses/p37/FFmpeg-legal.html",
+      "oid": "01b954945129254a21a9fea9e8894b234d0e6231",
+      "category": "WINDOWS_PATH",
+      "count": 10
+    },
+    {
+      "path": "legal/licenses/p37/GPL-3.0-only.txt",
+      "oid": "94a9ed024d3859793618152ea559a168bbcbb5e2",
+      "category": "WINDOWS_PATH",
+      "count": 4
+    },
+    {
+      "path": "legal/licenses/p37/LGPL-3.0-only.txt",
+      "oid": "65c5ca88a67c30becee01c5a8816d964b03862f9",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "legal/licenses/p37/NVIDIA-CUDA-12.8.1-EULA.html",
+      "oid": "ec863d536bca77e870c26db531d41dfd63fa1122",
+      "category": "WINDOWS_PATH",
+      "count": 30
+    },
+    {
+      "path": "legal/licenses/p37/NVIDIA-cuDNN-9.10.2-EULA.html",
+      "oid": "c64142dc672f1dbf3786a002d815af9cb3a4d8a4",
+      "category": "WINDOWS_PATH",
+      "count": 14
+    },
+    {
+      "path": "legal/licenses/p37/SOURCES.json",
+      "oid": "c34c2f8f19c6d0aab726fc9c9b7ee93536d946f4",
+      "category": "WINDOWS_PATH",
+      "count": 6
+    },
+    {
+      "path": "legal/licenses/supplemental/SOURCES.json",
+      "oid": "0330f4d50d54f95b6704e9b201313e28c956b89e",
+      "category": "WINDOWS_PATH",
+      "count": 3
+    },
+    {
+      "path": "legal/licenses/supplemental/onnxsim/LICENSE",
+      "oid": "1ddac85aab0e55ccd071ce5ba16570128fc5c0cb",
+      "category": "WINDOWS_PATH",
+      "count": 2
+    },
+    {
+      "path": "legal/licenses/supplemental/onnxsim/NOTICE",
+      "oid": "07e3d4eff1b369eb6cff91a1d47a17c203e7b913",
+      "category": "WINDOWS_PATH",
+      "count": 3
+    },
+    {
+      "path": "legal/licenses/supplemental/tokenizers/LICENSE",
+      "oid": "261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64",
+      "category": "WINDOWS_PATH",
+      "count": 2
+    },
+    {
+      "path": "reports/IVAD_REPORT_SOURCE_INDEX.md",
+      "oid": "27f5a3748bb4f8a20c3c40b81b05965b0efdd732",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 3
+    },
+    {
+      "path": "reports/P2_ANNOTATION_UX_V2_TEST_RESULTS.md",
+      "oid": "38f75e38105c99e734790aa125a80948dc253b3d",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "reports/P2_ANNOTATION_WORKFLOW_SIMPLIFICATION.md",
+      "oid": "2665193bec7f404d536f548c84530d0c8fc269fe",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "reports/P2_CAMERA_REGISTRY_PERSISTENCE_HOTFIX.md",
+      "oid": "30d84d9bec143c7f90f0f13e4909425ec1db2948",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "reports/P2_CAMERA_REGISTRY_PERSISTENCE_HOTFIX.md",
+      "oid": "30d84d9bec143c7f90f0f13e4909425ec1db2948",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 7
+    },
+    {
+      "path": "reports/P2_CAMERA_ROI_ASSOCIATION.md",
+      "oid": "2b75f32b44857624602badde14805efb80d105ff",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "reports/P2_DISTRIBUTION_TEST_RESULTS.md",
+      "oid": "c139f5f2e50c5c9f9593c349ef71e38a3150c3f2",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "reports/P2_HOTFIX_REGRESSION.md",
+      "oid": "bf9c60bc71e28c865258cfc64437516ae2b17aa7",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "reports/P2_PROJECT_CAMERA_TAB_HOTFIX.md",
+      "oid": "3adaa1108b8f0ed641a3e50bbe46c20bba7effb3",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "reports/P2_REAL_VIDEO_REGRESSION_425_434.md",
+      "oid": "f60c5a29f23e72062d76a3386e33f817c8318bec",
+      "category": "WINDOWS_PATH",
+      "count": 3
+    },
+    {
+      "path": "reports/P2_TEST_RESULTS.md",
+      "oid": "e293421d78f20156a7e55c4b3160de534df8467d",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "reports/P36_RFDETR_FEASIBILITY.md",
+      "oid": "cd8fbc62d0f3321db89de4574007d43e0e801296",
+      "category": "WINDOWS_PATH",
+      "count": 6
+    },
+    {
+      "path": "reports/P36_RFDETR_FEASIBILITY.md",
+      "oid": "cd8fbc62d0f3321db89de4574007d43e0e801296",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 5
+    },
+    {
+      "path": "reports/P37_A_ACCEPTANCE.md",
+      "oid": "93fafcc2cbc7acc3eabfd7598cd8e7186d4f9ecf",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 5
+    },
+    {
+      "path": "reports/P37_A_ACCEPTANCE_CLOSURE.md",
+      "oid": "0db92e338070ad02cc40626fc29a8c759d896ed7",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "reports/P37_A_FINAL_TECHNICAL_ACCEPTANCE.md",
+      "oid": "fbfa3934c31ac73dd61978a77c4b89c4234e774d",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "reports/P37_EVALUATION_PARITY.md",
+      "oid": "3930a1d296a04edbb5fb4abe5f0cd278cf81f8cd",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "reports/P37_LEGACY_TRAINING_ARCHIVE.md",
+      "oid": "75e0ad3b27fcd23f5ec600f31a957a8bd9ab117d",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 9
+    },
+    {
+      "path": "reports/P3_5_DEMO_GUI_HOTFIX.md",
+      "oid": "f5b665bb8e3eec256d7e93c2e5a29b3a0c7574ae",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 5
+    },
+    {
+      "path": "reports/P3_5_OFFLINE_DEMO_ACCEPTANCE.md",
+      "oid": "faa6e122339f74d699947bf337b717d8a7f887f5",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "reports/P3_5_RELEASE_LICENSE_AUDIT.md",
+      "oid": "6887af2e8e598e81c07e36648e54b5b924ad31e7",
+      "category": "WINDOWS_PATH",
+      "count": 4
+    },
+    {
+      "path": "reports/P3_5_THREE_TAB_GUI_HOTFIX.md",
+      "oid": "033e84784bb2e62726089ef97aec05818ad9d9c6",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 3
+    },
+    {
+      "path": "reports/P3_DATASET_PERSISTENCE_HOTFIX.md",
+      "oid": "dd21ad5e0baddc45a351e45e3b1774bcb94ce8f6",
+      "category": "WINDOWS_PATH",
+      "count": 3
+    },
+    {
+      "path": "reports/P3_DATASET_PERSISTENCE_HOTFIX.md",
+      "oid": "dd21ad5e0baddc45a351e45e3b1774bcb94ce8f6",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 4
+    },
+    {
+      "path": "reports/P3_DATASET_SELECTION_TEST_RESULTS.md",
+      "oid": "30b7ecf28a5bc2b09c121f4a6c7f273933935773",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "reports/P3_DATASET_SPLIT_PRESETS.md",
+      "oid": "d84266a51e99873a63ee75dabf5337f20dceb1e2",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "reports/P3_DATASET_SPLIT_PRESETS.md",
+      "oid": "d84266a51e99873a63ee75dabf5337f20dceb1e2",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "reports/P3_DATASET_UI_HOTFIX.md",
+      "oid": "0780a3fa8a7467dfa62c13a160607bbba8a1b576",
+      "category": "WINDOWS_PATH",
+      "count": 4
+    },
+    {
+      "path": "reports/P3_DATASET_UI_HOTFIX.md",
+      "oid": "0780a3fa8a7467dfa62c13a160607bbba8a1b576",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "reports/P3_DATASET_UX_HOTFIX_V2.md",
+      "oid": "918f76fd06907a76337990c615a2224ff57418fb",
+      "category": "WINDOWS_PATH",
+      "count": 4
+    },
+    {
+      "path": "reports/P3_DATASET_UX_HOTFIX_V2.md",
+      "oid": "918f76fd06907a76337990c615a2224ff57418fb",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "reports/P3_DATASET_VALIDATION.md",
+      "oid": "e18af245b6dda354bc54fcddff2f0516a9abe0d8",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "reports/P3_DATASET_VALIDATION.md",
+      "oid": "e18af245b6dda354bc54fcddff2f0516a9abe0d8",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 5
+    },
+    {
+      "path": "reports/P3_DATASET_VERSION_LIFECYCLE.md",
+      "oid": "ae630962f9455a8b3d31d0f8b8abb5fa41ef8be4",
+      "category": "WINDOWS_PATH",
+      "count": 2
+    },
+    {
+      "path": "reports/P3_DATASET_WORKFLOW_TEST_RESULTS.md",
+      "oid": "6b4c12056af9dab817223f4656afc4dcfea3753e",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "reports/P3_DATA_SPLIT_TEST_RESULTS.md",
+      "oid": "d7edde686304b4a5517f040ec1b7ac5664d45297",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 3
+    },
+    {
+      "path": "reports/P3_FRAME_TIMESTAMP_INVESTIGATION.md",
+      "oid": "210b404228aca19c251b68af23c1dbeb26fb8417",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "reports/P3_FRAME_TIMESTAMP_INVESTIGATION.md",
+      "oid": "210b404228aca19c251b68af23c1dbeb26fb8417",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 6
+    },
+    {
+      "path": "reports/P3_MODEL_VALIDATION.md",
+      "oid": "dc546506228d2c35aa12e7c3f92329d6f9502eaf",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 3
+    },
+    {
+      "path": "reports/P3_TRAINING_PARAMETERS_GUI_TEST.md",
+      "oid": "757df2d887bcf0e94032ccc7975782743fadb095",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "reports/P3_WORKFLOW_GUI_HOTFIX.md",
+      "oid": "d6d9994b9b3bef6a7f8648d137a69f7284fe55da",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "reports/P3_WORKFLOW_GUI_HOTFIX.md",
+      "oid": "d6d9994b9b3bef6a7f8648d137a69f7284fe55da",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 4
+    },
+    {
+      "path": "reports/THIRD_PARTY_LICENSE_AUDIT.md",
+      "oid": "91a2bc6669de96607d1227c682375f4fa8c2928a",
+      "category": "WINDOWS_PATH",
+      "count": 8
+    },
+    {
+      "path": "scripts/build_stage_report_20261016.py",
+      "oid": "363695975d9bbaa87a9deb17d52fcc96daa6288a",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 6
+    },
+    {
+      "path": "scripts/p37a/closure_reports.py",
+      "oid": "09c8c1045700fdcf6ba812bea2bd973c1d438d83",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "scripts/p37a/failure_checks.py",
+      "oid": "b38f69b1c6bf8e443cf7147448d044833418fbe4",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "scripts/p37a/investigate_parity.py",
+      "oid": "98e7e274a110af9b5c82f53aed856968e2f34c8e",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "scripts/p37a/service_smoke.py",
+      "oid": "dd13f6373893a1f189d042d4614042cf567be26f",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "scripts/p37a/write_license_materials.py",
+      "oid": "1e9ada8af9e745ad37fafa3160f4fba1b4b824fb",
+      "category": "WINDOWS_PATH",
+      "count": 7
+    },
+    {
+      "path": "tests/test_annotation_camera_hotfix_gui.py",
+      "oid": "4bb2b837e38d0243cc67af7989663aadb0e516e6",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "tests/test_annotation_simplification.py",
+      "oid": "53d0bb2138233b3b94c8aa6069873f7259b45ad4",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "tests/test_camera_integrity_v2.py",
+      "oid": "8e6c62ac44e7c713f51de891abbfb8ee468600a1",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 12
+    },
+    {
+      "path": "tests/test_camera_integrity_v2_gui.py",
+      "oid": "50d3781ec8cacdd3c294bc84c94146895fe3f271",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 4
+    },
+    {
+      "path": "tests/test_dataset_lifecycle.py",
+      "oid": "da6fab4529ae3ebca8480dd8216f3893a9b2179f",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "tests/test_dataset_lifecycle.py",
+      "oid": "da6fab4529ae3ebca8480dd8216f3893a9b2179f",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "tests/test_distribution.py",
+      "oid": "ba16a5aa883fbb05caa3be7df627a208ed10357f",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "tests/test_jobs_logs.py",
+      "oid": "7bffc4d35aa49fc384d61ec2ad2af0ddab54aa4a",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "tests/test_jobs_logs.py",
+      "oid": "7bffc4d35aa49fc384d61ec2ad2af0ddab54aa4a",
+      "category": "RTSP_URI",
+      "count": 1
+    },
+    {
+      "path": "tests/test_p35_final_player.py",
+      "oid": "725e8b4cf77f8a9f662880e97d6bbf99e2277542",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "tests/test_p35_gui_redesign.py",
+      "oid": "921132b1197d0d1dd133184156c2448da3aa73ef",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 4
+    },
+    {
+      "path": "tests/test_p35_three_tab.py",
+      "oid": "a1855340913d361ac22e79db0d1be3d4a6f1ba6a",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 4
+    },
+    {
+      "path": "tests/test_p37a_export_contract.py",
+      "oid": "486033d5a88a27be1e319b925da568dcfc80822e",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "tests/test_workflow_training_hotfix.py",
+      "oid": "4d8f7e6ce46c72aca62250da98c47b5dc477daea",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "reports/P37_A_ACCEPTANCE.md",
+      "oid": "de068f7a307e491b70e6d0cc24d5e34b23cfd23c",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 5
+    },
+    {
+      "path": "reports/P37_A_ACCEPTANCE_CLOSURE.md",
+      "oid": "c18754da84e5d07108349db327de5eb73160f872",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "ivad_app/gui/dataset_page.py",
+      "oid": "5d9bd65d05eccc83468c7130007aa099d701bf1c",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "ivad_app/services/offline_demo_service.py",
+      "oid": "6dc7247862f875ed1891743d47ef0c654e1d3186",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "reports/P37_A_ACCEPTANCE.md",
+      "oid": "0936224026550b40a24138006f228f10b710d165",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 3
+    },
+    {
+      "path": "ivad_app/gui/dataset_page.py",
+      "oid": "8ef16b28b7956185625876c30ec80df98393b39f",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "tests/test_workflow_training_hotfix.py",
+      "oid": "3740168c1b0aca7d60e54132b49140dfe7fde631",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "AGENTS.md",
+      "oid": "b180c97bbab35c23dfbd91b547dbe9ace5bcb76c",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 3
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "oid": "29eabe83542b2971941c4a94d531fffffc8996c5",
+      "category": "WINDOWS_PATH",
+      "count": 7
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "oid": "29eabe83542b2971941c4a94d531fffffc8996c5",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "AGENTS.md",
+      "oid": "e1f5a05c9ed8d8c1426316e2d890d164a3bbc857",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 3
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "oid": "3e6cd042e7ba5e09daa61b700d7482c229acb253",
+      "category": "WINDOWS_PATH",
+      "count": 7
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "oid": "3e6cd042e7ba5e09daa61b700d7482c229acb253",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "AGENTS.md",
+      "oid": "33728a1acb61eabb1121421e60146f2770c4d559",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 3
+    },
+    {
+      "path": "docs/P3_5_OFFLINE_AI_DEMO_GUIDE.md",
+      "oid": "353b8418550bdef4e572cd6022b5eb59fc0a77c5",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "AGENTS.md",
+      "oid": "5bcfeb69e6ebb04d2969ed2228a9ab1ec46a67c9",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 3
+    },
+    {
+      "path": "docs/P3_5_OFFLINE_AI_DEMO_GUIDE.md",
+      "oid": "a45e03ad71bd3eeb7780aaa9c5e3f18ba88f5a10",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "tests/test_p35_gui_redesign.py",
+      "oid": "2ca940d4fd8fb8e3b0b1865e9294a5c590c1476d",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 4
+    },
+    {
+      "path": "AGENTS.md",
+      "oid": "1f5f10b437689bf6d7ba006a0b2e496d99717c4d",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 3
+    },
+    {
+      "path": "docs/P3_5_OFFLINE_AI_DEMO_GUIDE.md",
+      "oid": "f5caee433c48045fbcd5cd5b65e26ad40169dffe",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 3
+    },
+    {
+      "path": "ivad_app/services/offline_demo_service.py",
+      "oid": "51d1aa02e35a0b3248960ae09704374a386e7e16",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "AGENTS.md",
+      "oid": "fc071e8b7e67a1d80bb072951cbe38462a62df2f",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 3
+    },
+    {
+      "path": "docs/CURRENT_TASK.md",
+      "oid": "c0f80816c8fe9678cd703213d2f27fd86d914eff",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "oid": "69c2a2d1b2a4dd1df502d40f6bfcf1c82e6f76a6",
+      "category": "WINDOWS_PATH",
+      "count": 7
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "oid": "69c2a2d1b2a4dd1df502d40f6bfcf1c82e6f76a6",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "AGENTS.md",
+      "oid": "45c037a9bc531327a961886f2bf5966e0bf35afe",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "oid": "ca72b08790cd2928cced218872bad2c5d7b4aeed",
+      "category": "WINDOWS_PATH",
+      "count": 7
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "oid": "ca72b08790cd2928cced218872bad2c5d7b4aeed",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "docs/P3_DATASET_USER_GUIDE.md",
+      "oid": "f25fe3f6b20306c6ac9c8fdc91666a9b324d6f53",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "tests/test_dataset_lifecycle.py",
+      "oid": "01bdd32cb1d915e7271c11c40fc253916ae626a7",
+      "category": "WINDOWS_PATH",
+      "count": 1
+    },
+    {
+      "path": "tests/test_dataset_lifecycle.py",
+      "oid": "01bdd32cb1d915e7271c11c40fc253916ae626a7",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "AGENTS.md",
+      "oid": "66d1d64becd48df3e5a7a960c492832f78660c15",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "docs/CURRENT_TASK.md",
+      "oid": "6f5e63cf920b7eef90e1ef4cacee229c81aa3d4b",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "oid": "1edc885e22510cef5cb2a9c5ab03540f1198b281",
+      "category": "WINDOWS_PATH",
+      "count": 7
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "oid": "1edc885e22510cef5cb2a9c5ab03540f1198b281",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "docs/P3_DATASET_USER_GUIDE.md",
+      "oid": "a684f7977e95b62e1be35cba8f1a4a1deef30acc",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "docs/SRS.md",
+      "oid": "64e7372e6a1a086b86c9318471a08512af00562a",
+      "category": "WINDOWS_PATH",
+      "count": 5
+    },
+    {
+      "path": "ivad_app/gui/dataset_page.py",
+      "oid": "3b2f1f9affe918b3c3fe534de8670a7d22fefa93",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "AGENTS.md",
+      "oid": "49afb4495af01864732699141117174d9e858ecb",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "docs/CURRENT_TASK.md",
+      "oid": "0c08169fd6a97f2c87ebd7f9e2d25c75ca4cd802",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "oid": "3c238eda633ce9840c149a1cce5e94fa070981d3",
+      "category": "WINDOWS_PATH",
+      "count": 7
+    },
+    {
+      "path": "ivad_app/gui/dataset_page.py",
+      "oid": "f836deedc78fc9df5ea6b5e9c893eda7de1c24b1",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "oid": "569615bea4b524bf4d4c50dc7ae76d5bf329cc70",
+      "category": "WINDOWS_PATH",
+      "count": 7
+    },
+    {
+      "path": "tests/test_annotation_simplification.py",
+      "oid": "f9742b335382e363d3148e15b434481beaa56d84",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 2
+    },
+    {
+      "path": "docs/IVAD_P2_测试员操作指南.md",
+      "oid": "6982e31b4b05e87e58f563d25baca6f24d16657c",
+      "category": "WINDOWS_PATH",
+      "count": 3
+    },
+    {
+      "path": "tests/test_annotation_camera_hotfix_gui.py",
+      "oid": "541c8529776ff9fc3f39f1e5954345cffdc78515",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 1
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "oid": "4a94cf1432e9df1aef991157a147a975e2c72fd3",
+      "category": "WINDOWS_PATH",
+      "count": 7
+    },
+    {
+      "path": "docs/IVAD_P2_测试员操作指南.md",
+      "oid": "e3ebd3dd526e50e8a1fd370c0a702789b1cc2106",
+      "category": "WINDOWS_PATH",
+      "count": 3
+    },
+    {
+      "path": "tests/test_camera_integrity_v2_gui.py",
+      "oid": "b1c292265e92903e831029aeda27a259aba664d8",
+      "category": "REAL_PROJECT_REFERENCE",
+      "count": 4
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "oid": "ce498391948fb9f3b7d7c6a457e3386af50ce7b4",
+      "category": "WINDOWS_PATH",
+      "count": 7
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "oid": "20d9f25256e3831e1f35d5e083f7a3dbf9c4a67d",
+      "category": "WINDOWS_PATH",
+      "count": 7
+    },
+    {
+      "path": "docs/SRS.md",
+      "oid": "192986b9b738089dd92512245ea16389e6719515",
+      "category": "WINDOWS_PATH",
+      "count": 5
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "oid": "9a26b56616042f670c6a812065c930d784e1ed90",
+      "category": "WINDOWS_PATH",
+      "count": 7
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "oid": "1ac0536181e9fdfa43da0aec75e8d5ba7023d69b",
+      "category": "WINDOWS_PATH",
+      "count": 7
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "oid": "c23a526576af6ace6eb56a968614e71f43590d03",
+      "category": "WINDOWS_PATH",
+      "count": 6
+    }
+  ],
+  "limits": "all refs reachable objects; excludes unreachable/reflog-only objects, LFS remote contents, encrypted files, manual image OCR and entropy-only secrets; matches are candidates, not proven live credentials"
+}
