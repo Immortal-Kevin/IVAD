@@ -1,0 +1,18 @@
+{
+  "PACKAGING_FREEZE": "TRUE",
+  "DISTRIBUTION_STATUS": "BLOCKED",
+  "BUILD_STATUS": "BLOCKED_D2_NO_EXE",
+  "LOCAL_FUNCTIONAL_STATUS": "NOT_TESTED_CANDIDATE; SOURCE_REFERENCE_14_PASS",
+  "VIDEO_IMPORT_EXTRACTION_STATUS": "NOT_TESTED_CANDIDATE; SYNTHETIC_CLI_DECODE_EXTRACTION_PASS",
+  "RF_3050TI_COMPATIBILITY_STATUS": "NOT_TESTED",
+  "TARGET_3050TI": "NOT TESTED",
+  "LICENSE_PAYLOAD_STATUS": "BLOCKED",
+  "CONFIDENTIALITY_STATUS": "NOT_TESTED_PAYLOAD; ORIGINAL_ASSET_PROTECTION_PASS",
+  "SAME_ENTITY_INTERNAL_DELIVERY_STATUS": "BLOCKED",
+  "GENERAL_DISTRIBUTION_APPROVED": false,
+  "stop_reason": "P37D section 14: third-party DLL redistribution closure not confirmed; stop D3-D7 candidate work. No fee requirement established.",
+  "exe": null,
+  "exe_sha256": null,
+  "onedir_bytes": null,
+  "protection_result": "All five groups true; 2328 protected project/media files"
+}
