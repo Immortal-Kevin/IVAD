@@ -1,3 +1,4 @@
+6aa75d478598e0763877aa3bca2ee3f2183002851633dfdc027e17f48cf1dcf6  .gitattributes
 9eec875ed16d435fbc308b71261fe1b420fee579a1341ac630149b5b27153a25  CPython-siphash.txt-extraction.json
 56fed26b91d4bdf6b53d6cdc04ff44647de3093451fc877bd51defdcd01574d5  existing-build-materials/addins/7.1.sh
 750d8176b0b34bd44ce6e64229449984af9472f0a625d4c257cf8789cfd59f85  existing-build-materials/build.sh
