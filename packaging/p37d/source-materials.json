@@ -1,0 +1,118 @@
+{
+  "scope": "Engineering source preparation only, NOT an approved payload",
+  "qt_sources": [
+    {
+      "file": "qtbase-everywhere-src-6.8.3.tar.xz",
+      "url": "https://download.qt.io/archive/qt/6.8/6.8.3/submodules/qtbase-everywhere-src-6.8.3.tar.xz",
+      "final_url": "https://qt.mirror.constant.com/archive/qt/6.8/6.8.3/submodules/qtbase-everywhere-src-6.8.3.tar.xz",
+      "status": 200,
+      "length": "48426536",
+      "download_sha256": "56001b905601bb9023d399f3ba780d7fa940f3e4861e496a7c490331f49e0b80",
+      "bytes": 48426536,
+      "upstream_checksum_match": true
+    },
+    {
+      "file": "qtsvg-everywhere-src-6.8.3.tar.xz",
+      "url": "https://download.qt.io/archive/qt/6.8/6.8.3/submodules/qtsvg-everywhere-src-6.8.3.tar.xz",
+      "final_url": "https://qt.mirror.constant.com/archive/qt/6.8/6.8.3/submodules/qtsvg-everywhere-src-6.8.3.tar.xz",
+      "status": 200,
+      "length": "2009072",
+      "download_sha256": "35eb516460f00f264eb504baa253432384351cf23fb9980a5857190e8deef438",
+      "bytes": 2009072,
+      "upstream_checksum_match": true
+    },
+    {
+      "file": "qtimageformats-everywhere-src-6.8.3.tar.xz",
+      "url": "https://download.qt.io/archive/qt/6.8/6.8.3/submodules/qtimageformats-everywhere-src-6.8.3.tar.xz",
+      "final_url": "https://qt.mirror.constant.com/archive/qt/6.8/6.8.3/submodules/qtimageformats-everywhere-src-6.8.3.tar.xz",
+      "status": 200,
+      "length": "2035140",
+      "download_sha256": "049bfb99845e4801672aca07c3c4fc4c140f932a3a33faa899419579e33ef1c8",
+      "bytes": 2035140,
+      "upstream_checksum_match": true
+    },
+    {
+      "file": "pyside-setup-everywhere-src-6.8.3.tar.xz",
+      "url": "https://download.qt.io/official_releases/QtForPython/pyside6/PySide6-6.8.3-src/pyside-setup-everywhere-src-6.8.3.tar.xz",
+      "final_url": "https://qt.mirror.constant.com/official_releases/QtForPython/pyside6/PySide6-6.8.3-src/pyside-setup-everywhere-src-6.8.3.tar.xz",
+      "status": 200,
+      "length": "16611768",
+      "download_sha256": "d2c896f7f1a6a7ea4c9f98cfe317272fd139703ddf612b86999f09e48aeef0e6",
+      "bytes": 16611768,
+      "upstream_checksum_match": true
+    }
+  ],
+  "ffmpeg_archive": {
+    "name": "ffmpeg-n7.1.5-12-g1fdbca85aa-win64-lgpl-shared-7.1.zip",
+    "url": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-07-31-14-10/ffmpeg-n7.1.5-12-g1fdbca85aa-win64-lgpl-shared-7.1.zip",
+    "sha256": "0f376f96fb38554ccefb1b2ae9c7c6a7b351f0e60a372b38262c320e8392c5d0",
+    "published_checksum_match": true,
+    "files": 230,
+    "full_source_in_archive": false
+  },
+  "ffmpeg_research_dlls": [
+    {
+      "file": "avcodec-61.dll",
+      "bytes": 66260480,
+      "sha256": "30ec40e6210e592d02e626589a9997e3f793e83dac078aaa3ed410fcbdb20723",
+      "origin_archive": "ffmpeg-n7.1.5-12-g1fdbca85aa-win64-lgpl-shared-7.1.zip",
+      "scope": "LOCAL_RESEARCH_NOT_FINAL_PAYLOAD",
+      "license_closure": "PENDING corresponding source and static dependencies"
+    },
+    {
+      "file": "avdevice-61.dll",
+      "bytes": 7450624,
+      "sha256": "4bd591b126fcec2093e481c11c3f28533fd5c3bd4bcf64484f14ef1db12d51f7",
+      "origin_archive": "ffmpeg-n7.1.5-12-g1fdbca85aa-win64-lgpl-shared-7.1.zip",
+      "scope": "LOCAL_RESEARCH_NOT_FINAL_PAYLOAD",
+      "license_closure": "PENDING corresponding source and static dependencies"
+    },
+    {
+      "file": "avfilter-10.dll",
+      "bytes": 25192960,
+      "sha256": "5270813c632c7aa6b51ed41104dede624a346e4d32d0e3a6158069781b544e41",
+      "origin_archive": "ffmpeg-n7.1.5-12-g1fdbca85aa-win64-lgpl-shared-7.1.zip",
+      "scope": "LOCAL_RESEARCH_NOT_FINAL_PAYLOAD",
+      "license_closure": "PENDING corresponding source and static dependencies"
+    },
+    {
+      "file": "avformat-61.dll",
+      "bytes": 21862912,
+      "sha256": "3ef409dc46aea8cb163068637546033cfa6c2c92b9d0c0a1e1eee011027168a0",
+      "origin_archive": "ffmpeg-n7.1.5-12-g1fdbca85aa-win64-lgpl-shared-7.1.zip",
+      "scope": "LOCAL_RESEARCH_NOT_FINAL_PAYLOAD",
+      "license_closure": "PENDING corresponding source and static dependencies"
+    },
+    {
+      "file": "avutil-59.dll",
+      "bytes": 2838528,
+      "sha256": "99cb38dcb14027a74651eae812d9dd992ec4d0e66d19c2fc55c24af6c66e9a54",
+      "origin_archive": "ffmpeg-n7.1.5-12-g1fdbca85aa-win64-lgpl-shared-7.1.zip",
+      "scope": "LOCAL_RESEARCH_NOT_FINAL_PAYLOAD",
+      "license_closure": "PENDING corresponding source and static dependencies"
+    },
+    {
+      "file": "swresample-5.dll",
+      "bytes": 671232,
+      "sha256": "3906fac6b66139bd1a526f83cfcfd81cdb047a0ea9fc97b5761b7e7bf2722eb0",
+      "origin_archive": "ffmpeg-n7.1.5-12-g1fdbca85aa-win64-lgpl-shared-7.1.zip",
+      "scope": "LOCAL_RESEARCH_NOT_FINAL_PAYLOAD",
+      "license_closure": "PENDING corresponding source and static dependencies"
+    },
+    {
+      "file": "swscale-8.dll",
+      "bytes": 705024,
+      "sha256": "8a74ed235b17980e7f41de482c95b9ec8426c6d41235cab56c0eb74183b7d1e0",
+      "origin_archive": "ffmpeg-n7.1.5-12-g1fdbca85aa-win64-lgpl-shared-7.1.zip",
+      "scope": "LOCAL_RESEARCH_NOT_FINAL_PAYLOAD",
+      "license_closure": "PENDING corresponding source and static dependencies"
+    }
+  ],
+  "public_rf_weight": {
+    "included": false,
+    "downloaded": false,
+    "source": "https://storage.googleapis.com/rfdetr/nano_coco/checkpoint_best_regular.pth",
+    "sha256": "d8d6b9ee57d4d0ed2b1f305163624712a0532cb7bce0c747317984fc5457440d",
+    "license_reference": "legal/licenses/p37l/RF_WEIGHT.json"
+  }
+}
