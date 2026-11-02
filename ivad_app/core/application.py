@@ -14,7 +14,7 @@ from ivad_app.services.dataset_service import DatasetService
 from ivad_app.services.camera_service import CameraService
 
 class ApplicationServices:
-    def __init__(self, root: Path, data_dir: Path | None = None, *, step_seconds: float = 0.1, lite: bool | None = None):
+    def __init__(self, root: Path, data_dir: Path | None = None, *, step_seconds: float = 0.1, lite: bool | None = None, media_backend: str = 'legacy'):
         self.root = Path(root)
         from ivad_app.core.demo_policy import enabled, DisabledAI
         self.demo_lite = enabled()
@@ -28,7 +28,13 @@ class ApplicationServices:
         self.devices = DeviceService(self.db, self.settings, self.logs, self.root, lite=self.lite)
         self.jobs = JobService(self.db, self.logs, step_seconds=step_seconds)
         self.store = ProjectStore(self.projects)
-        self.media = MediaService(self.store, self.logs)
+        if media_backend == 'windows-mf':
+            from ivad_app.video.windows_source import WindowsVideoSource
+            self.media = MediaService(self.store, self.logs, source_factory=WindowsVideoSource)
+        elif media_backend == 'legacy':
+            self.media = MediaService(self.store, self.logs)
+        else:
+            raise ValueError('Unknown media backend; automatic fallback forbidden')
         self.annotations = AnnotationService(self.store, self.media, self.logs)
         self.cameras = CameraService(self.store,self.logs)
         self.datasets = DatasetService(self.store, self.logs)

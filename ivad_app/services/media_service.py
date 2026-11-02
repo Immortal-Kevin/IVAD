@@ -4,23 +4,32 @@ from ivad_app.video.timestamps import frame_times
 import hashlib, json, shutil, os
 from pathlib import Path
 from uuid import uuid4
-import numpy as np
-from PIL import Image
+from PIL import Image, ImageChops, ImageStat
 from sqlalchemy import select
 from ivad_app.core.contracts import AppError, utc_now
 from ivad_app.storage.models import MediaAsset, ExtractedFrame, DatasetVersion, ExportRecord
 from ivad_app.storage.project_store import file_hash, safe_path, row_dict
-from ivad_app.video.reader import FileVideoSource
 from ivad_app.services.camera_service import CameraService
 from ivad_app.services.media_lifecycle import MediaLifecycle
 
 def dhash(image):
-    array = np.asarray(image.convert('L').resize((9, 8)))
-    bits = array[:, 1:] > array[:, :-1]
-    return f'{int("".join("1" if bit else "0" for bit in bits.ravel()), 2):016x}'
+    # Preserve the existing 64-bit dHash; no new similarity/deduplication feature.
+    pixels = list(image.convert('L').resize((9, 8)).getdata())
+    bits = (pixels[y*9+x+1] > pixels[y*9+x] for y in range(8) for x in range(8))
+    return f'{int("".join("1" if bit else "0" for bit in bits), 2):016x}'
 
 class MediaService(MediaLifecycle):
-    def __init__(self, store, logs): self.store, self.logs = store, logs
+    def __init__(self, store, logs, *, source_factory=None):
+        self.store, self.logs = store, logs
+        self._source_factory = source_factory
+
+    @property
+    def source_factory(self):
+        if self._source_factory is None:
+            # Historical GUI keeps its existing decoder until migration acceptance.
+            from ivad_app.video.reader import FileVideoSource
+            return FileVideoSource
+        return self._source_factory
 
     @staticmethod
     def resolve(root, media):
@@ -73,7 +82,7 @@ class MediaService(MediaLifecycle):
                             camera=session.get(Camera,camera_id)
                             if not camera or not camera.details.get('enabled',True):raise AppError('CAMERA_DISABLED','请选择当前项目已启用的摄像头。')
                         session.add(MediaAsset(id=media_id, project_id=project_id, name=source.name, original_path=str(source), path='', mode=mode, sha256=checksum, size=size, video={}, camera=payload.get('camera',''),camera_id=camera_id, equipment=payload.get('equipment',''), site=payload.get('site',''), state='IMPORTING', error='', job_id=context.job_id, imported_at=utc_now()))
-                    metadata = FileVideoSource.probe(source)
+                    metadata = self.source_factory.probe(source)
                     if mode == 'COPY':
                         if shutil.disk_usage(folder).free < size + 16 * 1024 * 1024: raise AppError('DISK_SPACE', '项目磁盘空间不足，尚未复制原始录像。')
                         suffix = source.suffix.lower()[:10] or '.video'
@@ -142,6 +151,8 @@ class MediaService(MediaLifecycle):
         with Image.open(path) as image: return value, image.convert('RGB').copy()
 
     def _save_frame(self, folder, db, media_id, frame, method, parameters, job_id):
+        if hasattr(frame, 'timestamp_evidence'):
+            parameters = dict(parameters, timestamp_evidence=frame.timestamp_evidence)
         parameters_hash = hashlib.sha256(json.dumps(parameters, sort_keys=True).encode()).hexdigest()
         with db.transaction() as session:
             old = session.scalar(select(ExtractedFrame).where(ExtractedFrame.media_id == media_id, ExtractedFrame.pts_us == frame.pts_us, ExtractedFrame.parameters_hash == parameters_hash))
@@ -171,7 +182,9 @@ class MediaService(MediaLifecycle):
         if opts.get('format','PNG') not in {'PNG','JPEG'} or not 1 <= int(opts.get('quality',90)) <= 100: raise AppError('IMAGE_FORMAT', '图片格式或JPEG质量无效。')
         media = self.get(media_id, root)
         if end > media['video']['duration_us'] + 1000: raise AppError('SAMPLING_RANGE', '抽帧结束时间超出视频时长。')
-        source = FileVideoSource(Path(media['accessible_path']), media['video'])
+        source = self.source_factory(Path(media['accessible_path']), media['video'])
+        if hasattr(source, 'check_cancel'):
+            source.check_cancel = context.check
         ids = []; next_fixed = start; previous = None
         threshold = float(opts.get('sensitivity', 12)) / 100
         with self.store.open(root) as (folder, db, _):
@@ -182,8 +195,8 @@ class MediaService(MediaLifecycle):
                 if frame.time_us >= end: break
                 sample = frame.time_us >= next_fixed
                 if mode == 'smart':
-                    array = np.asarray(frame.image.convert('L').resize((64,64)), dtype=np.float32)
-                    changed = previous is None or float(np.abs(array - previous).mean()/255) >= threshold
+                    array = frame.image.convert('L').resize((64,64))
+                    changed = previous is None or ImageStat.Stat(ImageChops.difference(array, previous)).mean[0]/255 >= threshold
                     sample = changed or sample if opts.get('baseline',True) else changed
                     previous = array
                 if sample:
@@ -197,7 +210,7 @@ class MediaService(MediaLifecycle):
         return {'frames': ids, 'count': len(ids), 'maximum': maximum}
 
     def capture(self, media_id, time_us, root=None):
-        media = self.get(media_id, root); frame = FileVideoSource(Path(media['accessible_path']), media['video']).at(time_us)
+        media = self.get(media_id, root); frame = self.source_factory(Path(media['accessible_path']), media['video']).at(time_us)
         with self.store.open(root) as (folder, db, _):
             return self._save_frame(folder, db, media_id, frame, 'manual', {'mode':'manual','format':'PNG','rotation':frame.rotation}, 'manual')
 
@@ -205,8 +218,6 @@ class MediaService(MediaLifecycle):
         from ivad_app.core.demo_policy import require
         require('reencode')
         """Re-encode displayed frames in [start,end), preserving actual VFR PTS."""
-        import av
-        from fractions import Fraction
         parent=self.get(payload['media_id'],payload['root'])
         if parent['kind']=='CLIP':raise AppError('CLIP_NESTED','本轮不支持片段再次裁剪，请选择原始录像。')
         start=int(payload['start_us']);end=int(payload['end_us'])
@@ -223,28 +234,17 @@ class MediaService(MediaLifecycle):
             final=directory/(media_id+'.mp4');stage=directory/(media_id+'.mp4.partial')
             count=0;first=None;last=None;created=utc_now()
             try:
-                with av.open(str(stage),'w',format='mp4') as output:
-                    stream=None
-                    for frame in FileVideoSource(source,parent['video']).iter_frames(start,end):
-                        context.check()
-                        if frame.time_us>=end:break
-                        if stream is None:
-                            first=frame.time_us;stream=output.add_stream('libx264',rate=Fraction(parent['video']['nominal_fps'] or '25'))
-                            stream.width=frame.image.width;stream.height=frame.image.height
-                            stream.pix_fmt='yuv420p' if stream.width%2==0 and stream.height%2==0 else 'yuv444p';stream.time_base=Fraction(1,1000000);stream.codec_context.time_base=Fraction(1,1000000)
-                            stream.options={'crf':'18','preset':'fast','bf':'0'}
-                        encoded=av.VideoFrame.from_image(frame.image);encoded.pts=frame.time_us-first;encoded.time_base=Fraction(1,1000000)
-                        for packet in stream.encode(encoded):output.mux(packet)
-                        count+=1;last=frame.time_us;context.progress(min(90,(frame.time_us-start)*90/(end-start)))
-                    if count<2:raise AppError('CLIP_SHORT','所选范围不足两帧，无法保存可播放片段。')
-                    for packet in stream.encode():output.mux(packet)
-                context.check();meta=FileVideoSource.probe(stage)
+                if hasattr(self.source_factory, 'encode_clip'):
+                    count,first,last=self.source_factory.encode_clip(self.source_factory(source,parent['video']),stage,start,end,context)
+                else:
+                    count,first,last=self._legacy_encode_clip(context, source, parent, stage, start, end)
+                context.check();meta=self.source_factory.probe(stage)
                 verified=0;verified_last=None
-                for decoded in FileVideoSource(stage,meta).iter_frames():context.check();verified+=1;verified_last=decoded.time_us
+                for decoded in self.source_factory(stage,meta).iter_frames():context.check();verified+=1;verified_last=decoded.time_us
                 if verified!=count or abs(verified_last-(last-first))>1:raise AppError('CLIP_VERIFY','片段解码帧数或PTS校验失败。')
                 if file_hash(source,context.check)!=source_hash:raise AppError('SOURCE_CHANGED','裁剪期间源文件改变，停止提交。')
                 checksum=file_hash(stage,context.check);context.check();stage.rename(final)
-                info={'requested_start_us':start,'requested_end_us':end,'first_source_time_us':first,'last_source_time_us':last,'created_at':created,'source_sha256':source_hash,'frames':count,'encoding':'libx264 CRF18','audio':'omitted','rotation_applied':parent['video']['rotation'],'note':payload.get('note','')}
+                info={'requested_start_us':start,'requested_end_us':end,'first_source_time_us':first,'last_source_time_us':last,'created_at':created,'source_sha256':source_hash,'frames':count,'encoding':'Windows Media Foundation H.264' if hasattr(self.source_factory,'encode_clip') else 'libx264 CRF18','audio':'omitted','rotation_applied':parent['video']['rotation'],'note':payload.get('note','')}
                 context.log('片段编码与解码校验通过，正在提交：'+name)
                 with db.transaction() as session:
                     context.check()
@@ -254,6 +254,27 @@ class MediaService(MediaLifecycle):
             except Exception:
                 stage.unlink(missing_ok=True);final.unlink(missing_ok=True)
                 raise
+
+    def _legacy_encode_clip(self, context, source, parent, stage, start, end):
+        import av
+        from fractions import Fraction
+        count=0;first=last=None
+        with av.open(str(stage),'w',format='mp4') as output:
+            stream=None
+            for frame in self.source_factory(source,parent['video']).iter_frames(start,end):
+                context.check()
+                if frame.time_us>=end:break
+                if stream is None:
+                    first=frame.time_us;stream=output.add_stream('libx264',rate=Fraction(parent['video']['nominal_fps'] or '25'))
+                    stream.width=frame.image.width;stream.height=frame.image.height
+                    stream.pix_fmt='yuv420p' if stream.width%2==0 and stream.height%2==0 else 'yuv444p';stream.time_base=Fraction(1,1000000);stream.codec_context.time_base=Fraction(1,1000000)
+                    stream.options={'crf':'18','preset':'fast','bf':'0'}
+                encoded=av.VideoFrame.from_image(frame.image);encoded.pts=frame.time_us-first;encoded.time_base=Fraction(1,1000000)
+                for packet in stream.encode(encoded):output.mux(packet)
+                count+=1;last=frame.time_us;context.progress(min(90,(frame.time_us-start)*90/(end-start)))
+            if count<2:raise AppError('CLIP_SHORT','所选范围不足两帧，无法保存可播放片段。')
+            for packet in stream.encode():output.mux(packet)
+        return count,first,last
 
     def check(self, root=None):
         issues = []

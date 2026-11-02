@@ -15,6 +15,7 @@ from ivad_app.compute.gpu_lock import gpu_lease,ComputationCancelled
 from ivad_app.compute.rfdetr_contract import parameters,PROTOCOL
 from ivad_app.compute.rfdetr_evaluation import evaluate
 from ivad_app.compute.rfdetr_weights import require_native_weights
+from ivad_app.compute.offline_policy import enforce_offline_worker
 
 class DenyLegacy(importlib.abc.MetaPathFinder):
     def find_spec(self,fullname,path=None,target=None):
@@ -26,6 +27,7 @@ def digest(path):
     with Path(path).open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
 
 def main(path):
+    enforce_offline_worker()
     req=json.loads(Path(path).read_text(encoding='utf8'));work=Path(req['work']);start=time.monotonic();result={};cancel=lambda:(work/'cancel.request').exists()
     os.environ.update(HF_HUB_DISABLE_TELEMETRY='1',DO_NOT_TRACK='1',MPLCONFIGDIR=str(work/'mpl'),HF_HOME=str(work/'hf'))
     try:
