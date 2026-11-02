@@ -1,0 +1,63 @@
+[
+  {
+    "file": "libjpeg-turbo-3.1.0-LICENSE.md",
+    "url": "https://raw.githubusercontent.com/libjpeg-turbo/libjpeg-turbo/3.1.0/LICENSE.md",
+    "sha256": "96f5b328adbb78eeaaec6980d73fd558cb1e4d62560ed615646bc3cf5e532430",
+    "status": "FETCHED-notice-only"
+  },
+  {
+    "file": "libjpeg-turbo-3.1.0-README.ijg",
+    "url": "https://raw.githubusercontent.com/libjpeg-turbo/libjpeg-turbo/3.1.0/README.ijg",
+    "sha256": "75815e3bf6484201a3c3d17a1bbf10f2e8e3237f84df10a2357ea896db2a81d6",
+    "status": "FETCHED-notice-only"
+  },
+  {
+    "file": "FreeType-2.13.3-FTL.TXT",
+    "url": "https://raw.githubusercontent.com/freetype/freetype/VER-2-13-3/docs/FTL.TXT",
+    "sha256": "08c135755dd589039470f1fdbb400daaabaaa50d0b366d19cebff4d22986baa1",
+    "status": "FETCHED-notice-only"
+  },
+  {
+    "file": "LittleCMS-2.17-COPYING",
+    "url": "https://raw.githubusercontent.com/mm2/Little-CMS/lcms2.17/COPYING",
+    "status": "UNVERIFIED",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "file": "libwebp-1.5.0-COPYING",
+    "url": "https://raw.githubusercontent.com/webmproject/libwebp/v1.5.0/COPYING",
+    "sha256": "5aec868f669e384a22372a4e8a1a6cd7d44c64cd451f960ca69cc170d1e13acf",
+    "status": "FETCHED-notice-only"
+  },
+  {
+    "file": "libwebp-1.5.0-PATENTS",
+    "url": "https://raw.githubusercontent.com/webmproject/libwebp/v1.5.0/PATENTS",
+    "sha256": "cc3273e0694ea5896145e0677699b53471b03ea43021ddc50e7923fbb9f5023c",
+    "status": "FETCHED-notice-only"
+  },
+  {
+    "file": "OpenJPEG-2.5.3-LICENSE",
+    "url": "https://raw.githubusercontent.com/uclouvain/openjpeg/v2.5.3/LICENSE",
+    "sha256": "a6af136f3e15038a666b61f376612a07d9a4e48cb7c01adbf3e33b3f14ab49b6",
+    "status": "FETCHED-notice-only"
+  },
+  {
+    "file": "zlib-ng-2.2.4-LICENSE.md",
+    "url": "https://raw.githubusercontent.com/zlib-ng/zlib-ng/2.2.4/LICENSE.md",
+    "sha256": "6c9f0d975b41afaa34d22f55bb8986ce69e5cb7ad327cb2b28820cd425edf5ee",
+    "status": "FETCHED-notice-only"
+  },
+  {
+    "file": "libtiff-4.7.0-LICENSE.md",
+    "url": "https://gitlab.com/libtiff/libtiff/-/raw/v4.7.0/LICENSE.md",
+    "sha256": "0780558a8bfba0af1160ec1ff11ade4f41c0d7deafd6ecfc796b492a788e380d",
+    "status": "FETCHED-notice-only"
+  },
+  {
+    "file": "LittleCMS-2.17-LICENSE",
+    "url": "https://raw.githubusercontent.com/mm2/Little-CMS/lcms2.17/LICENSE",
+    "sha256": "6dbd60437f8ef91d8de1f08ad75882547fd4931bfcc3566a0735f28db1484d31",
+    "status": "FETCHED-notice-only",
+    "resolves": "previous COPYING URL 404"
+  }
+]

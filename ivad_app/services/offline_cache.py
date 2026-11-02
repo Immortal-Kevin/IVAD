@@ -1,12 +1,12 @@
 """Exact cache admission; legacy caches remain readable, never guessed as new runs."""
 import hashlib,json
 from pathlib import Path
-import av
 from ivad_app.core.contracts import AppError
 from ivad_app.storage.project_store import file_hash
 
 class OfflineCache:
     def cache_identity(self,payload):
+        import av  # Historical YOLO cache protocol only, never RF composition.
         root=payload['root'];media=self.s.media.get(payload['media_id'],root);_,model=self.s.models.verify(payload['model_id'],root)
         python=Path(self.s.settings.preferences().get('worker_python') or self.s.root/'.venv-nvidia/Scripts/python.exe');environment={}
         for name in ['torch','torchvision','ultralytics','PIL']:

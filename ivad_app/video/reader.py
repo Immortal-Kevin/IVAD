@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from fractions import Fraction
 from itertools import chain
 from pathlib import Path
-import av
 from PIL import Image
 from ivad_app.core.contracts import AppError
 from ivad_app.video.timestamps import relative_time_us
@@ -19,6 +18,7 @@ class VideoFrame:
 def micros(value, base): return int(round(Fraction(value) * base * 1000000))
 
 def open_local_video(path):
+    import av
     from ivad_app.core.demo_policy import enabled
     # Python socket hooks cannot see native FFmpeg protocol handlers. Restrict
     # nested playlist/media references too, rather than only checking the path.
@@ -41,6 +41,7 @@ class FileVideoSource:
 
     @staticmethod
     def probe(path: Path) -> dict:
+        import av
         try:
             with open_local_video(path) as container:
                 if not container.streams.video: raise AppError('NO_VIDEO', '文件没有可解码的视频轨道。')

@@ -3,8 +3,6 @@ import csv,json,shutil,subprocess,os,queue,threading,time,math
 from pathlib import Path
 from uuid import uuid4
 from fractions import Fraction
-import av
-from PIL import ImageDraw,ImageFont
 from ivad_app.core.contracts import AppError,utc_now
 from ivad_app.storage.project_store import atomic_json,file_hash
 from ivad_app.video.reader import FileVideoSource
@@ -41,6 +39,8 @@ class OfflineDemoService(OfflineCache):
         from ivad_app.services.backend_policy import MIGRATION_PENDING
         raise AppError('DEMO_MIGRATION_PENDING',MIGRATION_PENDING)
     def legacy_run(self,context,payload):
+        import av
+        from PIL import ImageDraw,ImageFont
         from ivad_app.services.backend_policy import MIGRATION_PENDING
         raise AppError('DEMO_MIGRATION_PENDING',MIGRATION_PENDING)
         # Unreachable historical implementation retained for provenance only.

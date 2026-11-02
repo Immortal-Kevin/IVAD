@@ -1,0 +1,7 @@
+# Candidate media SERVICE dependencies only. Not a complete WPF/RF product.
+# No Qt, av, OpenCV or NumPy is needed by the native-media service path.
+# PACKAGING_FREEZE=TRUE / DISTRIBUTION_STATUS=BLOCKED
+SQLAlchemy==2.0.40
+alembic==1.15.2
+Pillow==11.2.1
+PyYAML==6.0.2
