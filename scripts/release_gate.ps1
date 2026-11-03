@@ -1,5 +1,7 @@
-# SPDX-License-Identifier: Apache-2.0
+﻿# SPDX-License-Identifier: Apache-2.0
+param([switch]$Integrated,[string]$OutputDirectory='build/integrated-release-20261103',[string]$EvidenceDirectory='integration/20261103/gate')
 $ErrorActionPreference='Stop'
+if($Integrated){& (Join-Path $PSScriptRoot 'integration_gate.ps1') -OutputDirectory $OutputDirectory -EvidenceDirectory $EvidenceDirectory;exit $LASTEXITCODE}
 $root=Split-Path -Parent $PSScriptRoot
 Push-Location $root
 try {
