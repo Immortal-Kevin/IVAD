@@ -1,6 +1,6 @@
-// SPDX-License-Identifier: Apache-2.0
+﻿// SPDX-License-Identifier: Apache-2.0
 using System.Reflection;
 [assembly: AssemblyTitle("IVAD Intel Annotator H1-H5 Integrated")]
-[assembly: AssemblyVersion("1.1.5.0")]
-[assembly: AssemblyFileVersion("1.1.5.0")]
-[assembly: AssemblyInformationalVersion("1.1.5-H1H5-20261103")]
+[assembly: AssemblyVersion("1.1.5.1")]
+[assembly: AssemblyFileVersion("1.1.5.1")]
+[assembly: AssemblyInformationalVersion("1.1.5.1-BatchNormal-20261103")]

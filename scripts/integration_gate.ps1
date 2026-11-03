@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+﻿# SPDX-License-Identifier: Apache-2.0
 param([string]$OutputDirectory='build/integrated-release-20261103',[string]$EvidenceDirectory='integration/20261103/gate')
 $ErrorActionPreference='Stop'
 $root=Split-Path -Parent $PSScriptRoot
@@ -22,6 +22,8 @@ if(Test-Path -LiteralPath $exe){
  Run-OwnTest 'WPF-regressions' @('--ui-check',('"'+$out+'\wpf"'),('"'+$last+'\full.ids.zip"'))
  Run-OwnTest 'H1-H3-transactions' @('--hotfix-check',('"'+$out+'\hotfix"'))
  Run-OwnTest 'H4-H5-selection-queue' @('--h45-check',('"'+$out+'\h45"'))
+ Run-OwnTest 'batch-normal-925-regressions' @('--batch-normal-check',('"'+$out+'\batch-normal"'))
+ Run-OwnTest 'batch-normal-new-process-reopen' @('--batch-normal-reopen',('"'+$out+'\batch-normal"'))
  Run-OwnTest 'deployment-sequence' @('--deployment-check',('"'+$out+'\deployment"'))
  Run-OwnTest 'deployment-new-process-reopen' @('--deployment-reopen',('"'+$out+'\deployment"'))
  $realVideo=Get-ChildItem -LiteralPath (Join-Path $root 'projects') -File -Filter '*.mp4' | Select-Object -First 1

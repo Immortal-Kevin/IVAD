@@ -58,7 +58,7 @@ namespace Ivad.Annotator {
    videos.SelectionChanged+=(s,e)=>{if(!refreshingSources){StopPreview();UpdateVideoFrames();}};
    ConfigureViewport();imageHost.SizeChanged+=(s,e)=>Redraw();canvas.MouseLeftButtonDown+=Down;canvas.MouseLeftButtonUp+=Up;canvas.MouseMove+=Move;canvas.Focusable=true;canvas.KeyDown+=(s,e)=>{if(e.Key==Key.Delete){Guard(DeleteSelected);e.Handled=true;}};
    Closing+=(s,e)=>{if(busy){e.Cancel=true;closeWhenIdle=true;cancellation.Cancel();status.Text="正在取消任务，清理后关闭窗口…";}else if(!DiscardDraft()){e.Cancel=true;closeWhenIdle=false;}};
-   ticker=new System.Windows.Threading.DispatcherTimer{Interval=TimeSpan.FromMilliseconds(200)};ticker.Tick+=(s,e)=>{if(busy&&progressText!=null&&!cancellation.IsCancellationRequested)status.Text=progressText;UpdateExtraction();};ticker.Start();Closed+=(s,e)=>{ticker.Stop();player.Close();};
+   ticker=new System.Windows.Threading.DispatcherTimer{Interval=TimeSpan.FromMilliseconds(200)};ticker.Tick+=(s,e)=>{if(busy&&progressText!=null&&!cancellation.IsCancellationRequested)status.Text=progressText;UpdateExtraction();UpdateBatchProgress();};ticker.Start();Closed+=(s,e)=>{ticker.Stop();player.Close();};
   }
   void BuildProjectPage(){
    var form=Form("项目主目录",()=>{

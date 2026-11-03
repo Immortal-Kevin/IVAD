@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0
+﻿// SPDX-License-Identifier: Apache-2.0
 using System;
 using System.IO;
 using System.Linq;
@@ -39,7 +39,7 @@ namespace Ivad.Annotator {
    frameStateFilter.ItemsSource=new[]{"全部状态","待标注 / 未确认","已确认","已删除"};frameStateFilter.SelectedIndex=0;
    Name(frameVideoFilter,"帧视频筛选");Name(frameStateFilter,"帧状态筛选");panel.Children.Add(frameVideoFilter);panel.Children.Add(frameStateFilter);
    frameVideoFilter.SelectionChanged+=(s,e)=>ChangeFrameFilter();frameStateFilter.SelectionChanged+=(s,e)=>ChangeFrameFilter();
-   var row=new System.Windows.Controls.Primitives.UniformGrid{Columns=2};AddTool(row,"批量标记正常",BatchNormal);AddTool(row,"撤销最近批次",UndoNormalBatch);AddTool(row,"批量删除抽帧",()=>QueueChange(true));AddTool(row,"恢复选中帧",()=>QueueChange(false));foreach(Button b in row.Children){b.Padding=new Thickness(2);b.Margin=new Thickness(1);b.Content=new TextBlock{Text=b.Content.ToString(),TextWrapping=TextWrapping.Wrap,TextAlignment=TextAlignment.Center,FontSize=11};}panel.Children.Add(row);panel.Children.Add(selectionCount);frames.RangeChanged+=()=>selectionCount.Text="已选择 "+frames.Ids.Count+" 帧";
+   var row=new System.Windows.Controls.Primitives.UniformGrid{Columns=2};AddTool(row,"批量标记正常",BatchNormal);AddTool(row,"撤销最近批次",UndoNormalBatch);AddTool(row,"批量删除抽帧",()=>QueueChange(true));AddTool(row,"恢复选中帧",()=>QueueChange(false));foreach(Button b in row.Children){b.Padding=new Thickness(2);b.Margin=new Thickness(1);b.Content=new TextBlock{Text=b.Content.ToString(),TextWrapping=TextWrapping.Wrap,TextAlignment=TextAlignment.Center,FontSize=11};}panel.Children.Add(row);panel.Children.Add(selectionCount);panel.Children.Add(batchProgress);panel.Children.Add(batchFeedback);Name(batchFeedback,"批量正常处理结果");Name(batchProgress,"批量正常操作进度");frames.RangeChanged+=()=>selectionCount.Text="已选择 "+frames.Ids.Count+" 帧";
    panel.Children.Add(new TextBlock{Text="Ctrl 多选 · Shift 范围选择",FontSize=11,TextWrapping=TextWrapping.Wrap});
   }
   int acceptedVideo=0,acceptedState=0;
@@ -66,10 +66,46 @@ namespace Ivad.Annotator {
    if(!FrameMatches(f)){refreshing=true;visibleFrames.Remove(frameChoices[id]);refreshing=false;}
    UpdateFrameDetails();
   }
+  readonly TextBlock batchFeedback=new TextBlock{TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,4,0,6),FontSize=12};
+  readonly ProgressBar batchProgress=new ProgressBar{Height=6,Minimum=0,Maximum=1,Visibility=Visibility.Collapsed};
+  volatile string batchProgressSnapshot;
+  BatchNormalResult lastBatchResult;
+  static string BatchCounts(BatchNormalResult r){return "选中"+r.Selected+"帧；成功标记"+r.Success+"帧；跳过"+r.Skipped+"帧；失败"+r.Failed+"帧。";}
+  void UpdateBatchProgress(){var snapshot=batchProgressSnapshot;if(snapshot==null)return;var parts=snapshot.Split('|');int current,total;if(parts.Length!=4||!Int32.TryParse(parts[2],out current)||!Int32.TryParse(parts[3],out total))return;batchProgress.Maximum=Math.Max(1,total);batchProgress.Value=current;if(busy)batchFeedback.Text=parts[1]+"："+current+" / "+total;}
   void BatchNormal(){
-   Require();if(polygon.Count>0||start.HasValue||reviewEdited){status.Text="请先保存当前草稿，批次尚未执行。";return;}
-   string[] ids=frames.SelectionIds();string a=actor.Text;
-   Run("批量标记正常",()=>store.MarkNormalBatch(ids,a),undo=>{batchUndo=undo;Refresh();extractionSummary="整批已提交，可撤销最近批次。";});
+   if(busy)return;Require();
+   // Capture the exact UUID set before focus, scrolling, or asynchronous work can change it.
+   string[] ids=frames.SelectionIds().Distinct().ToArray();string who=actor.Text;
+   var result=new BatchNormalResult{Selected=ids.Length};lastBatchResult=result;
+   string draft=frame!=null&&(polygon.Count>0||start.HasValue||reviewEdited)?frame.id:null;
+   batchProgressSnapshot=null;batchProgress.Visibility=Visibility.Visible;batchProgress.Maximum=Math.Max(1,ids.Length);batchProgress.Value=0;
+   if(ids.Length==0){batchFeedback.Text=BatchCounts(result)+"请先选择图片帧。";status.Text=batchFeedback.Text;return;}
+   batchFeedback.Text="正在检查选中"+ids.Length+"帧；尚未提交。";
+   Run("批量标记正常",()=>store.MarkNormalBatchEligible(ids,who,result,draft),r=>{
+    batchProgressSnapshot=null;batchProgress.Value=batchProgress.Maximum;
+    if(r.Success>0){batchUndo=r.Undo;RefreshBatchRows(r,draft);}
+    batchFeedback.Text=BatchCounts(r)+(r.SkipReasons.Count==0?"":"\n跳过原因："+String.Join("；",r.SkipReasons.Select(p=>p.Key+" "+p.Value+"帧")));
+    extractionSummary=batchFeedback.Text;Log("BATCH_NORMAL selected="+r.Selected+" success="+r.Success+" skipped="+r.Skipped+" failed="+r.Failed);
+   },e=>{
+    batchProgressSnapshot=null;batchProgress.Value=0;result.Success=0;result.Failed=result.Selected-result.Skipped;
+    string reason=e is UnauthorizedAccessException?"没有项目写入权限，请检查项目目录。":e is OperationCanceledException?"操作已取消，未提交更改已回滚。":e is IOException?"项目写入失败或存在占用／冲突；整批合格帧未提交。详情："+e.Message:e.Message;
+    batchFeedback.Text=BatchCounts(result)+"\n原因："+reason;status.Text=batchFeedback.Text;Log("BATCH_NORMAL_ROLLBACK "+BatchCounts(result)+" "+e);
+   });
+  }
+  void RefreshBatchRows(BatchNormalResult result,string draft){
+   var changed=new HashSet<string>(result.SuccessIds);
+   foreach(var r in store.Data.entities.Where(e=>e.kind=="Review"&&changed.Contains(e.Text("frame_id"))))latestReviews[r.Text("frame_id")]=r;
+   foreach(string id in changed)frameChoices[id].Name=FrameLabel(store.Find(id));
+   confirmedCount=latestReviews.Values.Count(e=>e.Text("status")=="confirmed");
+   // Update each changed row once; only a filtering change replaces the collection once per batch.
+   if(visibleFrames.Any(c=>changed.Contains(c.Id)&&!FrameMatches(store.Find(c.Id)))){
+    string current=frame==null?null:frame.id;refreshing=true;
+    try{visibleFrames=new ObservableCollection<Choice>(visibleFrames.Where(c=>FrameMatches(store.Find(c.Id))));frames.ItemsSource=visibleFrames;frames.SelectedItem=visibleFrames.FirstOrDefault(c=>c.Id==current);if(frames.SelectedItem==null&&visibleFrames.Count>0)frames.SelectedIndex=0;}finally{refreshing=false;}
+    if(frames.SelectedItem==null)ClearFrame();else if(frame==null||((Choice)frames.SelectedItem).Id!=frame.id){frame=store.Find(((Choice)frames.SelectedItem).Id);selected=null;ShowFrame();}
+   }
+   visibleConfirmedCount=visibleFrames.Count(c=>LatestReview(c.Id)!=null&&LatestReview(c.Id).Text("status")=="confirmed");
+   if(frame!=null&&frame.id!=draft&&changed.Contains(frame.id))ShowFrame();
+   UpdateFrameDetails();UpdateVideoFrames();
   }
   void UndoNormalBatch(){Require();if(polygon.Count>0||start.HasValue||reviewEdited){status.Text="请先保存当前草稿。";return;}var undo=batchUndo;string a=actor.Text;Run("撤销最近批次",()=>{store.UndoBatch(undo,a);return store;},s=>{batchUndo=null;Refresh();});}
  }

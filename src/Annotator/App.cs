@@ -72,11 +72,11 @@ namespace Ivad.Annotator {
   void Guard(Action action){if(busy)return;try{action();}catch(Exception e){Error(e);}}
   void Error(Exception e){status.Text="操作失败："+e.Message;Log(e.ToString());}
   static void Log(string text){AppDiagnostics.Write("annotator.log",text);}
-  async void Run<T>(string title,Func<T> work,Action<T> done){
+  async void Run<T>(string title,Func<T> work,Action<T> done,Action<Exception> failed=null){
    if(busy)return;StopPreview();busy=true;workspace.IsEnabled=navigation.IsEnabled=false;tabs.IsEnabled=frames.IsEnabled=canvas.IsEnabled=tools.IsEnabled=false;cancel.IsEnabled=true;cancellation=new CancellationTokenSource();var token=cancellation.Token;progressText=title;extractionSummary=null;status.Text=title;Log("START "+title);
-   try{T result=await Task.Run(()=>{Work.Configure(()=>token.IsCancellationRequested,message=>{if(message.StartsWith("IVAD_PROGRESS|")){extractionProgress=message.Substring(14);progressText=title+"："+message.Split('|')[1];return;}if((DateTime.UtcNow-lastProgress).TotalMilliseconds>=150){progressText=title+"："+message;lastProgress=DateTime.UtcNow;}});try{return work();}finally{Work.Configure(null,null);}});busy=false;done(result);status.Text=title+"完成。"+(extractionSummary??"已提交的数据保存在本地。");Log("PASS "+title);}
-   catch(OperationCanceledException e){if(extractionJob)extractionProgress="已取消；源视频与已提交数据保留|0|-1";status.Text=e.Message;Log("CANCEL "+title);/* Transaction methods have already rolled back; retain the active draft and selection. */}
-   catch(Exception e){if(extractionJob)extractionProgress="失败；可重试，详见任务状态|0|-1";Error(e);/* Keep the session and unsaved draft on failure; a conflict requires an explicit reopen. */}
+   try{T result=await Task.Run(()=>{Work.Configure(()=>token.IsCancellationRequested,message=>{if(message.StartsWith("IVAD_BATCH|")){batchProgressSnapshot=message;return;}if(message.StartsWith("IVAD_PROGRESS|")){extractionProgress=message.Substring(14);progressText=title+"："+message.Split('|')[1];return;}if((DateTime.UtcNow-lastProgress).TotalMilliseconds>=150){progressText=title+"："+message;lastProgress=DateTime.UtcNow;}});try{return work();}finally{Work.Configure(null,null);}});busy=false;done(result);status.Text=title+"完成。"+(extractionSummary??"已提交的数据保存在本地。");Log("PASS "+title);}
+   catch(OperationCanceledException e){if(extractionJob)extractionProgress="已取消；源视频与已提交数据保留|0|-1";status.Text=e.Message;Log("CANCEL "+title);if(failed!=null)failed(e);/* Transaction methods have already rolled back; retain the active draft and selection. */}
+   catch(Exception e){if(extractionJob)extractionProgress="失败；可重试，详见任务状态|0|-1";Error(e);if(failed!=null)failed(e);/* Keep the session and unsaved draft on failure; a conflict requires an explicit reopen. */}
    finally{busy=false;extractionJob=false;UpdateExtraction();workspace.IsEnabled=navigation.IsEnabled=true;tabs.IsEnabled=frames.IsEnabled=canvas.IsEnabled=tools.IsEnabled=true;cancel.IsEnabled=false;cancellation.Dispose();cancellation=null;if(closeWhenIdle)Close();}
   }
   void CommitGeometry(Func<Entity> edit){
@@ -135,6 +135,9 @@ namespace Ivad.Annotator {
    if(args.Length==4&&args[0]=="--hotfix-child")return MainWindow.HotfixChild(args[1],args[2],args[3]);
    if(args.Length==3&&args[0]=="--deployment-crash")return DeploymentChecks.CrashWriter(args[1],args[2]);
    var app=new Application();var window=new MainWindow();
+   if(args.Length==2&&args[0]=="--batch-normal-check"){int code=window.BatchNormalChecks(args[1],false);app.Shutdown(code);return code;}
+   if(args.Length==2&&args[0]=="--batch-normal-reopen"){int code=window.BatchNormalChecks(args[1],true);app.Shutdown(code);return code;}
+   if(args.Length==2&&args[0]=="--batch-normal-ui")window.OpenBatchNormalFixture(args[1]);
    if(args.Length==2&&args[0]=="--open-project")window.OpenProjectPath(args[1]);
    if(args.Length==3&&args[0]=="--integration-check"){int code=window.IntegrationChecks(args[1],args[2],false);app.Shutdown(code);return code;}
    if(args.Length==2&&args[0]=="--integration-reopen"){int code=window.IntegrationChecks(args[1],null,true);app.Shutdown(code);return code;}

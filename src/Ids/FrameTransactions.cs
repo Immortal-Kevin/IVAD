@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0
+﻿// SPDX-License-Identifier: Apache-2.0
 using System;
 using System.IO;
 using System.Linq;
@@ -6,6 +6,12 @@ using System.Text;
 using System.Collections.Generic;
 using System.Diagnostics;
 namespace Ivad.Ids {
+ public sealed class BatchNormalResult {
+  public int Selected,Success,Skipped,Failed;
+  public string[] SuccessIds=new string[0];
+  public Dictionary<string,int> SkipReasons=new Dictionary<string,int>();
+  public BatchUndo Undo;
+ }
  public sealed class BatchUndo {
   internal string fingerprint;
   internal List<Entity> before;
@@ -75,8 +81,34 @@ namespace Ivad.Ids {
    foreach(var f in selected){var a=assetIndex[f.Text("asset_path")];var info=new FileInfo(Rules.SafePath(Root,a.path));if(!info.Exists||info.Length!=a.bytes)throw new InvalidDataException("批次图片缺失或尺寸已变化");}
    // No image decode or image SHA in a metadata-only batch. Exports always verify every asset.
    var before=selected.Select(CloneEntity).ToList();int n=Data.entities.Count;
-   try{foreach(var f in selected)ApplyReview(f,"normal","confirmed",actor);var added=Data.entities.Skip(n).ToList();CommitFrames(before,added);return new BatchUndo{fingerprint=expected,before=before,appended=added.Select(e=>e.id).ToList(),revisions=selected.ToDictionary(e=>e.id,e=>e.revision)};}
+   try{int prepared=0;foreach(var f in selected){ApplyReview(f,"normal","confirmed",actor);prepared++;if(prepared%32==0||prepared==selected.Count)Work.Report("IVAD_BATCH|正在准备审核记录；尚未提交|"+prepared+"|"+selected.Count);}Work.Report("IVAD_BATCH|正在原子提交；尚未确认保存|"+selected.Count+"|"+selected.Count);var added=Data.entities.Skip(n).ToList();CommitFrames(before,added);return new BatchUndo{fingerprint=expected,before=before,appended=added.Select(e=>e.id).ToList(),revisions=selected.ToDictionary(e=>e.id,e=>e.revision)};}
    catch{foreach(var old in before){var f=Find(old.id);f.data=old.data;f.revision=old.revision;}RemoveTail(n);throw;}
+  }
+  // The UI batches eligible targets without relaxing the strict atomic transaction used below.
+  // The result is in-memory only: IDS schemas, review UUIDs and revision persistence are unchanged.
+  internal BatchNormalResult MarkNormalBatchEligible(IEnumerable<string> ids,string actor,BatchNormalResult result,string draftFrame=null){
+   var targets=ids.Distinct().ToArray();result.Selected=targets.Length;
+   try{
+    if(String.IsNullOrWhiteSpace(actor))throw new InvalidDataException("审核人不能为空");
+    var annotated=new HashSet<string>(Data.entities.Where(e=>e.kind=="Annotation"&&e.Text("deleted")!="True").Select(e=>e.Text("frame_id")));
+    var reviews=Data.entities.Where(e=>e.kind=="Review").GroupBy(e=>e.Text("frame_id")).ToDictionary(g=>g.Key,g=>g.Last());
+    var eligible=new List<string>();int checkedCount=0;
+    Work.Report("IVAD_BATCH|正在检查选择；尚未提交|0|"+targets.Length);
+    foreach(string id in targets){
+     Work.Check();var f=Find(id);Entity r;reviews.TryGetValue(id,out r);string reason=null;
+     if(f.kind!="Frame")throw new InvalidDataException("多选集合包含非图片帧，未提交");
+     if(id==draftFrame)reason="当前帧有未保存草稿";
+     else if(f.Text("queue_deleted")=="True")reason="已软删除";
+     else if(annotated.Contains(id))reason="存在异常框或多边形";
+     else if(f.Text("locked")=="True"||f.Text("review_locked")=="True"||(r!=null&&(r.Text("status")=="confirmed"||r.Text("locked")=="True")))reason="已确认或审核锁定";
+     else if(f.Text("state")!="unannotated")reason="不是未标注状态";
+     else if(f.revision==Int32.MaxValue)reason="修订号达到上限";
+     if(reason==null)eligible.Add(id);else{result.Skipped++;if(!result.SkipReasons.ContainsKey(reason))result.SkipReasons[reason]=0;result.SkipReasons[reason]++;}
+     checkedCount++;if(checkedCount%32==0||checkedCount==targets.Length)Work.Report("IVAD_BATCH|正在检查选择；尚未提交|"+checkedCount+"|"+targets.Length);
+    }
+    if(eligible.Count>0){result.Undo=MarkNormalBatch(eligible,actor);result.SuccessIds=eligible.ToArray();result.Success=eligible.Count;}
+    return result;
+   }catch{result.Success=0;result.Failed=result.Selected-result.Skipped;throw;}
   }
   internal void UndoBatch(BatchUndo undo,string actor){
    if(undo==null||undo.fingerprint!=expected)throw new IOException("批次之后已有编辑，拒绝撤销以保护后续数据");
