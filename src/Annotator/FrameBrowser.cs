@@ -86,11 +86,15 @@ namespace Ivad.Annotator {
     if(r.Success>0){batchUndo=r.Undo;RefreshBatchRows(r,draft);}
     batchFeedback.Text=BatchCounts(r)+(r.SkipReasons.Count==0?"":"\n跳过原因："+String.Join("；",r.SkipReasons.Select(p=>p.Key+" "+p.Value+"帧")));
     extractionSummary=batchFeedback.Text;Log("BATCH_NORMAL selected="+r.Selected+" success="+r.Success+" skipped="+r.Skipped+" failed="+r.Failed);
-   },e=>{
-    batchProgressSnapshot=null;batchProgress.Value=0;result.Success=0;result.Failed=result.Selected-result.Skipped;
+   },e=>BatchNormalFailed(result,e));
+  }
+  void BatchNormalFailed(BatchNormalResult result,Exception e){
+    batchProgressSnapshot=null;
+    // A post-commit UI failure must not be reported as a database rollback.
+    if(result.Success>0){batchProgress.Value=batchProgress.Maximum;batchFeedback.Text=BatchCounts(result)+"\n数据已提交，但列表刷新失败，请重新打开项目。原因："+e.Message;status.Text=batchFeedback.Text;Log("BATCH_NORMAL_COMMITTED_UI_ERROR "+BatchCounts(result)+" "+e);return;}
+    batchProgress.Value=0;result.Failed=result.Selected-result.Skipped;
     string reason=e is UnauthorizedAccessException?"没有项目写入权限，请检查项目目录。":e is OperationCanceledException?"操作已取消，未提交更改已回滚。":e is IOException?"项目写入失败或存在占用／冲突；整批合格帧未提交。详情："+e.Message:e.Message;
     batchFeedback.Text=BatchCounts(result)+"\n原因："+reason;status.Text=batchFeedback.Text;Log("BATCH_NORMAL_ROLLBACK "+BatchCounts(result)+" "+e);
-   });
   }
   void RefreshBatchRows(BatchNormalResult result,string draft){
    var changed=new HashSet<string>(result.SuccessIds);
