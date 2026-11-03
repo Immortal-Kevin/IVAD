@@ -28,10 +28,10 @@ namespace Ivad.Ids {
   public string target_sha256 {get;set;} public List<string> included_assets {get;set;}
  }
  public static class Codec {
-  public static JavaScriptSerializer Serializer(){return new JavaScriptSerializer{MaxJsonLength=16*1024*1024,RecursionLimit=100};}
+  public static JavaScriptSerializer Serializer(){var s=new JavaScriptSerializer{MaxJsonLength=16*1024*1024,RecursionLimit=100};s.RegisterConverters(new[]{new StableIdsConverter()});return s;}
   public static string Json(object o){return Serializer().Serialize(o);}
   public static T Parse<T>(string s){return Serializer().Deserialize<T>(s);}
-  public static string Hash(byte[] b){using(var h=SHA256.Create())return BitConverter.ToString(h.ComputeHash(b)).Replace("-","").ToLowerInvariant();}
+  public static string Hash(byte[] b){var watch=System.Diagnostics.Stopwatch.StartNew();using(var h=SHA256.Create()){string result=BitConverter.ToString(h.ComputeHash(b)).Replace("-","").ToLowerInvariant();System.Threading.Interlocked.Increment(ref Work.MemoryHashCalls);System.Threading.Interlocked.Add(ref Work.MemoryHashBytes,b.Length);System.Threading.Interlocked.Add(ref Work.MemoryHashTicks,watch.ElapsedTicks);return result;}}
   public static string HashFile(string p){return Work.HashFile(p);}
   public static string Fingerprint(Document d){return Hash(Encoding.UTF8.GetBytes(Json(d)));}
   public static Document Clone(Document d){return Parse<Document>(Json(d));}
@@ -93,19 +93,19 @@ namespace Ivad.Ids {
   }
   public static void VerifyAssets(Document d,string root){foreach(var a in d.assets){string p=SafePath(root,a.path);Need(File.Exists(p)&&new FileInfo(p).Length==a.bytes&&Codec.HashFile(p)==a.sha256,"资产哈希不符: "+a.path);}}
  }
- public sealed class Store {
+ public sealed partial class Store {
   public string Root {get;private set;} public Document Data {get;private set;}
   string expected;
   readonly List<string> createdAssets=new List<string>();
   public string Manifest {get{return Path.Combine(Root,"project.ids.json");}}
-  public Store(string root){Root=Path.GetFullPath(root);if(File.Exists(Manifest)){byte[] bytes=File.ReadAllBytes(Manifest);Data=Codec.Parse<Document>(Encoding.UTF8.GetString(bytes).TrimStart('\uFEFF'));Rules.Validate(Data);expected=Codec.Hash(bytes);}}
+  public Store(string root){Root=Path.GetFullPath(root);if(File.Exists(Manifest)){byte[] bytes=File.ReadAllBytes(Manifest);Data=Codec.Parse<Document>(Encoding.UTF8.GetString(bytes).TrimStart('\uFEFF'));Rules.Validate(Data);expected=Codec.Hash(bytes);InitializeFast(Encoding.UTF8.GetString(bytes).TrimStart('\uFEFF'));}}
   public static Store Create(string root,string name,string site){
    var s=new Store(root);if(s.Data!=null)throw new IOException("目标已有项目");
    Directory.CreateDirectory(s.Root);s.Data=new Document();
    var a=s.Add("Site",new Dictionary<string,object>{{"name",site}});var p=s.Add("Project",new Dictionary<string,object>{{"name",name},{"site_id",a.id}});s.Data.project_id=p.id;s.Save();return s;
   }
-  public Entity Add(string kind,Dictionary<string,object> data){var e=new Entity{kind=kind,data=data};Data.entities.Add(e);return e;}
-  public Entity Find(string id){return Data.entities.Single(e=>e.id==id);}
+  public Entity Add(string kind,Dictionary<string,object> data){var e=new Entity{kind=kind,data=data};Data.entities.Add(e);if(entityIndex!=null)entityIndex[e.id]=e;return e;}
+  public Entity Find(string id){Entity e;if(entityIndex!=null&&entityIndex.TryGetValue(id,out e))return e;return Data.entities.Single(x=>x.id==id);}
   public void Revise(Entity e,string actor){Data.entities.Add(new Entity{kind="Revision",data=new Dictionary<string,object>{{"entity_id",e.id},{"entity_revision",e.revision},{"actor",actor},{"utc",DateTime.UtcNow.ToString("o")},{"snapshot",Codec.Json(e.data)}}});}
   public Asset CopyAsset(string source){
    string hash=Codec.HashFile(source),ext=Path.GetExtension(source).ToLowerInvariant();
@@ -131,11 +131,11 @@ namespace Ivad.Ids {
     string temp=Manifest+"."+Guid.NewGuid().ToString("N")+".tmp";
     try{File.WriteAllText(temp,Codec.Json(Data),new UTF8Encoding(false));string nextHash=Codec.HashFile(temp);Work.Check();
      if(File.Exists(Manifest))File.Replace(temp,Manifest,Manifest+".backup",true);else File.Move(temp,Manifest);
-     expected=nextHash;createdAssets.Clear();
+     expected=nextHash;createdAssets.Clear();InitializeFast(File.ReadAllText(Manifest));
     }catch{Data.sequence=seq;if(File.Exists(temp))File.Delete(temp);throw;}
    }
   }
-  public void Reload(){var s=new Store(Root);Data=s.Data;expected=s.expected;}
+  public void Reload(){var s=new Store(Root);Data=s.Data;expected=s.expected;InitializeFast(s.committedJson);}
   public void AbortAssets(){CleanupOwned(Root,createdAssets);createdAssets.Clear();}
   public static void CleanupOwned(string root,IEnumerable<string> files){
    // Only files created by this Store may be removed, and never if another committed document references them.
@@ -165,7 +165,7 @@ namespace Ivad.Ids {
    Rules.Validate(store.Data);Rules.VerifyAssets(store.Data,store.Root);
    if(baseline!=null){Rules.Validate(baseline);if(baseline.project_id!=store.Data.project_id)throw new InvalidDataException("增量基线项目不同");}
    if(File.Exists(output))throw new IOException("导出包不可覆盖，请使用新文件名");
-   var current=Codec.Clone(store.Data);var included=current.assets.Where(a=>baseline==null||!baseline.assets.Any(b=>b.path==a.path&&b.sha256==a.sha256)).ToList();
+   if(baseline!=null)baseline=QueueProjection.Active(baseline);var current=QueueProjection.Active(store.Data);var included=current.assets.Where(a=>baseline==null||!baseline.assets.Any(b=>b.path==a.path&&b.sha256==a.sha256)).ToList();
    var env=new Envelope{format="ids-package/1.0",mode=baseline==null?"full":"incremental",base_sha256=baseline==null?null:Codec.Fingerprint(baseline),target_sha256=Codec.Fingerprint(current),included_assets=included.Select(a=>a.path).ToList()};
    string temp=output+"."+Guid.NewGuid().ToString("N")+".tmp";
    try{using(var fs=new FileStream(temp,FileMode.CreateNew))using(var z=new ZipArchive(fs,ZipArchiveMode.Create)){

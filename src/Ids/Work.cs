@@ -6,6 +6,8 @@ using System.Security.Cryptography;
 namespace Ivad.Ids {
  // The context is installed on the worker thread, never on the WPF dispatcher.
  public static class Work {
+  public static long HashCalls,HashBytes,HashTicks,MemoryHashCalls,MemoryHashBytes,MemoryHashTicks;
+  public static void ResetMetrics(){HashCalls=HashBytes=HashTicks=MemoryHashCalls=MemoryHashBytes=MemoryHashTicks=0;}
   [ThreadStatic] static Func<bool> cancelled;
   [ThreadStatic] static Action<string> progress;
   [ThreadStatic] static Action<string> created;
@@ -21,10 +23,11 @@ namespace Ivad.Ids {
    }
   }
   public static string HashFile(string path){
+   var watch=System.Diagnostics.Stopwatch.StartNew();System.Threading.Interlocked.Increment(ref HashCalls);
    using(var input=File.OpenRead(path))using(var hash=SHA256.Create()){
     byte[] buffer=new byte[1024*1024];int n;long done=0;
     while(true){Check();n=input.Read(buffer,0,buffer.Length);if(n==0)break;hash.TransformBlock(buffer,0,n,null,0);done+=n;Report("SHA256 "+Path.GetFileName(path)+" "+done+" / "+input.Length+" bytes");}
-    hash.TransformFinalBlock(new byte[0],0,0);return BitConverter.ToString(hash.Hash).Replace("-","").ToLowerInvariant();
+    hash.TransformFinalBlock(new byte[0],0,0);System.Threading.Interlocked.Add(ref HashBytes,done);System.Threading.Interlocked.Add(ref HashTicks,watch.ElapsedTicks);return BitConverter.ToString(hash.Hash).Replace("-","").ToLowerInvariant();
    }
   }
  }
