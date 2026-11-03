@@ -1,0 +1,8 @@
+.venvs/
+artifacts/
+__pycache__/
+*.pyc
+build/
+user_data/
+governance/evidence/
+*.ids.zip
