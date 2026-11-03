@@ -22,7 +22,7 @@ $sources += (Join-Path $root 'src/Annotator/Interface.cs'),(Join-Path $root 'src
 $sources += (Join-Path $root 'src/Annotator/HotfixChecks.cs'),(Join-Path $root 'src/Annotator/HotfixAcceptance.cs'),(Join-Path $root 'src/Annotator/FrameBrowser.cs'),(Join-Path $root 'src/Ids/GeometryTransactions.cs'),(Join-Path $root 'src/Ids/FrameTransactions.cs')
 $sources += (Join-Path $root 'src/Annotator/RangeFrameList.cs'),(Join-Path $root 'src/Annotator/QueueUi.cs'),(Join-Path $root 'src/Annotator/H45Checks.cs'),(Join-Path $root 'src/Ids/QueueTransactions.cs')
 $sources += (Join-Path $root 'src/Ids/StableIdsConverter.cs')
-$sources += (Join-Path $root 'src/Annotator/ViewportAndIdsUi.cs'),(Join-Path $root 'src/Annotator/IntegrationChecks.cs'),(Join-Path $root 'src/Annotator/IntegrationVersion.cs')
+$sources += (Join-Path $root 'src/Annotator/ViewportAndIdsUi.cs'),(Join-Path $root 'src/Annotator/IntegrationChecks.cs'),(Join-Path $root 'src/Annotator/IntegrationVersion.cs'),(Join-Path $root 'src/Annotator/BatchNormalChecks.cs')
 $staging=Join-Path $root ('build/compile/'+[Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Force -Path $staging | Out-Null
 $stagedExe=Join-Path $staging $exeName
