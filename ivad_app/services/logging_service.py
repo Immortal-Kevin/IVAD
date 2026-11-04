@@ -7,6 +7,8 @@ from ivad_app.core.contracts import utc_now
 from ivad_app.storage.models import LogRecord
 
 def redact(value: str) -> str:
+    from ivad_app.services.local_security import redact as local_redact
+    value=local_redact(value)
     value = re.sub(r'(?i)(password|passwd|token|api[_-]?key|secret)(\s*[:=]\s*)[^\s,;]+', r'\1\2<redacted>', value)
     value = re.sub(r'\b[A-Za-z]:[\\/][^\n\"\']+', '<path>', value)
     value = re.sub(r'(?i)rtsp://[^\s]+', '<rtsp-redacted>', value)
