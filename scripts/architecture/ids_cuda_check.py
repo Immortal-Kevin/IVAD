@@ -7,7 +7,9 @@ ROOT=Path(__file__).resolve().parents[2];sys.path.insert(0,str(ROOT))
 from ivad_app.services.ids_import_service import IdsImportService
 from ivad_app.services.wpf_rf_service import WpfRFService
 out=Path(sys.argv[1]).resolve();out.mkdir(parents=True,exist_ok=False)
-os.environ['IVAD_IDS_CONTROLLED_ROOT']=str(out.parent)
+from ivad_app.services.local_security import initialize
+workspace=out/'workspace';initialize(workspace)
+os.environ['IVAD_IDS_CONTROLLED_ROOT']=str(workspace)
 source=out/'source';(source/'assets').mkdir(parents=True)
 entities=[];assets=[]
 def add(kind,data):
@@ -29,16 +31,18 @@ doc=dict(schema='ids/1.0',project_id=project,sequence=1,entities=entities,assets
 (source/'project.ids.json').write_text(json.dumps(doc),encoding='utf8')
 exe=ROOT/'wpf_intel/build/rf-gate/Ivad.Annotator.Dev.exe';env=dict(os.environ);env.pop('IVAD_NVIDIA_BRIDGE',None)
 subprocess.run([str(exe),'--ids-export',str(source),str(out/'fixture.ids')],env=env,check=True)
-IdsImportService(exe).import_package(out/'fixture.ids',out/'project')
-service=WpfRFService(ROOT,out)
+IdsImportService(exe).import_package(out/'fixture.ids',workspace/'project')
+service=WpfRFService(ROOT,workspace)
+if os.environ.get("IVAD_RF_WORKER_PYTHON"):
+ prefs=service.services.settings.preferences();prefs["rfdetr_worker_python"]=os.environ["IVAD_RF_WORKER_PYTHON"];service.services.settings.save_preferences(prefs)
 try:
- r=service.execute(dict(action='train',root=str(out/'project'),epochs=1));(out/'job.json').write_text(json.dumps(r));print('CUDA job submitted',flush=True)
+ r=service.execute(dict(action='train',root=str(workspace/'project'),epochs=1));(out/'job.json').write_text(json.dumps(r));print('CUDA job submitted',flush=True)
  deadline=time.monotonic()+600
  while time.monotonic()<deadline:
-  status=service.execute(dict(action='job',root=str(out/'project'),job_id=r['job_id']))
+  status=service.execute(dict(action='job',root=str(workspace/'project'),job_id=r['job_id']))
   if status['state'] in {'SUCCEEDED','FAILED','CANCELLED','INTERRUPTED'}:break
   time.sleep(1)
- else:service.execute(dict(action='cancel',root=str(out/'project'),job_id=r['job_id']));raise TimeoutError('CUDA fixture timeout')
+ else:service.execute(dict(action='cancel',root=str(workspace/'project'),job_id=r['job_id']));raise TimeoutError('CUDA fixture timeout')
  (out/'result.json').write_text(json.dumps(status,ensure_ascii=False,indent=2),encoding='utf8');print(json.dumps({'state':status['state'],'error':status.get('error')}),flush=True)
  assert status['state']=='SUCCEEDED'
 finally:service.close()

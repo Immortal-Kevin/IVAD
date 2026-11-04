@@ -1,0 +1,2 @@
+# Preserve publisher license bytes, including original trailing whitespace.
+*.txt -text whitespace=-blank-at-eol

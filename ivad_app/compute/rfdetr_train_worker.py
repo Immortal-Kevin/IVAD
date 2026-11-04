@@ -110,7 +110,8 @@ def main(path):
             if forbidden:raise RuntimeError('Forbidden imports')
             result=dict(status='PASS',**second,evidence=dict(evidence,checkpoint_reloaded_cuda=True,cpu_fallback=False),parity=dict(status='PASS',first=first,second=second,delta=delta,tolerance=1e-4),weights=str(weights),weights_sha256=digest(weights),artifact_format='rf-detr-weights-pth',peak_allocated_bytes=torch.cuda.max_memory_allocated(),torch=torch.__version__,cuda=torch.version.cuda,gpu=torch.cuda.get_device_name(),forbidden_imports=forbidden,loaded_modules=sorted(sys.modules))
     except Exception as exc:
-        result=dict(status='CANCELLED' if isinstance(exc,ComputationCancelled) else 'BLOCKED',error=repr(exc),oom='out of memory' in str(exc).lower(),traceback=traceback.format_exc());traceback.print_exc()
+        from ivad_app.services.local_security import redact
+        result=dict(status='CANCELLED' if isinstance(exc,ComputationCancelled) else 'BLOCKED',error=redact(repr(exc)),oom='out of memory' in str(exc).lower(),traceback=redact(traceback.format_exc()));traceback.print_exc()
     result['seconds']=time.monotonic()-start;write(work/'result.json',result)
     return 0 if result['status']=='PASS' else 3 if result['status']=='CANCELLED' else 1
 

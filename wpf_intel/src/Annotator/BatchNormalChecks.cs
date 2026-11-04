@@ -32,7 +32,7 @@ namespace Ivad.Annotator {
   void BatchClick(){var b=Elements(Content as DependencyObject).OfType<Button>().Single(e=>AutomationProperties.GetName(e)=="批量标记正常");b.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));}
   static int DiskConfirmed(Store s){return s.Data.entities.Where(e=>e.kind=="Review").GroupBy(e=>e.Text("frame_id")).Count(g=>g.Last().Text("status")=="confirmed");}
   static void AssertBatchDisk(Store s,IEnumerable<string> ids){var reviews=s.Data.entities.Where(e=>e.kind=="Review").GroupBy(e=>e.Text("frame_id")).ToDictionary(g=>g.Key,g=>g.Last());foreach(var id in ids){Check(s.Find(id).Text("state")=="normal","saved normal "+id);Check(reviews.ContainsKey(id)&&reviews[id].Text("status")=="confirmed","saved confirmed "+id);}}
-  public void OpenBatchNormalFixture(string root){ShowBatchFixture(BatchFixture(Path.GetFullPath(root),1800,true));frames.SelectedIndex=1799;frames.SelectRange(875,1799,false);frames.ScrollIntoView(frames.Items[1799]);Title="IVAD 批量正常925帧独立测试";}
+  public void OpenBatchNormalFixture(string root){ShowBatchFixture(BatchFixture(Path.GetFullPath(root),1800,true));frames.SelectedIndex=875;frames.ResetSelection();frames.ScrollIntoView(frames.Items[875]);Title="IVAD 批量正常925帧独立测试";}
   public int BatchNormalChecks(string output,bool reopen){
    System.Threading.SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext(Dispatcher));output=Path.GetFullPath(output);
    if(!reopen&&Directory.Exists(output)&&Directory.EnumerateFileSystemEntries(output).Any())throw new IOException("批量回归只允许全新独立目录");Directory.CreateDirectory(output);

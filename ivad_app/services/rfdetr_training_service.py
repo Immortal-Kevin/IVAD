@@ -108,7 +108,10 @@ class RFDETRTrainingService:
             env=dict(os.environ,PYTHONUTF8='1',CUDA_VISIBLE_DEVICES=report['gpu_uuid'])
             with context.service.gate.acquire(payload['device_id'],context.cancel),(work/'worker-console.log').open('w',encoding='utf8') as log:
                 context.check();data['state']='RUNNING';self.put(rid,data,root)
-                child=subprocess.Popen([report['worker'],'-I','-X','utf8',str(self.root/'ivad_app/compute/rfdetr_train_worker.py'),str(work/'request.json')],stdout=log,stderr=subprocess.STDOUT,env=env,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
+                from .local_security import drain_redacted
+                from threading import Thread
+                child=subprocess.Popen([report['worker'],'-I','-X','utf8',str(self.root/'ivad_app/compute/rfdetr_train_worker.py'),str(work/'request.json')],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,encoding='utf8',errors='replace',env=env,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
+                reader=Thread(target=drain_redacted,args=(child.stdout,log),daemon=True);reader.start()
                 stopping=None
                 try:
                     while child.poll() is None:
@@ -125,6 +128,7 @@ class RFDETRTrainingService:
                         time.sleep(.1)
                 finally:
                     if child.poll() is None:self.stop_child(child)
+                    reader.join()
             context.check()
             result=json.loads((work/'result.json').read_text(encoding='utf8')) if (work/'result.json').exists() else {}
             if child.returncode or result.get('status')!='PASS':raise AppError('RF_OOM' if result.get('oom') else 'RF_WORKER',result.get('error','RF Worker异常退出；保留日志，不登记模型。'))

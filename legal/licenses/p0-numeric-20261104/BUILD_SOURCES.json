@@ -1,0 +1,214 @@
+{
+  "PACKAGING_FREEZE": true,
+  "DISTRIBUTION_STATUS": "BLOCKED",
+  "source_archives": [
+    {
+      "name": "numpy",
+      "version": "2.5.4",
+      "url": "https://files.pythonhosted.org/packages/95/b0/c7453d0b6e2073c3264468b106ee1563750cecc910965e67357e3698c83e/numpy-2.5.4.tar.gz",
+      "sha256": "9a94cf751c9ad8ebaa835bcd3d40dacf8534ad086b88c38029b65123c7999d2a"
+    },
+    {
+      "name": "scipy",
+      "version": "1.18.1",
+      "url": "https://files.pythonhosted.org/packages/7e/74/66de6258867beb2ef08f35f9f2ac017a52cacd5081714d239ff1a442d458/scipy-1.18.1.tar.gz",
+      "sha256": "52c4b7422442aba924d03ad4019852b08a92e64ea187b933135687bfe2747307"
+    }
+  ],
+  "wheel_outputs": [
+    {
+      "file": "numpy-2.5.4-cp312-cp312-win_amd64.whl",
+      "sha256": "d9938375203b4240f74123462a74fe453bc4781041c18911a7047b3ee770aabf"
+    },
+    {
+      "file": "scipy-1.18.1-cp312-cp312-win_amd64.whl",
+      "sha256": "c729f4b9b1ba41901bc05f1d4701bc8cea529f59030292dacc4b848d41018f82"
+    }
+  ],
+  "notices": [
+    {
+      "path": "legal\\licenses\\p0-numeric-20261104\\NumPy-2.5.4-LICENSE.txt",
+      "sha256": "1be1df33863f97a7bc1c4d67980bd6c69c9a6fef0a5ee76e6ad6cb91e56e8491"
+    },
+    {
+      "path": "legal\\licenses\\p0-numeric-20261104\\SciPy-1.18.1-LICENSE.txt",
+      "sha256": "221e59f5e910fd7f94e44f0dac77436a11338c285c6346232e4a850a50da0e94"
+    },
+    {
+      "path": "legal\\licenses\\p0-numeric-20261104\\SciPy-1.18.1-BUNDLED.txt",
+      "sha256": "45b1a2cf4eb57277812fcbca2b6af7d84e98c942a5e4dcc360610f49de16c63f"
+    },
+    {
+      "path": "legal\\licenses\\p0-numeric-20261104\\oneMKL-2026.2-ISSL.txt",
+      "sha256": "7721633d0ddff43fae25ebfd405f8166a0ce730cbcec44f2f3ad9d5eb8ac9a6f"
+    }
+  ],
+  "toolchain": {
+    "MSVC": "14.44.35207 / VS Build Tools 17.14.44",
+    "SDK": "10.0.26100.0",
+    "meson": "1.12.1",
+    "meson-python": "0.21.1",
+    "ninja": "1.13.2",
+    "Cython": {
+      "numpy": "3.3.1",
+      "scipy": "3.2.9"
+    },
+    "pybind11": "3.0.4",
+    "build_only_numpy": "2.2.6",
+    "mkl": "2026.2.0",
+    "cl_version": "19.44.35229"
+  },
+  "flags": {
+    "numpy": [
+      "blas=none",
+      "lapack=none",
+      "allow-noblas=true"
+    ],
+    "scipy": [
+      "_without-fortran=true",
+      "use-pythran=false",
+      "blas=mkl-dynamic-lp64-seq",
+      "lapack=mkl-dynamic-lp64-seq"
+    ]
+  },
+  "limitation": "SciPy experimental without-Fortran build excludes scipy.odr; RF scope validated, not complete SciPy API replacement. Candidate overlay depends on baseline RF packages and local MKL build runtime. Not a portable deployment.",
+  "actual_build_config": {
+    "numpy": {
+      "Compilers": {
+        "c": {
+          "name": "msvc",
+          "linker": "link",
+          "version": "19.44.35229",
+          "commands": "cl"
+        },
+        "cython": {
+          "name": "cython",
+          "linker": "cython",
+          "version": "3.3.1",
+          "commands": "cython"
+        },
+        "c++": {
+          "name": "msvc",
+          "linker": "link",
+          "version": "19.44.35229",
+          "commands": "cl"
+        }
+      },
+      "Machine Information": {
+        "host": {
+          "cpu": "x86_64",
+          "family": "x86_64",
+          "endian": "little",
+          "system": "windows"
+        },
+        "build": {
+          "cpu": "x86_64",
+          "family": "x86_64",
+          "endian": "little",
+          "system": "windows"
+        }
+      },
+      "Build Dependencies": {
+        "blas": {
+          "name": "none"
+        },
+        "lapack": {
+          "name": "none"
+        }
+      },
+      "Python Information": {
+        "path": "E:\\IVAD Project\\P0_Private_20261104\\build-env\\Scripts\\python.exe",
+        "version": "3.12"
+      },
+      "SIMD Extensions": {
+        "baseline": [
+          "X86_V2"
+        ],
+        "found": [
+          "X86_V3"
+        ]
+      }
+    },
+    "scipy": {
+      "Compilers": {
+        "c": {
+          "name": "msvc",
+          "linker": "link",
+          "version": "19.44.35229",
+          "commands": "cl"
+        },
+        "cython": {
+          "name": "cython",
+          "linker": "cython",
+          "version": "3.2.9",
+          "commands": "cython"
+        },
+        "c++": {
+          "name": "msvc",
+          "linker": "link",
+          "version": "19.44.35229",
+          "commands": "cl"
+        },
+        "fortran": {
+          "name": "msvc",
+          "linker": "link",
+          "version": "19.44.35229",
+          "commands": "cl",
+          "args": "n/a",
+          "linker args": "n/a"
+        },
+        "pythran": {}
+      },
+      "Machine Information": {
+        "host": {
+          "cpu": "x86_64",
+          "family": "x86_64",
+          "endian": "little",
+          "system": "windows"
+        },
+        "build": {
+          "cpu": "x86_64",
+          "family": "x86_64",
+          "endian": "little",
+          "system": "windows"
+        },
+        "cross-compiled": false
+      },
+      "Build Dependencies": {
+        "blas": {
+          "name": "mkl-dynamic-lp64-seq",
+          "found": true,
+          "version": "2026.2",
+          "detection method": "pkgconfig",
+          "include directory": "R:/build-env/Library/include",
+          "lib directory": "R:/build-env/Library/lib",
+          "openblas configuration": "unknown",
+          "pc file directory": "R:/build-env/Library/lib/pkgconfig",
+          "has ilp64": false,
+          "cython blas ilp64": false
+        },
+        "lapack": {
+          "name": "mkl-dynamic-lp64-seq",
+          "found": true,
+          "version": "2026.2",
+          "detection method": "pkgconfig",
+          "include directory": "R:/build-env/Library/include",
+          "lib directory": "R:/build-env/Library/lib",
+          "openblas configuration": "unknown",
+          "pc file directory": "R:/build-env/Library/lib/pkgconfig",
+          "has ilp64": false
+        },
+        "pybind11": {
+          "name": "pybind11",
+          "version": "3.0.4",
+          "detection method": "config-tool",
+          "include directory": "unknown"
+        }
+      },
+      "Python Information": {
+        "path": "R:/build-env/Scripts/python.exe",
+        "version": "3.12"
+      }
+    }
+  }
+}

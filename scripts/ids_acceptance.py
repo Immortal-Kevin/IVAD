@@ -69,13 +69,15 @@ def snapshot(root):
 
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('private_root');parser.add_argument('--output-name',default='ids-gate');args=parser.parse_args()
-    private=Path(args.private_root).resolve();os.environ['IVAD_IDS_CONTROLLED_ROOT']=str(private)
+    parser=argparse.ArgumentParser();parser.add_argument('private_root');parser.add_argument('--output-name',default='ids-gate');parser.add_argument('--output-root',type=Path);args=parser.parse_args()
+    private=Path(args.private_root).resolve()
     repo=Path(__file__).resolve().parents[1]
-    service=IdsImportService(repo/'wpf_intel/build/dev/Ivad.Annotator.Dev.exe')
+    service=IdsImportService(repo/'wpf_intel/build/final/Ivad.Annotator.Dev.exe')
     reference=private/'reference';index=json.loads((reference/'04_IDS_Private_Data/IDS_PACKAGE_INDEX.json').read_text(encoding='utf-8-sig'))
     if Path(args.output_name).name!=args.output_name:raise ValueError('Invalid output name')
-    output=private/args.output_name;output.mkdir(exist_ok=False)
+    output=(args.output_root or private/args.output_name).resolve();output.mkdir(exist_ok=False)
+    from ivad_app.services.local_security import initialize
+    initialize(output);os.environ['IVAD_IDS_CONTROLLED_ROOT']=str(output)
     results=[];targets={}
     def test(name,fn):
         try:detail=fn();entry={'name':name,'status':'PASS','detail':detail}

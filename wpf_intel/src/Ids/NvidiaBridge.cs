@@ -24,7 +24,9 @@ namespace Ivad.Ids {
    if(!(bool)response["ok"])throw new IOException(Convert.ToString(response["error"]));
    return Convert.ToString(response["result"]);
   }}
-  public static void Hydrate(string root){if(Enabled)Call(new Dictionary<string,object>{{"action","hydrate"},{"root",root}});}
+  public static bool IsAdministrator=false;
+  public static void Hydrate(string root){if(Enabled){Call(new Dictionary<string,object>{{"action","hydrate"},{"root",root}});var identity=Codec.Parse<Dictionary<string,object>>(Call(new Dictionary<string,object>{{"action","identity"},{"root",root}}));IsAdministrator=Convert.ToString(identity["role"])=="administrator";}}
+  public static void AuthorizeExport(string root,string output){if(Enabled)Call(new Dictionary<string,object>{{"action","export"},{"root",root},{"destination",output}});}
   public static void Commit(string root,string file,string expected){if(Enabled)Call(new Dictionary<string,object>{{"action","commit"},{"root",root},{"file",file},{"expected",expected}});}
  }
 }

@@ -234,7 +234,8 @@ class IdsImportService:
         self.codec=Path(codec_executable).resolve()
 
     def import_package(self, package, root, *, fail_after=None):
-        root=controlled(root); root.mkdir(parents=True,exist_ok=True)
+        from .local_security import authorize
+        root=controlled(root); authorize(root,'import');root.mkdir(parents=True,exist_ok=True)
         before=state(root)
         package=Path(package).resolve()
         # Intel importer validates bytes/paths/assets and produces its own stable
