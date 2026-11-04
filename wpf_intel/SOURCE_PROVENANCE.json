@@ -1,0 +1,221 @@
+{
+  "intel_commit": "5e157141c51f8f0885a7c46de05a30865ceede73",
+  "files": [
+    {
+      "path": "src/Annotator/App.cs",
+      "intel_sha256": "1aaa542b32483feb12fcbca7d4b4b9c10f8f0509f772af47bd451d92350f8907",
+      "nvidia_sha256": "3378a17e27725c220536b229818749fa17e42211e03dfb444aee9a4fabf4d393",
+      "modified": true
+    },
+    {
+      "path": "src/Annotator/AppDiagnostics.cs",
+      "intel_sha256": "91101022aeb94d30a91793a7d9b162726095b5fc6f9f59cb15803f062d13ad1f",
+      "nvidia_sha256": "91101022aeb94d30a91793a7d9b162726095b5fc6f9f59cb15803f062d13ad1f",
+      "modified": false
+    },
+    {
+      "path": "src/Annotator/BatchNormalChecks.cs",
+      "intel_sha256": "4e73e513d4b1abca67e31da21515f52ff94b19db3c09dcd05f24df487a84cb7b",
+      "nvidia_sha256": "4e73e513d4b1abca67e31da21515f52ff94b19db3c09dcd05f24df487a84cb7b",
+      "modified": false
+    },
+    {
+      "path": "src/Annotator/DeploymentChecks.cs",
+      "intel_sha256": "30a321a4fc5d04a6acf4058a34f79b0fdd105339b319a389d88b24f6f542b420",
+      "nvidia_sha256": "30a321a4fc5d04a6acf4058a34f79b0fdd105339b319a389d88b24f6f542b420",
+      "modified": false
+    },
+    {
+      "path": "src/Annotator/FrameBrowser.cs",
+      "intel_sha256": "d3c255c8952e1dff0f83d7b0cee93131e20760dd8d8d4dcd2927a4666214c901",
+      "nvidia_sha256": "d3c255c8952e1dff0f83d7b0cee93131e20760dd8d8d4dcd2927a4666214c901",
+      "modified": false
+    },
+    {
+      "path": "src/Annotator/H45Checks.cs",
+      "intel_sha256": "1f5b61dc065a3bb3b5f299866c6f9018e2f58f4dec1115d988e849acc6fbe5b3",
+      "nvidia_sha256": "1f5b61dc065a3bb3b5f299866c6f9018e2f58f4dec1115d988e849acc6fbe5b3",
+      "modified": false
+    },
+    {
+      "path": "src/Annotator/HotfixAcceptance.cs",
+      "intel_sha256": "e7b8febce5beff046eaaf0e30abd7b2aa05843e172e3c36b847297e3ea2c906e",
+      "nvidia_sha256": "9451f1dcf088090c7338db8003209483d3068d1a5bb6ed7aec49066458456f0d",
+      "modified": true
+    },
+    {
+      "path": "src/Annotator/HotfixChecks.cs",
+      "intel_sha256": "c0934831a9bb471b4ebad81d41ba654ea160e2ca7d5b54ed83fe77cf8bf18884",
+      "nvidia_sha256": "c0934831a9bb471b4ebad81d41ba654ea160e2ca7d5b54ed83fe77cf8bf18884",
+      "modified": false
+    },
+    {
+      "path": "src/Annotator/IntegrationChecks.cs",
+      "intel_sha256": "30a327c74a346a4d2280cfb18504aa7994ddebc95e92918ad1df1a19838d6047",
+      "nvidia_sha256": "30a327c74a346a4d2280cfb18504aa7994ddebc95e92918ad1df1a19838d6047",
+      "modified": false
+    },
+    {
+      "path": "src/Annotator/IntegrationVersion.cs",
+      "intel_sha256": "892cbe1a3140300a4263ab187a4ebaf1c0551e8af8d1be56c34ff3b0e557d32a",
+      "nvidia_sha256": "892cbe1a3140300a4263ab187a4ebaf1c0551e8af8d1be56c34ff3b0e557d32a",
+      "modified": false
+    },
+    {
+      "path": "src/Annotator/Interface.cs",
+      "intel_sha256": "2cdfc1740223ad56a310eba20aefadc0278664674f6d03b5d41e46298f036e60",
+      "nvidia_sha256": "8e840847e5208ec5eba23a3023035215ff877bcd39cb92445c5c9938400cbd2e",
+      "modified": true
+    },
+    {
+      "path": "src/Annotator/LICENSE",
+      "intel_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "nvidia_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "modified": false
+    },
+    {
+      "path": "src/Annotator/Media.cs",
+      "intel_sha256": "814deb78380778093fdda3f882cbe44adaf35898c1faff87caff6bad045ad1d9",
+      "nvidia_sha256": "de6db2a317bd162628caef58066ba6cfa8c3802c1bfbe9ee86aaef4fb39f89b7",
+      "modified": true
+    },
+    {
+      "path": "src/Annotator/NOTICE",
+      "intel_sha256": "458bd53c59b14a7b92317e3b78a94930a9234bef261e3740e57cc533609c0245",
+      "nvidia_sha256": "458bd53c59b14a7b92317e3b78a94930a9234bef261e3740e57cc533609c0245",
+      "modified": false
+    },
+    {
+      "path": "src/Annotator/NvidiaMedia.cs",
+      "intel_sha256": null,
+      "nvidia_sha256": "84d1e7cc7cf3ca902c60e382ecba5c73252eac84e25801b8066dfe52f1564d3c",
+      "modified": true
+    },
+    {
+      "path": "src/Annotator/NvidiaWorkspace.cs",
+      "intel_sha256": null,
+      "nvidia_sha256": "6daec90f977875321ef7d977997adf779195a1871fe8d522d7e0e76fbd689379",
+      "modified": true
+    },
+    {
+      "path": "src/Annotator/Portable.config",
+      "intel_sha256": "1e491000484df1097751b1595dc9edc32e0f013c65d8e82b4313815996c1fe1f",
+      "nvidia_sha256": "1e491000484df1097751b1595dc9edc32e0f013c65d8e82b4313815996c1fe1f",
+      "modified": false
+    },
+    {
+      "path": "src/Annotator/Portable.manifest",
+      "intel_sha256": "efe6a67b5ded9621da92db63636dbb4078f3c967ec1d965f2435be5041d5dd76",
+      "nvidia_sha256": "efe6a67b5ded9621da92db63636dbb4078f3c967ec1d965f2435be5041d5dd76",
+      "modified": false
+    },
+    {
+      "path": "src/Annotator/QueueUi.cs",
+      "intel_sha256": "70b0e72976a9b5e83f6e106302cf85d193030d46891c54a99cef66f07b311c62",
+      "nvidia_sha256": "70b0e72976a9b5e83f6e106302cf85d193030d46891c54a99cef66f07b311c62",
+      "modified": false
+    },
+    {
+      "path": "src/Annotator/RangeFrameList.cs",
+      "intel_sha256": "11f5864688fb404c936cb7486cfacfa5da11c03ef497b0d8d617c0e56fa856b1",
+      "nvidia_sha256": "11f5864688fb404c936cb7486cfacfa5da11c03ef497b0d8d617c0e56fa856b1",
+      "modified": false
+    },
+    {
+      "path": "src/Annotator/Theme.xaml",
+      "intel_sha256": "9031059d6273582159a599f1998ef9d0034132076f0692cfe8bf213a176cf960",
+      "nvidia_sha256": "9031059d6273582159a599f1998ef9d0034132076f0692cfe8bf213a176cf960",
+      "modified": false
+    },
+    {
+      "path": "src/Annotator/UiChecks.cs",
+      "intel_sha256": "48b87d3d858b4ffb51355ae1f3b71a8472a460a52abfd73bbf3efd72604819aa",
+      "nvidia_sha256": "48b87d3d858b4ffb51355ae1f3b71a8472a460a52abfd73bbf3efd72604819aa",
+      "modified": false
+    },
+    {
+      "path": "src/Annotator/VideoJobs.cs",
+      "intel_sha256": "17ca13b470c9455cdcc074305e59ecdf72b9c204e308b015f1627e600d835bac",
+      "nvidia_sha256": "17ca13b470c9455cdcc074305e59ecdf72b9c204e308b015f1627e600d835bac",
+      "modified": false
+    },
+    {
+      "path": "src/Annotator/ViewportAndIdsUi.cs",
+      "intel_sha256": "02d305622c2a316f125b697e2e635b97c3cca56a4eaa5349921477b24e43eac3",
+      "nvidia_sha256": "02d305622c2a316f125b697e2e635b97c3cca56a4eaa5349921477b24e43eac3",
+      "modified": false
+    },
+    {
+      "path": "src/Annotator/Workflow.cs",
+      "intel_sha256": "c33efade20a983845e0de868ddf2d35fa9c2be4aa17f8a3a3ac7f3f04d080981",
+      "nvidia_sha256": "c33efade20a983845e0de868ddf2d35fa9c2be4aa17f8a3a3ac7f3f04d080981",
+      "modified": false
+    },
+    {
+      "path": "src/Full/LICENSE",
+      "intel_sha256": "5306dc3d1e7347e52e8550ac78cd11ab3befddc45cd5c97f73058d4f68466e9f",
+      "nvidia_sha256": "5306dc3d1e7347e52e8550ac78cd11ab3befddc45cd5c97f73058d4f68466e9f",
+      "modified": false
+    },
+    {
+      "path": "src/Full/TrainingAdapter.cs",
+      "intel_sha256": "1b5a5d90311c6098007928a12c3cb0d524771175f5163484ea5c558598fd7b06",
+      "nvidia_sha256": "1b5a5d90311c6098007928a12c3cb0d524771175f5163484ea5c558598fd7b06",
+      "modified": false
+    },
+    {
+      "path": "src/Ids/FrameTransactions.cs",
+      "intel_sha256": "2ea34ab55ab5a3c22d6b779c9736d584904e4be38eed192acef0cbacea9fd527",
+      "nvidia_sha256": "229e9a49dff38526dd99774eb8de555fd3f6d4b064c42672fd144a3ee181fb8b",
+      "modified": true
+    },
+    {
+      "path": "src/Ids/GeometryTransactions.cs",
+      "intel_sha256": "c1dce0b405c967c48af87c7eaa2109e375bbf540f5c570110c83f1ccd0196e54",
+      "nvidia_sha256": "c1dce0b405c967c48af87c7eaa2109e375bbf540f5c570110c83f1ccd0196e54",
+      "modified": false
+    },
+    {
+      "path": "src/Ids/Ids.cs",
+      "intel_sha256": "4b831464e8c0f036454735f045736bd634dc6a251b0c3664a9240038463d7496",
+      "nvidia_sha256": "d9be5997fa645814025bcc7a60830a28efb8eb71ebc2b1c686cffbc3fdeb22c2",
+      "modified": true
+    },
+    {
+      "path": "src/Ids/LICENSE",
+      "intel_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "nvidia_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "modified": false
+    },
+    {
+      "path": "src/Ids/NOTICE",
+      "intel_sha256": "c8e8f6b72dc165ba9debdfbb5e54e02bb9756ebc1185545e300bdda897500299",
+      "nvidia_sha256": "c8e8f6b72dc165ba9debdfbb5e54e02bb9756ebc1185545e300bdda897500299",
+      "modified": false
+    },
+    {
+      "path": "src/Ids/NvidiaBridge.cs",
+      "intel_sha256": null,
+      "nvidia_sha256": "39a2c802282dcb27dc57a03887622996e492d8658ced7f68f56d36852dab7c6c",
+      "modified": true
+    },
+    {
+      "path": "src/Ids/QueueTransactions.cs",
+      "intel_sha256": "192cd2fa09072b665570b1af6670ac81d4b19e58ad53a9d243a38ba35254929a",
+      "nvidia_sha256": "192cd2fa09072b665570b1af6670ac81d4b19e58ad53a9d243a38ba35254929a",
+      "modified": false
+    },
+    {
+      "path": "src/Ids/StableIdsConverter.cs",
+      "intel_sha256": "6c184aed1341b03df43a91d9f11491528f3aaa3709912c234db9e85c4c5b7866",
+      "nvidia_sha256": "6c184aed1341b03df43a91d9f11491528f3aaa3709912c234db9e85c4c5b7866",
+      "modified": false
+    },
+    {
+      "path": "src/Ids/Work.cs",
+      "intel_sha256": "b77dc1110fae9533725c92bbd9821e8f35834425251f6afb2f853378bdbc7097",
+      "nvidia_sha256": "b77dc1110fae9533725c92bbd9821e8f35834425251f6afb2f853378bdbc7097",
+      "modified": false
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: Apache-2.0
+using System;
+using System.IO;
+using System.Linq;
+using System.Collections.Generic;
+using Ivad.Ids;
+using Ivad.Annotator;
+partial class Tests {
+ static void WorkflowTests(string root){
+  string home=Path.Combine(root,"ui-root");Store s=null;string camera=null;
+  Test("workflow/root-create-hierarchy",()=>{s=Workflow.OpenOrCreate(home,"人工验收项目","厂区A","设备A","摄像头A",null);camera=s.Data.entities.First(e=>e.kind=="Camera").id;Assert(s.Root==Path.Combine(home,"厂区A","设备A","摄像头A"),"hierarchy");Assert(File.Exists(s.Manifest),"persisted");});
+  Test("workflow/detect-existing-reopen-stable-IDs",()=>{var found=Workflow.Detect(home);Assert(found.Count==1&&found[0].CameraId==camera,"detected camera");string before=Codec.HashFile(s.Manifest);var reopen=Workflow.OpenOrCreate(home,"人工验收项目","厂区A","设备A","摄像头A",found[0]);Assert(reopen.Data.project_id==s.Data.project_id&&Codec.HashFile(s.Manifest)==before,"no overwrite");});
+  Test("workflow/reuse-existing-empty-folders",()=>{string leaf=Path.Combine(home,"厂区B","设备B","摄像头B");Directory.CreateDirectory(leaf);File.WriteAllText(Path.Combine(leaf,"keep.txt"),"user data");var entry=Workflow.Detect(home).First(x=>x.Site=="厂区B");var reused=Workflow.OpenOrCreate(home,"B","厂区B","设备B","摄像头B",entry);Assert(reused.Root==leaf&&File.ReadAllText(Path.Combine(leaf,"keep.txt"))=="user data","reuse no deletion");});
+  Test("workflow/legacy-project-detected-without-moving",()=>{var old=FixtureStore(Path.Combine(home,"legacy"));string before=Codec.HashFile(old.Manifest);var found=Workflow.Detect(home).First(x=>x.Root==old.Root);var reopen=Workflow.OpenOrCreate(home,found.Project,found.Site,found.Equipment,found.Camera,found);Assert(reopen.Root==old.Root&&Codec.HashFile(old.Manifest)==before,"legacy in place");});
+  Test("workflow/invalid-folder-names-no-escape",()=>{foreach(string name in new[]{"../escape","CON","a/b","a\\b","bad.","", ".."})Reject(()=>Workflow.OpenOrCreate(home,"P",name,"设备","相机",null));});
+  Test("workflow/no-implicit-root-or-association-overwrite",()=>{Reject(()=>Workflow.OpenOrCreate("","P","厂区A","设备A","摄像头A",null));var other=FixtureStore(Path.Combine(home,"不同厂区","不同设备","不同摄像头"));string before=Codec.HashFile(other.Manifest);Reject(()=>Workflow.OpenOrCreate(home,"P","不同厂区","不同设备","不同摄像头",null));Assert(Codec.HashFile(other.Manifest)==before,"conflicting names cannot reinterpret existing project");});
+  Test("workflow/package-default-name-collision",()=>{var date=new DateTime(2026,10,26);string first=Workflow.PackagePath(s,camera,home,date);Assert(Path.GetFileName(first)=="厂区A-设备A-摄像头A-20261026.ids","default name");File.WriteAllText(first,"keep");string second=Workflow.PackagePath(s,camera,home,date);Assert(second.EndsWith("-20261026-01.ids"),"first collision");File.WriteAllText(second,"keep2");Assert(Workflow.PackagePath(s,camera,home,date).EndsWith("-20261026-02.ids"),"second collision");Assert(File.ReadAllText(first)=="keep","never overwrite");});
+  Test("workflow/reviewer-policy",()=>{Assert(Workflow.ReviewStatus("审核员","normal","rejected",false)=="confirmed","normal default");Assert(Workflow.ReviewStatus("审核员","abnormal","needs_work",true)=="confirmed","annotation default");Assert(Workflow.ReviewStatus("本地管理员","normal","rejected",false)=="rejected","administrator choice");Assert(Workflow.ReviewStatus("审核员","unknown","confirmed",false)=="unknown","unknown stays uncertain");Reject(()=>Workflow.ReviewStatus("审核员","unannotated","confirmed",false));});
+  var messages=new List<string>();Entity video=null;
+  Test("workflow/extraction-exact-total-VFR-readonly-plan",()=>{video=s.ImportVideo(Path.Combine(root,"vfr.mp4"),camera);string before=Codec.HashFile(s.Manifest);Assert(Media.CountFrames(s.Root,video.id,.001,500,0,3)==6,"actual six not max500");Assert(Codec.HashFile(s.Manifest)==before&&!Directory.GetDirectories(s.Root,".frames-*").Any(),"plan has no mutation");});
+  Test("workflow/extraction-total-progress-commit",()=>{Work.Configure(null,m=>messages.Add(m));try{Assert(Media.ExtractWithProgress(s.Root,video.id,.001,500,0,3,null)==6,"six");}finally{Work.Configure(null,null);}Assert(messages.Contains("IVAD_PROGRESS|开始抽帧|0|6")&&messages.Contains("IVAD_PROGRESS|抽帧完成，已保存|6|6"),"real total and persisted completion");Assert(Media.CountFrames(s.Root,video.id,.001,500,0,3)==0,"duplicates excluded");s.Reload();});
+  Test("workflow/next-frame-order-and-last",()=>{var frames=s.Data.entities.Where(e=>e.kind=="Frame").OrderBy(e=>e.Number("source_timestamp_100ns")).ToList();Assert(Workflow.NextFrame(s.Data.entities,frames[0].id)==frames[1].id,"next by PTS");Assert(Workflow.NextFrame(s.Data.entities,frames.Last().id)==null,"no wrap at last");});
+  Test("workflow/ids-extension-roundtrip-and-reopen",()=>{string package=Workflow.PackagePath(s,camera,s.Root,new DateTime(2026,10,26));Packages.Export(s,package,null);var reopened=Packages.Import(package,Path.Combine(root,"ui-restored"));Assert(Codec.Fingerprint(reopened.Data)==Codec.Fingerprint(s.Data),"ids extension lossless");Rules.VerifyAssets(reopened.Data,reopened.Root);});
+ }
+}
