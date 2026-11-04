@@ -12,6 +12,9 @@ __pycache__/
 .pytest_cache/
 *.pyc
 *.pt
+*.pth
+*.ids
+**/project.ids.json
 *.onnx
 *.whl
 *.db

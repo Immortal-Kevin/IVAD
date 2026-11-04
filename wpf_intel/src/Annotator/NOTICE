@@ -1,0 +1,6 @@
+IVAD Annotator
+Copyright 2026 IVAD contributors
+Licensed under the Apache License, Version 2.0.
+Windows .NET Framework and Media Foundation are operating system prerequisites.
+No Microsoft runtime, font, codec, AI framework, user dataset or model is bundled.
+Full/NVIDIA private code is outside this Apache-licensed component.
