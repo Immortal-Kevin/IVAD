@@ -6,6 +6,7 @@ import sys
 import secrets
 from uuid import uuid4
 from .ids_import_service import state, controlled, commit_document
+from .local_security import authorize,redact
 rf=None
 
 
@@ -13,8 +14,13 @@ def execute(request):
     global rf
     root=controlled(request['root'])
     action=request['action']
+    identity=authorize(root,action,request.get('destination'))
+    if action=='identity':return json.dumps(identity)
+    if action=='export':return 'authorized'
     if action=='hydrate':
         saved=state(root)
+        if saved is None and (root/'project.sqlite').is_file():
+            raise ValueError('LEGACY_PROJECT_REQUIRES_VALIDATED_IDS_COPY: 旧项目尚无已验证IDS投影；保留原数据库，请在副本上完成兼容转换。')
         if saved:
             if not (root/'project.json').exists():
                 from ivad_app.storage.project_store import atomic_json
@@ -52,6 +58,6 @@ if __name__=='__main__':
             if not token or request.get('protocol')!='ivad-local/1' or not secrets.compare_digest(request.get('token',''),token):
                 raise ValueError('IPC_AUTHENTICATION_FAILED')
             answer={'ok':True,'result':execute(request)}
-        except Exception as exc:answer={'ok':False,'error':str(exc)}
+        except Exception as exc:answer={'ok':False,'error':redact(str(exc))}
         print(json.dumps(answer,ensure_ascii=True),flush=True)
     if rf is not None:rf.close()

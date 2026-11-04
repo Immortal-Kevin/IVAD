@@ -48,12 +48,20 @@ def freeze(services, root):
 class WpfRFService:
     def __init__(self,repo,workspace):
         from ivad_app.core.application import ApplicationServices
+        from .local_security import authorize
+        authorize(Path(workspace)/'wpf-runtime','identity')
         self.services=ApplicationServices(Path(repo),Path(workspace)/'wpf-runtime',media_backend='windows-mf',lite=False)
-        self.services.settings.save_preferences({'language':'zh_CN','worker_python':'','preferred_gpu':'',
-            'rfdetr_worker_python':str(Path(repo)/'.venv-rf-media-candidate/Scripts/python.exe')})
+        import os
+        prefs=self.services.settings.preferences()
+        prefs.setdefault('rfdetr_worker_python',str(Path(repo)/'.venv-rf-media-candidate/Scripts/python.exe'))
+        if not prefs['rfdetr_worker_python']:prefs['rfdetr_worker_python']=str(Path(repo)/'.venv-rf-media-candidate/Scripts/python.exe')
+        if os.environ.get('IVAD_RF_WORKER_PYTHON'):prefs['rfdetr_worker_python']=os.environ['IVAD_RF_WORKER_PYTHON']
+        self.services.settings.save_preferences(prefs)
 
     def execute(self,r):
         root=str(controlled(r['root']));app=self.services;action=r['action']
+        from .local_security import authorize,check_acl,sid
+        authorize(root,action)
         if action=='gpu':return [dict(id=d.id,name=d.name,available=d.backend_available) for d in app.training.rf_devices()]
         if action=='registry':return app.models.versions(root,include_archived=True)
         if action=='runs':return app.training.runs(root,include_archived=True)
@@ -62,6 +70,7 @@ class WpfRFService:
         if action=='infer':
             import subprocess,os
             weights,entry=app.models.verify(r['model_id'],root)
+            check_acl(weights,sid())
             with app.store.open(root) as (_,db,_),db.transaction() as s:
                 frame=s.scalar(select(ExtractedFrame).order_by(ExtractedFrame.id))
                 if not frame:raise ValueError('FRAME_REQUIRED')
@@ -74,10 +83,14 @@ class WpfRFService:
                 gpu_uuid=devices[0].id.removeprefix('nvidia:'),output=str(work/'result.json'))
             atomic_json(work/'request.json',request)
             env=dict(os.environ,HF_HUB_OFFLINE='1',HF_DATASETS_OFFLINE='1',WANDB_MODE='disabled')
-            with (work/'worker.log').open('w',encoding='utf8') as log:
-                subprocess.run([str(app.training.rf.python()),'-I','-X','utf8',str(app.root/'ivad_app/compute/ids_inference_worker.py'),str(work/'request.json')],stdout=log,stderr=log,env=env,check=True,timeout=180)
+            from .local_security import redact
+            result=subprocess.run([str(app.training.rf.python()),'-I','-X','utf8',str(app.root/'ivad_app/compute/ids_inference_worker.py'),str(work/'request.json')],capture_output=True,text=True,encoding='utf8',errors='replace',env=env,timeout=180,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
+            (work/'worker.log').write_text(redact(result.stdout+'\n'+result.stderr),encoding='utf8')
+            result.check_returncode()
             return json.loads((work/'result.json').read_text(encoding='utf8'))
         if action in ('train','validate'):
+            if r.get('model_id'):
+                weights,_=app.models.verify(r['model_id'],root);check_acl(weights,sid())
             vid=r.get('version_id') or freeze(app,root)
             devices=[d for d in app.training.rf_devices() if d.backend_available]
             if not devices:raise ValueError('CUDA_REQUIRED')

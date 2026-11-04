@@ -162,6 +162,7 @@ namespace Ivad.Ids {
   const long Limit=20L*1024*1024*1024;
   static void Entry(ZipArchive zip,string name,byte[] bytes){var e=zip.CreateEntry(name,CompressionLevel.Optimal);using(var s=e.Open())s.Write(bytes,0,bytes.Length);}
   public static void Export(Store store,string output,Document baseline){
+   NvidiaBridge.AuthorizeExport(store.Root,output);
    Rules.Validate(store.Data);Rules.VerifyAssets(store.Data,store.Root);
    if(baseline!=null){Rules.Validate(baseline);if(baseline.project_id!=store.Data.project_id)throw new InvalidDataException("增量基线项目不同");}
    if(File.Exists(output))throw new IOException("导出包不可覆盖，请使用新文件名");
