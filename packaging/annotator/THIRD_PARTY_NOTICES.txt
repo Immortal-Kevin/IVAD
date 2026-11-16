@@ -1,0 +1,14 @@
+IVAD Annotator — third-party and environment notices
+
+Distributed application code, IDS implementation, UI theme and diagnostic fixture generator are self-authored and licensed Apache-2.0. See LICENSE and NOTICE.
+No third-party NuGet/pip/npm packages, DLLs, fonts, icons, codecs, model files or runtime installers are distributed. No FFmpeg is used or bundled; its LGPL exception is not exercised. No separate third-party license text is applicable to the shipped content.
+
+EXTERNAL PREREQUISITES, NOT COVERED BY THE APPLICATION APACHE LICENSE:
+- Microsoft Windows, .NET Framework/WPF, GDI+/Windows Forms and Media Foundation are external Microsoft components governed by their applicable Microsoft/Windows license terms. The recipient supplies a properly licensed Windows system and independently obtains any missing runtime from Microsoft under that installer's terms.
+- The Microsoft deployment guide describes installing/redeploying the official .NET Framework redistributable subject to its terms. This package makes no use of those redistribution rights: it neither copies individual Windows/.NET DLLs nor bundles an installer. Future runtime bundling requires a separate artifact/terms review under Policy B.1.
+- The Windows C# compiler, PowerShell and audit Python were build tools only and are not required to run or included in this ZIP.
+Official deployment guide: https://learn.microsoft.com/en-us/dotnet/framework/deployment/deployment-guide-for-developers
+Runtime download: https://dotnet.microsoft.com/en-us/download/dotnet-framework/net48
+Windows terms: https://www.microsoft.com/useterms
+
+No Microsoft trademark, ownership or Apache licensing claim is made for the external prerequisites. Users retain their own dataset and media rights. This material audit does not grant codec patents or third-party media rights.

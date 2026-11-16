@@ -1,0 +1,9 @@
+{
+ "policy":"B.1", "release_frozen":true,
+ "annotator_allowed":["Apache-2.0"],
+ "full_allowed":["Apache-2.0","MIT","BSD-2-Clause","BSD-3-Clause"],
+ "forbidden":["GPL","AGPL","PML","UNKNOWN"],
+ "ffmpeg_enabled":false,"training_enabled":false,
+ "candidate_files":["build/dev/Ivad.Annotator.Dev.exe"],
+ "mandatory_materials":["LICENSE_POLICY.md","THIRD_PARTY_LICENSES.md","SBOM.json","MODEL_LICENSE_REGISTER.md","FFMPEG_COMPLIANCE.md","DISTRIBUTION_CHECKLIST.md","LEGACY_CLEANUP_REPORT.md"]
+}

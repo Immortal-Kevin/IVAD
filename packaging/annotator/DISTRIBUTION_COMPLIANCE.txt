@@ -1,0 +1,13 @@
+Policy B.1 — one-time local portable test delivery
+Build: 1.1-test.20261026.01; authorization IVAD-ANNOTATOR-PORTABLE-20261026-ONCE.
+Self-authored Annotator/IDS content: Apache-2.0, original LICENSE and NOTICE preserved.
+Shipped external libraries/runtimes/fonts/codecs/models: NONE.
+Windows/.NET/WPF/Media Foundation: external OS prerequisites, NOT Apache, NOT redistributed.
+
+Packaging uses an explicit file allowlist, freshly compiled x64 executable, known embedded theme, assembly-reference/PInvoke/resource inspection, per-file hashes, and a privacy scan of final contents. No recursive project-directory zip.
+No user videos/images/database, logs, personal paths, credentials, Full private code, development environments or caches included.
+Runtime component copies are not necessary. No FFmpeg exception requested or used.
+
+This is an unsigned portable test build, not an installer or public release. Do not bypass Windows security or enterprise policy. No Internet upload, device copying, automatic updates, telemetry or automatic runtime installation is performed by this delivery.
+After final ZIP delivery the one-time authorization is consumed and normal packaging freeze resumes. Future packages require another explicit user authorization. Existing Policy B.1 is unchanged.
+Other Windows computers: NOT TESTED. Read the delivery report for separate material audit, local independent execution and real-GUI results; internal diagnostic command checks do not establish native GUI PASS.

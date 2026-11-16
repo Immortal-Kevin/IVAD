@@ -1,0 +1,42 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "type": "application",
+      "name": "IVAD Annotator",
+      "version": "1.1-dev"
+    }
+  },
+  "components": [
+    {
+      "type": "application",
+      "name": "IVAD Annotator / IDS self-authored code",
+      "version": "1.1-dev",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "04b6fb0c9764e8da5783a6536ed82b28fe852ca5b7f7f7c23cff136f6dc8d0ac"
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "name": "ivad:distribution-status",
+      "value": "NOT VERIFIED"
+    },
+    {
+      "name": "ivad:external-runtime",
+      "value": "Windows .NET Framework / Media Foundation; not bundled"
+    }
+  ]
+}

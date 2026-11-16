@@ -1,0 +1,16 @@
+{
+  "authorization_id": "IVAD-ANNOTATOR-PORTABLE-20261026-ONCE",
+  "status": "CONSUMED_FROZEN",
+  "build_id": "1.1-test.20261026.01",
+  "file_version": "1.1.2026.1026",
+  "scope": "One local Windows x64 Annotator portable test delivery; rebuilds to repair this candidate permitted before completion",
+  "internet_upload": false,
+  "full_product": false,
+  "installer": false,
+  "future_builds_authorized": false,
+  "normal_release_freeze": true,
+  "authority": "Explicit user request in current conversation on 2026-10-26",
+  "completed_utc": "2026-10-26T09:39:33.343522+00:00",
+  "delivered_zip": "dist/IVAD-Annotator-v1.1-win-x64-portable.zip",
+  "delivered_sha256": "66633ee6471781024fa077a6f4a809b1034dbba198e8426e38c2ac7befd3fb97"
+}

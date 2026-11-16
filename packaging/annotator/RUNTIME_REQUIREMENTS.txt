@@ -1,0 +1,32 @@
+﻿运行环境：Windows 10/11 x64，.NET Framework 4.8或更高4.x（推荐使用系统现有4.8.1）。
+应用是C# 5/WPF，托管CLR v4.0，x64；发布配置明确目标.NETFramework,Version=v4.8。
+本次用系统C#编译器4.8.9221.0和现有.NET Framework 4.8.1系统程序集编译；尚未在纯4.8目标机实测。
+不是现代.NET / .NET Desktop Runtime发布，不是自包含运行时。
+
+只读检测：检查运行环境.cmd，或PowerShell读取注册表（不需要管理员）：
+(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full').Release
+数值>=528040代表4.8或更高。不要根据v4.0.30319文件夹名判断具体版本。
+
+缺少.NET Framework时，由目标电脑用户/管理员自行从Microsoft官方页面选择Runtime，按安装程序条款安装：
+https://dotnet.microsoft.com/en-us/download/dotnet-framework/net48
+离线安装入口：
+https://dotnet.microsoft.com/en-us/download/dotnet-framework/thank-you/net48-offline-installer
+不需要Developer Pack。安装系统组件可能需管理员权限与重启；本包不自动安装或降级现有版本。
+安装了较新4.x时不要强行安装较旧版本。Windows 11通常已有4.8/4.8.1。
+
+媒体：Windows Media Foundation（mfplat.dll、mfreadwrite.dll）和本机WPF视频播放支持。
+MP4/H.264与AVI仍需实际媒体解码测试；HEVC等可能依赖本机额外支持，本包不附带或购买编解码器。
+Windows N版缺少媒体功能时，由用户/管理员通过设置的“可选功能”安装对应Media Feature Pack：
+https://support.microsoft.com/en-us/windows/experience/platform-variants/media-feature-pack-for-windows-n
+普通版不要盲目安装N版组件；精简系统/Windows Server/ARM不属于本包已验证范围。
+
+Intel/AMD/NVIDIA显示硬件均为设计目标；算法不要求CUDA或独立GPU，不声明所有驱动/显卡组合已经通过。
+包内不含Visual C++ redistributable、.NET安装器、系统DLL、字体、FFmpeg、Python或模型。
+缺少CLR时由Windows/.NET启动配置显示运行时提示，应用自身不能在CLR加载前显示WPF；缺失运行时机器未实测。
+
+官方依据（2026-10-26核对）：
+https://learn.microsoft.com/en-us/dotnet/framework/install/how-to-determine-which-versions-are-installed
+https://learn.microsoft.com/en-us/dotnet/framework/get-started/system-requirements
+https://learn.microsoft.com/en-us/dotnet/framework/deployment/deployment-guide-for-developers
+https://learn.microsoft.com/en-us/dotnet/framework/configure-apps/file-schema/startup/supportedruntime-element
+https://learn.microsoft.com/en-us/windows/win32/medfound/supported-media-formats-in-media-foundation
