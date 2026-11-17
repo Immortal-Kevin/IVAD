@@ -1,0 +1,51 @@
+{
+  "models": [
+    {
+      "filename": "IVAD_RFDETRNano_20Epoch_50de2cc6.pth",
+      "architecture": "RFDETRNano",
+      "kind": "company-authorized",
+      "sha256": "06eb7a09ad219baad7d524dbcc334111a61385f418cea25a7b17d9637a33b2ed",
+      "class_names": [
+        "压滤版破裂"
+      ],
+      "source": "50de2cc6-6106-4df0-8362-d27761b26728 / 8525test1 v1 / 20 Epoch / inference-only tensor-preserving export",
+      "source_sha256": "639f7f99903cd86c3ce44bd9ee48e238b35e94c185eba925d3032c72d9a9c7ad",
+      "authorization": "仅限金海泽地办公电脑本地演示，不向厂方提供软件副本。",
+      "license": "RF-DETR architecture Apache-2.0; company fine-tuned weights private",
+      "display_name": "20 Epoch · 50de2cc6 · 默认实验模型",
+      "model_id": "50de2cc6-6106-4df0-8362-d27761b26728",
+      "epochs": 20,
+      "dataset": "8525test1 v1",
+      "dataset_version_id": "fd9a3ba2-ed9b-4698-8838-5002b036fef0",
+      "resolution": 384,
+      "class_map": {
+        "0": "压滤版破裂"
+      },
+      "field_validation": "尚未经过淖尔壕现场验证"
+    },
+    {
+      "filename": "IVAD_RFDETRNano_1Epoch_0d48a0e4.pth",
+      "architecture": "RFDETRNano",
+      "kind": "company-authorized",
+      "sha256": "cdaa15e7225daf5cca80788b4ab072afde519a164f4678a4e58ccb1095547027",
+      "class_names": [
+        "压滤版破裂"
+      ],
+      "source": "P3.7-A accepted RFDETRNano; inference-only tensor-preserving export",
+      "source_sha256": "bc9d31e4457fe18c3306d3f567ff1fc6b0885a4bd3c233c867dcf865da1c52c6",
+      "authorization": "仅限金海泽地办公电脑本地演示，不向厂方提供软件副本。",
+      "license": "RF-DETR architecture Apache-2.0; company fine-tuned weights private",
+      "display_name": "1 Epoch · 0d48a0e4 · 对照实验模型",
+      "model_id": "0d48a0e4-8fef-4ed9-953f-b84f9736976b",
+      "epochs": 1,
+      "dataset": "8525test1 v1",
+      "dataset_version_id": "fd9a3ba2-ed9b-4698-8838-5002b036fef0",
+      "resolution": 384,
+      "class_map": {
+        "0": "压滤版破裂"
+      },
+      "field_validation": "尚未经过淖尔壕现场验证"
+    }
+  ],
+  "default_model": "IVAD_RFDETRNano_20Epoch_50de2cc6.pth"
+}
