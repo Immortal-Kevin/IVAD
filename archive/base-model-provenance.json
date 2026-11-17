@@ -1,0 +1,36 @@
+{
+  "yolo11n": {
+    "upstream_weight": "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo11n.pt",
+    "upstream_weight_release": "v8.4.0",
+    "training_library": "ultralytics==8.4.176",
+    "base_sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
+    "evidence": [
+      "artifacts/p0/download-hashes.json",
+      "reports/P0_NVIDIA_DOWNLOAD_GUIDE.txt",
+      "reports/P3_TRAINING_RESULTS.md",
+      "registry-lineage.json"
+    ]
+  },
+  "yolo26n": {
+    "upstream_weight": "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26n.pt",
+    "upstream_weight_release": "v8.4.0",
+    "training_library": "ultralytics==8.4.176",
+    "base_sha256": "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef",
+    "evidence": [
+      "artifacts/p0/download-hashes.json",
+      "reports/P0_NVIDIA_DOWNLOAD_GUIDE.txt",
+      "reports/P3_TRAINING_RESULTS.md",
+      "registry-lineage.json"
+    ]
+  },
+  "rfdetr-nano": {
+    "upstream_weight": "https://storage.googleapis.com/rfdetr/nano_coco/checkpoint_best_regular.pth",
+    "training_library": "rfdetr==1.11.2",
+    "upstream_source_commit": "7433d5919d0f7e72cc6cb78663e0a731afd499e0",
+    "base_sha256": "d8d6b9ee57d4d0ed2b1f305163624712a0532cb7bce0c747317984fc5457440d",
+    "evidence": [
+      "reports/P36_RFDETR_FEASIBILITY.md",
+      "registry-lineage.json"
+    ]
+  }
+}

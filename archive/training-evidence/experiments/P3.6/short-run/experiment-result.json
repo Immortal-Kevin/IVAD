@@ -1,0 +1,45 @@
+{
+  "status": "PASS",
+  "cpu_ai_fallback": false,
+  "parameters": {
+    "weights": "workspace\\IVAD_Platform_v1.0_NVIDIA_Primary\\artifacts\\p36-rfdetr-20261016\\weights\\rf-detr-nano.pth",
+    "dataset": "workspace\\IVAD_Platform_v1.0_NVIDIA_Primary\\artifacts\\p36-rfdetr-20261016\\coco",
+    "train": {
+      "batch_size": 4,
+      "grad_accum_steps": 1,
+      "lr": 0.0001,
+      "lr_encoder": 0.00015,
+      "num_workers": 0,
+      "seed": 20261016,
+      "multi_scale": false,
+      "scale_jitter": false,
+      "use_ema": true,
+      "amp_dtype": "bf16",
+      "tensorboard": false,
+      "wandb": false,
+      "mlflow": false,
+      "run_test": false,
+      "progress_bar": null,
+      "checkpoint_interval": 1,
+      "eval_backend": "faster_coco_eval",
+      "class_names": [
+        "压滤版破裂"
+      ],
+      "save_dataset_grids": false,
+      "epochs": 1
+    },
+    "output": "workspace\\IVAD_Platform_v1.0_NVIDIA_Primary\\artifacts\\p36-rfdetr-20261016\\short-run"
+  },
+  "evidence": {
+    "cuda_forward_calls": 40,
+    "cuda_gradients": true,
+    "weight_changed": true,
+    "optimizer_steps": 40
+  },
+  "peak_vram_allocated_bytes": 2170979840,
+  "peak_vram_reserved_bytes": 2348810240,
+  "torch": "2.9.1+cu128",
+  "cuda": "12.8",
+  "gpu": "NVIDIA GeForce RTX 5070 Ti",
+  "seconds": 58.3245394000005
+}
