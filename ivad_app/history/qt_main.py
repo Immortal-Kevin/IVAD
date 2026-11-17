@@ -12,7 +12,7 @@ def main():
     parser.add_argument('--data-dir', type=Path)
     parser.add_argument('--smoke-seconds', type=float, default=0)
     args = parser.parse_args()
-    root = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parent.parent))
+    root = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parents[2]))
     QGuiApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
     app = QApplication(sys.argv[:1]); app.setApplicationName('IVAD Platform'); app.setOrganizationName('IVAD')
     from ivad_app.core.demo_policy import enabled
