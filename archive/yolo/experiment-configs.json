@@ -1,0 +1,59 @@
+[
+  {
+    "architecture": "yolo11n",
+    "framework": "ultralytics==8.4.176",
+    "base_weights_release": "v8.4.0",
+    "base_weights_sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
+    "parameters": {
+      "epochs": 20,
+      "imgsz": 640,
+      "batch": 4,
+      "lr0": 0.01,
+      "optimizer": "SGD",
+      "weight_decay": 0.0005,
+      "augment": true,
+      "patience": 10,
+      "seed": 123,
+      "amp": false
+    },
+    "dataset": "frozen local annotation set; data retained offline"
+  },
+  {
+    "architecture": "yolo26n",
+    "framework": "ultralytics==8.4.176",
+    "base_weights_release": "v8.4.0",
+    "base_weights_sha256": "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef",
+    "parameters": {
+      "epochs": 30,
+      "imgsz": 640,
+      "batch": 8,
+      "lr0": 0.01,
+      "optimizer": "auto",
+      "weight_decay": 0.0005,
+      "augment": true,
+      "patience": 10,
+      "seed": 123,
+      "amp": true
+    },
+    "dataset": "frozen local annotation set; data retained offline"
+  },
+  {
+    "architecture": "yolo26n",
+    "framework": "ultralytics==8.4.176",
+    "base_weights_release": "v8.4.0",
+    "base_weights_sha256": "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef",
+    "parameters": {
+      "epochs": 20,
+      "imgsz": 640,
+      "batch": 4,
+      "lr0": 0.01,
+      "optimizer": "SGD",
+      "weight_decay": 0.0005,
+      "augment": true,
+      "patience": 10,
+      "seed": 123,
+      "amp": false
+    },
+    "dataset": "frozen local annotation set; data retained offline"
+  }
+]
