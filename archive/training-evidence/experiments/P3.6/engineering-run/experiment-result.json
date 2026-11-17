@@ -1,0 +1,36 @@
+{
+  "status": "CANCELLED",
+  "cpu_ai_fallback": false,
+  "parameters": {
+    "weights": "workspace\\IVAD_Platform_v1.0_NVIDIA_Primary\\artifacts\\p36-rfdetr-20261016\\weights\\rf-detr-nano.pth",
+    "dataset": "workspace\\IVAD_Platform_v1.0_NVIDIA_Primary\\artifacts\\p36-rfdetr-20261016\\coco",
+    "train": {
+      "batch_size": 4,
+      "grad_accum_steps": 1,
+      "lr": 0.0001,
+      "lr_encoder": 0.00015,
+      "num_workers": 0,
+      "seed": 20261016,
+      "multi_scale": false,
+      "scale_jitter": false,
+      "use_ema": true,
+      "amp_dtype": "bf16",
+      "tensorboard": false,
+      "wandb": false,
+      "mlflow": false,
+      "run_test": false,
+      "progress_bar": null,
+      "checkpoint_interval": 1,
+      "eval_backend": "faster_coco_eval",
+      "class_names": [
+        "压滤版破裂"
+      ],
+      "save_dataset_grids": false,
+      "epochs": 12
+    },
+    "output": "workspace\\IVAD_Platform_v1.0_NVIDIA_Primary\\artifacts\\p36-rfdetr-20261016\\engineering-run"
+  },
+  "error": "InterruptedError('Explicit cancellation; partial checkpoint retained')",
+  "traceback": "Traceback (most recent call last):\n  File \"workspace\\IVAD_Platform_v1.0_NVIDIA_Primary\\experiments\\p36_rfdetr\\train.py\", line 59, in main\n    pl.seed_everything(req['train']['seed'],workers=True)\n  File \"workspace\\IVAD_Platform_v1.0_NVIDIA_Primary\\.venv-rfdetr\\Lib\\site-packages\\rfdetr\\detr.py\", line 1437, in train\n    trainer.fit(module, datamodule, ckpt_path=config.resume or None)\n  File \"workspace\\IVAD_Platform_v1.0_NVIDIA_Primary\\.venv-rfdetr\\Lib\\site-packages\\pytorch_lightning\\trainer\\trainer.py\", line 584, in fit\n    call._call_and_handle_interrupt(\n  File \"workspace\\IVAD_Platform_v1.0_NVIDIA_Primary\\.venv-rfdetr\\Lib\\site-packages\\pytorch_lightning\\trainer\\call.py\", line 49, in _call_and_handle_interrupt\n    return trainer_fn(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"workspace\\IVAD_Platform_v1.0_NVIDIA_Primary\\.venv-rfdetr\\Lib\\site-packages\\pytorch_lightning\\trainer\\trainer.py\", line 630, in _fit_impl\n    self._run(model, ckpt_path=ckpt_path, weights_only=weights_only)\n  File \"workspace\\IVAD_Platform_v1.0_NVIDIA_Primary\\.venv-rfdetr\\Lib\\site-packages\\pytorch_lightning\\trainer\\trainer.py\", line 1079, in _run\n    results = self._run_stage()\n              ^^^^^^^^^^^^^^^^^\n  File \"workspace\\IVAD_Platform_v1.0_NVIDIA_Primary\\.venv-rfdetr\\Lib\\site-packages\\pytorch_lightning\\trainer\\trainer.py\", line 1123, in _run_stage\n    self.fit_loop.run()\n  File \"workspace\\IVAD_Platform_v1.0_NVIDIA_Primary\\.venv-rfdetr\\Lib\\site-packages\\pytorch_lightning\\loops\\fit_loop.py\", line 217, in run\n    self.advance()\n  File \"workspace\\IVAD_Platform_v1.0_NVIDIA_Primary\\.venv-rfdetr\\Lib\\site-packages\\pytorch_lightning\\loops\\fit_loop.py\", line 469, in advance\n    self.epoch_loop.run(self._data_fetcher)\n  File \"workspace\\IVAD_Platform_v1.0_NVIDIA_Primary\\.venv-rfdetr\\Lib\\site-packages\\pytorch_lightning\\loops\\training_epoch_loop.py\", line 153, in run\n    self.advance(data_fetcher)\n  File \"workspace\\IVAD_Platform_v1.0_NVIDIA_Primary\\.venv-rfdetr\\Lib\\site-packages\\pytorch_lightning\\loops\\training_epoch_loop.py\", line 375, in advance\n    call._call_callback_hooks(trainer, \"on_train_batch_end\", batch_output, batch, batch_idx)\n  File \"workspace\\IVAD_Platform_v1.0_NVIDIA_Primary\\.venv-rfdetr\\Lib\\site-packages\\pytorch_lightning\\trainer\\call.py\", line 228, in _call_callback_hooks\n    fn(trainer, trainer.lightning_module, *args, **kwargs)\n  File \"workspace\\IVAD_Platform_v1.0_NVIDIA_Primary\\experiments\\p36_rfdetr\\train.py\", line 52, in on_train_batch_end\n    raise InterruptedError('Explicit cancellation; partial checkpoint retained')\nInterruptedError: Explicit cancellation; partial checkpoint retained\n",
+  "seconds": 68.10388529999909
+}

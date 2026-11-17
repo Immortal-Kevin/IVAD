@@ -1,0 +1,154 @@
+[
+  {
+    "path": "archive/training-evidence/experiments/P3.6/engineering-run/training_config.json",
+    "origin": "IVAD_Platform_v1.0_NVIDIA_Primary/artifacts/p36-rfdetr-20261016/engineering-run/training_config.json",
+    "original_sha256": "643efdc10cdfeac6e3a58b3448b07ece3efbaa4206c237a26587241acf7b7736",
+    "base_sha256": "d8d6b9ee57d4d0ed2b1f305163624712a0532cb7bce0c747317984fc5457440d",
+    "dataset_sha256": "5eecfe2509b89dd67ec0ecf6280654607f036599099d538d305e27c27798a8ac",
+    "architecture": "rfdetr-nano"
+  },
+  {
+    "path": "archive/training-evidence/experiments/P3.6/engineering-run/metrics.csv",
+    "origin": "IVAD_Platform_v1.0_NVIDIA_Primary/artifacts/p36-rfdetr-20261016/engineering-run/metrics.csv",
+    "original_sha256": "fcaeeebce366ccb11bbfb2790fc96a9c7989d54e295783c94c90e5c5a391ca0e",
+    "base_sha256": "d8d6b9ee57d4d0ed2b1f305163624712a0532cb7bce0c747317984fc5457440d",
+    "dataset_sha256": "5eecfe2509b89dd67ec0ecf6280654607f036599099d538d305e27c27798a8ac",
+    "architecture": "rfdetr-nano"
+  },
+  {
+    "path": "archive/training-evidence/experiments/P3.6/engineering-run/experiment-result.json",
+    "origin": "IVAD_Platform_v1.0_NVIDIA_Primary/artifacts/p36-rfdetr-20261016/engineering-run/experiment-result.json",
+    "original_sha256": "0173bfad6361a2daab070748ed85d255f7834cb5ba3e74d31cc651898e24cc59",
+    "base_sha256": "d8d6b9ee57d4d0ed2b1f305163624712a0532cb7bce0c747317984fc5457440d",
+    "dataset_sha256": "5eecfe2509b89dd67ec0ecf6280654607f036599099d538d305e27c27798a8ac",
+    "architecture": "rfdetr-nano"
+  },
+  {
+    "path": "archive/training-evidence/experiments/P3.6/engineering-seeded-run/training_config.json",
+    "origin": "IVAD_Platform_v1.0_NVIDIA_Primary/artifacts/p36-rfdetr-20261016/engineering-seeded-run/training_config.json",
+    "original_sha256": "36b48ed93a0bcedb171fba8363825474e7d9bf001a5736fd274c491e7e35cc1d",
+    "base_sha256": "d8d6b9ee57d4d0ed2b1f305163624712a0532cb7bce0c747317984fc5457440d",
+    "dataset_sha256": "5eecfe2509b89dd67ec0ecf6280654607f036599099d538d305e27c27798a8ac",
+    "architecture": "rfdetr-nano"
+  },
+  {
+    "path": "archive/training-evidence/experiments/P3.6/engineering-seeded-run/metrics.csv",
+    "origin": "IVAD_Platform_v1.0_NVIDIA_Primary/artifacts/p36-rfdetr-20261016/engineering-seeded-run/metrics.csv",
+    "original_sha256": "04727ced756eed135a0da6410c3f8ecc956d78d4090e836276d18811f4b4930b",
+    "base_sha256": "d8d6b9ee57d4d0ed2b1f305163624712a0532cb7bce0c747317984fc5457440d",
+    "dataset_sha256": "5eecfe2509b89dd67ec0ecf6280654607f036599099d538d305e27c27798a8ac",
+    "architecture": "rfdetr-nano"
+  },
+  {
+    "path": "archive/training-evidence/experiments/P3.6/engineering-seeded-run/experiment-result.json",
+    "origin": "IVAD_Platform_v1.0_NVIDIA_Primary/artifacts/p36-rfdetr-20261016/engineering-seeded-run/experiment-result.json",
+    "original_sha256": "c082d802dcee5e2d6ad15d70a3697463dd1896ee1a0b229e9fb9d657e32f24b8",
+    "base_sha256": "d8d6b9ee57d4d0ed2b1f305163624712a0532cb7bce0c747317984fc5457440d",
+    "dataset_sha256": "5eecfe2509b89dd67ec0ecf6280654607f036599099d538d305e27c27798a8ac",
+    "architecture": "rfdetr-nano"
+  },
+  {
+    "path": "archive/training-evidence/experiments/P3.6/short-run/training_config.json",
+    "origin": "IVAD_Platform_v1.0_NVIDIA_Primary/artifacts/p36-rfdetr-20261016/short-run/training_config.json",
+    "original_sha256": "2819a5789053c6527ce419073c02dfe4a67d2d492f14e926b0cd377e62811267",
+    "base_sha256": "d8d6b9ee57d4d0ed2b1f305163624712a0532cb7bce0c747317984fc5457440d",
+    "dataset_sha256": "5eecfe2509b89dd67ec0ecf6280654607f036599099d538d305e27c27798a8ac",
+    "architecture": "rfdetr-nano"
+  },
+  {
+    "path": "archive/training-evidence/experiments/P3.6/short-run/metrics.csv",
+    "origin": "IVAD_Platform_v1.0_NVIDIA_Primary/artifacts/p36-rfdetr-20261016/short-run/metrics.csv",
+    "original_sha256": "973874ea262b3794d1f6c950f1fd7c433d43386763228ba38e2ffcf2ce5fc98b",
+    "base_sha256": "d8d6b9ee57d4d0ed2b1f305163624712a0532cb7bce0c747317984fc5457440d",
+    "dataset_sha256": "5eecfe2509b89dd67ec0ecf6280654607f036599099d538d305e27c27798a8ac",
+    "architecture": "rfdetr-nano"
+  },
+  {
+    "path": "archive/training-evidence/experiments/P3.6/short-run/experiment-result.json",
+    "origin": "IVAD_Platform_v1.0_NVIDIA_Primary/artifacts/p36-rfdetr-20261016/short-run/experiment-result.json",
+    "original_sha256": "ff76fe4b9db874422b4c99aa8f652a0991b0aa88758b1627b747afa4dc167ec8",
+    "base_sha256": "d8d6b9ee57d4d0ed2b1f305163624712a0532cb7bce0c747317984fc5457440d",
+    "dataset_sha256": "5eecfe2509b89dd67ec0ecf6280654607f036599099d538d305e27c27798a8ac",
+    "architecture": "rfdetr-nano"
+  },
+  {
+    "path": "archive/training-evidence/registered/7a01bcad-4b18-4cec-a0f7-1a31f94d6a32/args.yaml",
+    "origin": "示例项目/IVAD-fc4276bc-6919-42c6-8e56-234a9b9bd3e2/training/7a01bcad-4b18-4cec-a0f7-1a31f94d6a32/run/args.yaml",
+    "original_sha256": "a62ddbb603d0dcaa27e5af34511d93dfc606b90cbfbe7a3392098e617fd2f095",
+    "base_sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
+    "dataset_sha256": "5eecfe2509b89dd67ec0ecf6280654607f036599099d538d305e27c27798a8ac",
+    "architecture": "yolo11n"
+  },
+  {
+    "path": "archive/training-evidence/registered/7a01bcad-4b18-4cec-a0f7-1a31f94d6a32/results.csv",
+    "origin": "示例项目/IVAD-fc4276bc-6919-42c6-8e56-234a9b9bd3e2/training/7a01bcad-4b18-4cec-a0f7-1a31f94d6a32/run/results.csv",
+    "original_sha256": "6e6b1b6c4ecbc9caba3009265568bfa2233868faec6718377100500690329abb",
+    "base_sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
+    "dataset_sha256": "5eecfe2509b89dd67ec0ecf6280654607f036599099d538d305e27c27798a8ac",
+    "architecture": "yolo11n"
+  },
+  {
+    "path": "archive/training-evidence/registered/1cc172a1-6d8b-434b-99ab-20e433535ca2/args.yaml",
+    "origin": "示例项目/IVAD-fc4276bc-6919-42c6-8e56-234a9b9bd3e2/training/1cc172a1-6d8b-434b-99ab-20e433535ca2/run/args.yaml",
+    "original_sha256": "6abe8c26b1722756dd3ec65fa893b8a440a9983c03e5391d4ec783f585f17a3d",
+    "base_sha256": "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef",
+    "dataset_sha256": "5eecfe2509b89dd67ec0ecf6280654607f036599099d538d305e27c27798a8ac",
+    "architecture": "yolo26n"
+  },
+  {
+    "path": "archive/training-evidence/registered/1cc172a1-6d8b-434b-99ab-20e433535ca2/results.csv",
+    "origin": "示例项目/IVAD-fc4276bc-6919-42c6-8e56-234a9b9bd3e2/training/1cc172a1-6d8b-434b-99ab-20e433535ca2/run/results.csv",
+    "original_sha256": "6f22fbae0b892d868ac3682d1b8103c833acb1002b570f57b621b40c7c9b4c9a",
+    "base_sha256": "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef",
+    "dataset_sha256": "5eecfe2509b89dd67ec0ecf6280654607f036599099d538d305e27c27798a8ac",
+    "architecture": "yolo26n"
+  },
+  {
+    "path": "archive/training-evidence/registered/37aa67d8-3d61-4f37-92ad-7b23cea2bf64/args.yaml",
+    "origin": "示例项目/IVAD-fc4276bc-6919-42c6-8e56-234a9b9bd3e2/training/37aa67d8-3d61-4f37-92ad-7b23cea2bf64/run/args.yaml",
+    "original_sha256": "cbca438a4c460bb4267474670aa92dda0b593fca12e9e97660c37f92b04f18d6",
+    "base_sha256": "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef",
+    "dataset_sha256": "5eecfe2509b89dd67ec0ecf6280654607f036599099d538d305e27c27798a8ac",
+    "architecture": "yolo26n"
+  },
+  {
+    "path": "archive/training-evidence/registered/37aa67d8-3d61-4f37-92ad-7b23cea2bf64/results.csv",
+    "origin": "示例项目/IVAD-fc4276bc-6919-42c6-8e56-234a9b9bd3e2/training/37aa67d8-3d61-4f37-92ad-7b23cea2bf64/run/results.csv",
+    "original_sha256": "f2dbb204560a8aac223e239dd144a02d3d9e7ce3c2943125098dc6ebb13452a3",
+    "base_sha256": "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef",
+    "dataset_sha256": "5eecfe2509b89dd67ec0ecf6280654607f036599099d538d305e27c27798a8ac",
+    "architecture": "yolo26n"
+  },
+  {
+    "path": "archive/training-evidence/registered/75ede84e-4426-4928-9665-14df3f878328/training_config.json",
+    "origin": "示例项目/IVAD-fc4276bc-6919-42c6-8e56-234a9b9bd3e2/training/75ede84e-4426-4928-9665-14df3f878328/run/training_config.json",
+    "original_sha256": "29da340cce030089380ee6340a37a7f1d4916743940ba1613cb8dcae4244038a",
+    "base_sha256": "d8d6b9ee57d4d0ed2b1f305163624712a0532cb7bce0c747317984fc5457440d",
+    "dataset_sha256": "5eecfe2509b89dd67ec0ecf6280654607f036599099d538d305e27c27798a8ac",
+    "architecture": "rfdetr-nano"
+  },
+  {
+    "path": "archive/training-evidence/registered/75ede84e-4426-4928-9665-14df3f878328/metrics.csv",
+    "origin": "示例项目/IVAD-fc4276bc-6919-42c6-8e56-234a9b9bd3e2/training/75ede84e-4426-4928-9665-14df3f878328/run/metrics.csv",
+    "original_sha256": "ba8f5b94f7f0275b2ab9d632d10b7e65c9e494de499da848a57adba7afd27eea",
+    "base_sha256": "d8d6b9ee57d4d0ed2b1f305163624712a0532cb7bce0c747317984fc5457440d",
+    "dataset_sha256": "5eecfe2509b89dd67ec0ecf6280654607f036599099d538d305e27c27798a8ac",
+    "architecture": "rfdetr-nano"
+  },
+  {
+    "path": "archive/training-evidence/registered/f9237c67-8559-475d-b6ca-9ac06bea7121/training_config.json",
+    "origin": "示例项目/IVAD-fc4276bc-6919-42c6-8e56-234a9b9bd3e2/training/f9237c67-8559-475d-b6ca-9ac06bea7121/run/training_config.json",
+    "original_sha256": "b0332ea36e18e156ef1598a8ff74f6801e0f584132e77aa92ec2c5e27e8f70cc",
+    "base_sha256": "d8d6b9ee57d4d0ed2b1f305163624712a0532cb7bce0c747317984fc5457440d",
+    "dataset_sha256": "5eecfe2509b89dd67ec0ecf6280654607f036599099d538d305e27c27798a8ac",
+    "architecture": "rfdetr-nano"
+  },
+  {
+    "path": "archive/training-evidence/registered/f9237c67-8559-475d-b6ca-9ac06bea7121/metrics.csv",
+    "origin": "示例项目/IVAD-fc4276bc-6919-42c6-8e56-234a9b9bd3e2/training/f9237c67-8559-475d-b6ca-9ac06bea7121/run/metrics.csv",
+    "original_sha256": "8d34bf99687f3226971f8cc17b66f9569a47bbe9cdf8a59e25b3a8f59d3e5cae",
+    "base_sha256": "d8d6b9ee57d4d0ed2b1f305163624712a0532cb7bce0c747317984fc5457440d",
+    "dataset_sha256": "5eecfe2509b89dd67ec0ecf6280654607f036599099d538d305e27c27798a8ac",
+    "architecture": "rfdetr-nano"
+  }
+]
