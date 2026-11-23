@@ -107,6 +107,8 @@ internal static class Views
     internal static void Field(TableLayoutPanel grid, string name, Control input)
     {
         var row = Grid(2);
+        row.RowCount = 1;
+        row.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 126));
         row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         row.Controls.Add(Single(name), 0, 0);
