@@ -47,11 +47,17 @@ internal static class Views
     internal static Padding Pads(int left, int top, int right, int bottom)
     { return new Padding(Px(left), Px(top), Px(right), Px(bottom)); }
     internal static Padding Pads(int all) { return Pads(all, all, all, all); }
+    internal static Font UiFont(float points, FontStyle style = FontStyle.Regular)
+    {
+        // The control may not have a handle yet. Resolve typographic points
+        // against the same launch-monitor DPI as its physical layout metrics.
+        return new Font("Microsoft YaHei UI", points * StartupDpi / 72f, style, GraphicsUnit.Pixel);
+    }
 
     internal static Label Text(string value, float size = 10, bool bold = false)
     {
         return new Label { Text = value, AutoSize = true, ForeColor = Ink,
-            Font = new Font("Microsoft YaHei UI", size, bold ? FontStyle.Bold : FontStyle.Regular),
+            Font = UiFont(size, bold ? FontStyle.Bold : FontStyle.Regular),
             Margin = Pads(0, 0, 0, 5), TextAlign = ContentAlignment.MiddleLeft };
     }
 
@@ -67,11 +73,18 @@ internal static class Views
 
     internal static Button Button(string text, bool primary = false)
     {
-        var button = new Button { Text = text, AutoSize = true,
+        var button = new Button { Text = text, Font = UiFont(10),
             MinimumSize = new Size(Px(80), Px(32)), FlatStyle = FlatStyle.Flat,
             BackColor = primary ? Blue : Color.White, ForeColor = primary ? Color.White : Ink,
             Padding = Pads(6, 2, 6, 2), Margin = Pads(0, 0, 7, 3),
-            Cursor = Cursors.Hand, UseVisualStyleBackColor = false };
+            Cursor = Cursors.Hand, UseVisualStyleBackColor = false, UseCompatibleTextRendering = true };
+        using (var bitmap = new Bitmap(1, 1))
+        using (var graphics = Graphics.FromImage(bitmap))
+        {
+            var measured = graphics.MeasureString(text, button.Font);
+            button.Size = new Size(Math.Max(Px(80), (int)Math.Ceiling(measured.Width) + Px(24)),
+                                   Math.Max(Px(32), (int)Math.Ceiling(measured.Height) + Px(10)));
+        }
         button.FlatAppearance.BorderColor = primary ? Blue : Line;
         return button;
     }
@@ -272,7 +285,7 @@ internal sealed class PathView : TableLayoutPanel
         Controls.Add(title, 0, 0);
         if (picker != null)
         {
-            ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, picker.Width));
             picker.Dock = DockStyle.Fill;
             picker.MinimumSize = new Size(Views.Px(60), Views.Px(28));
             picker.Margin = new Padding(0);

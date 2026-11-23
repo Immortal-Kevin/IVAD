@@ -34,7 +34,7 @@ internal sealed partial class TrainerForm
     {
         var left = Views.ScrollBody();
         Views.Row(left, Views.Text("项目与配置", 16, true), 42);
-        trainProject.Font = new Font(Font.FontFamily, 10, FontStyle.Bold);
+        trainProject.Font = Views.UiFont(10, FontStyle.Bold);
         boundIds = new PathView("已绑定 IDS", tooltips);
         Views.Field(left, "项目名称", trainProject);
         Views.Field(left, "已绑定 IDS", boundIds);
@@ -98,7 +98,7 @@ internal sealed partial class TrainerForm
 
         var tabs = new TabControl { Dock = DockStyle.Fill, Margin = Views.Pads(0, 6, 0, 0) };
         var logs = new TabPage("实时日志") { BackColor = Color.White, Padding = Views.Pads(9) };
-        trainLog.Font = new Font("Microsoft YaHei UI", 9);
+        trainLog.Font = Views.UiFont(9);
         logs.Controls.Add(trainLog);
         tabs.TabPages.Add(logs);
         var metrics = new TabPage("训练指标") { BackColor = Color.White, Padding = Views.Pads(12), AutoScroll = true };

@@ -48,7 +48,7 @@ internal sealed partial class TrainerForm : Form
         trainer = new WorkerJob(this);
         verifier = new WorkerJob(this);
         Text = "IVAD Open Trainer v0.2.1";
-        Font = new Font("Microsoft YaHei UI", 10);
+        Font = Views.UiFont(10);
         AutoScaleMode = AutoScaleMode.None;
         StartPosition = FormStartPosition.Manual;
         FitInitialWindow(Views.StartupScreen.WorkingArea);
@@ -207,7 +207,7 @@ internal sealed partial class TrainerForm : Form
         var right = Views.Grid();
         Views.Row(right, Views.Text("导入统计", 16, true), 43);
         importSummary.ForeColor = Views.Blue;
-        importSummary.Font = new Font(Font.FontFamily, 12, FontStyle.Bold);
+        importSummary.Font = Views.UiFont(12, FontStyle.Bold);
         Views.Wrap(right, importSummary);
         Views.Row(right, importSummary, 41);
         importDetail.ForeColor = Views.Muted;

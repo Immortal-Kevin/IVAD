@@ -84,7 +84,7 @@ internal sealed partial class TrainerForm
         {
             item.BackColor = Views.Canvas;
             item.ForeColor = Views.Blue;
-            item.Font = new Font(Font.FontFamily, 10, FontStyle.Bold);
+            item.Font = Views.UiFont(10, FontStyle.Bold);
             item.Padding = Views.Pads(6, 0, 0, 0);
             item.Margin = Views.Pads(0, 0, 5, 0);
             fps.Controls.Add(item, index++, 0);
