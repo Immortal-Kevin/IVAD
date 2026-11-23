@@ -27,14 +27,24 @@ def train(args, dataset, output, classes, evidence):
                          use_ema=False, multi_scale=False, scale_jitter=False, tensorboard=False,
                          progress_bar=None, checkpoint_interval=1, run_test=False,
                          eval_backend="faster_coco_eval", class_names=[c["name"] for c in classes])
-    accelerator = {"cpu": "cpu", "cuda": "cuda", "xpu": "xpu"}[args.device]
+    accelerator = args.device
+    strategy = {}
     if args.device == "xpu":
+        from pytorch_lightning.strategies import SingleDeviceStrategy
+
         from rf_xpu import XPULightningAccelerator
         accelerator = XPULightningAccelerator()
+        strategy["strategy"] = SingleDeviceStrategy(device=torch.device("xpu:0"))
     module = RFDETRModelModule(model_config, config, load_encoder_weights=False)
     data = RFDETRDataModule(model_config, config)
     runner = build_trainer(config, model_config, accelerator=accelerator, devices=1,
-                           extra_callbacks=[Observe()], num_sanity_val_steps=0)
+                           extra_callbacks=[Observe()], num_sanity_val_steps=0, **strategy)
+    actual_device = runner.strategy.root_device
+    if actual_device.type != args.device:
+        raise RuntimeError(f"RF-DETR selected {actual_device} for requested {args.device}")
+    print(f"RF-DETR training device: {actual_device}", flush=True)
+    if args.device == "xpu":
+        print("Lightning's GPU availability line refers to CUDA. This run uses Intel XPU.", flush=True)
     runner.fit(module, data)
     weights = destination / "checkpoint_best_total.pth"
     checkpoint = torch.load(weights, map_location="cpu", weights_only=False)
