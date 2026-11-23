@@ -18,7 +18,7 @@ internal sealed partial class TrainerForm
     private readonly Label trainStatus = Views.Single("任务状态   ·   就绪");
     private readonly Label actualDevice = Views.Single("实际设备   ·   —");
     private readonly Label epochStatus = Views.Single("Epoch   ·   —");
-    private readonly ProgressBar progressBar = new ProgressBar { Dock = DockStyle.Fill, Margin = new Padding(0, 7, 7, 7) };
+    private readonly ProgressBar progressBar = new ProgressBar { Dock = DockStyle.Fill, Margin = Views.Pads(0, 5, 5, 5) };
     private readonly RichTextBox trainLog = new RichTextBox { Dock = DockStyle.Fill, ReadOnly = true,
         BackColor = Color.FromArgb(245, 249, 253), BorderStyle = BorderStyle.None, DetectUrls = false };
     private readonly Button trainStart = Views.Button("开始训练", true);
@@ -96,12 +96,12 @@ internal sealed partial class TrainerForm
         controls.Controls.Add(trainCancel, 1, 0);
         Views.Row(right, controls, 42);
 
-        var tabs = new TabControl { Dock = DockStyle.Fill, Margin = new Padding(0, 6, 0, 0) };
-        var logs = new TabPage("实时日志") { BackColor = Color.White, Padding = new Padding(9) };
+        var tabs = new TabControl { Dock = DockStyle.Fill, Margin = Views.Pads(0, 6, 0, 0) };
+        var logs = new TabPage("实时日志") { BackColor = Color.White, Padding = Views.Pads(9) };
         trainLog.Font = new Font("Microsoft YaHei UI", 9);
         logs.Controls.Add(trainLog);
         tabs.TabPages.Add(logs);
-        var metrics = new TabPage("训练指标") { BackColor = Color.White, Padding = new Padding(12), AutoScroll = true };
+        var metrics = new TabPage("训练指标") { BackColor = Color.White, Padding = Views.Pads(12), AutoScroll = true };
         var measured = Views.ScrollBody();
         string[] keys = { "loss", "map50", "map", "precision", "recall" };
         string[] labels = { "训练损失", "mAP@50", "mAP@50–95", "精确率", "召回率" };
@@ -113,7 +113,7 @@ internal sealed partial class TrainerForm
         }
         metrics.Controls.Add(measured);
         tabs.TabPages.Add(metrics);
-        var exports = new TabPage("模型导出") { BackColor = Color.White, Padding = new Padding(12) };
+        var exports = new TabPage("模型导出") { BackColor = Color.White, Padding = Views.Pads(12) };
         var export = Views.ScrollBody();
         artifactPath = new PathView("已生成权重", tooltips);
         Views.Field(export, "已生成权重", artifactPath);

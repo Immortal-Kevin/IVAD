@@ -205,16 +205,18 @@ internal sealed partial class TrainerForm : Form
         importDetail.ForeColor = Views.Muted;
         Views.Wrap(right, importDetail);
         Views.Row(right, importDetail, 35);
-        classList.Columns.Add("类别", 215);
-        classList.Columns.Add("有效标注", 104);
-        classList.Columns.Add("IDS 类别 ID", 285);
+        classList.Columns.Add("类别", Views.Px(215));
+        classList.Columns.Add("有效标注", Views.Px(104));
+        classList.Columns.Add("IDS 类别 ID", Views.Px(285));
         classList.Resize += delegate {
             int w = classList.ClientSize.Width;
-            if (w > 48)
+            int dpi = classList.DeviceDpi;
+            if (w > Views.Scale(48, dpi))
             {
                 classList.Columns[0].Width = w * 36 / 100;
-                classList.Columns[1].Width = w * 17 / 100;
-                classList.Columns[2].Width = Math.Max(0, w - classList.Columns[0].Width - classList.Columns[1].Width - 5);
+                classList.Columns[1].Width = Math.Max(Views.Scale(86, dpi), w * 17 / 100);
+                classList.Columns[2].Width = Math.Max(Views.Scale(95, dpi),
+                    w - classList.Columns[0].Width - classList.Columns[1].Width - Views.Scale(6, dpi));
             }
         };
         Views.Row(right, classList, -1);
