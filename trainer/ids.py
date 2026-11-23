@@ -13,6 +13,8 @@ from zipfile import ZipFile
 
 from PIL import Image
 
+from split import automatic_split
+
 ASSET_PATH = re.compile(r"assets/([0-9a-f]{64})\.[a-zA-Z0-9]{1,12}\Z")
 MAX_METADATA = 16 * 1024**2
 
@@ -124,7 +126,7 @@ def inspect_package(path):
             require(data["asset_path"] in assets, "Frame image missing from IDS inventory")
             for field in ("width", "height"):
                 require(type(data[field]) is int and data[field] > 0, "Invalid IDS frame dimensions")
-            frame = Frame(UUID(entry["id"]).hex, data["asset_path"], data["video_id"], data["pts_us"],
+            frame = Frame(UUID(entry["id"]).hex, data["asset_path"], str(UUID(data["video_id"])), data.get("pts_us"),
                           data["width"], data["height"], [])
             all_frames[frame.id] = frame
         for entry in kinds["Annotation"]:
@@ -174,34 +176,32 @@ def inspect_package(path):
     return summary, eligible
 
 
-def split_frames(frames, limit=None):
-    unique = {}
-    for frame in sorted(frames, key=lambda f: (f.video, f.pts, f.id)):
-        prior = unique.setdefault(frame.asset, frame)
-        require(sorted(prior.boxes) == sorted(frame.boxes),
-                "Identical frame images have conflicting reviewed annotations")
-    frames = list(unique.values())
-    target_indices = [i for i, frame in enumerate(frames) if frame.boxes]
-    require(len(target_indices) >= 2, "Two distinct reviewed positive images are required")
-    low, high = target_indices[0] + 1, target_indices[-1]
-    boundaries = [i for i in range(low, high + 1) if frames[i - 1].video != frames[i].video]
-    ideal = max(low, min(high, int(len(frames) * 0.8)))
-    cut = min(boundaries, key=lambda i: abs(i - ideal)) if boundaries else ideal
-    method = "source-video holdout" if boundaries else "temporal holdout within the same source video"
-    splits = {"train": frames[:cut], "valid": frames[cut:]}
-    if limit:
-        splits = {key: sorted(items, key=lambda frame: not frame.boxes)[:limit]
-                  for key, items in splits.items()}
-    return splits, method
-
-
 def prepare(path, output, model, summary, frames, limit=None):
     import yaml
 
-    splits, method = split_frames(frames, limit)
-    print(f"Validation split: {method}", flush=True)
-    for name, items in splits.items():
-        print(f"{name}: {len(items)} images, {sum(len(item.boxes) for item in items)} boxes", flush=True)
+    from events import emit
+
+    splits, manifest = automatic_split(frames, summary["target_sha256"], limit)
+    mode = "同源视频留出验证" if manifest["validation"] else "无独立正例验证"
+    output.mkdir(parents=True)
+    manifest_path = output.parent / "split-manifest.json"
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    lines = [f"自动拆分 · {mode}"]
+    for index, (video, stats) in enumerate(manifest["videos"].items(), 1):
+        for side, label in (("train", "训练"), ("valid", "验证"), ("embargo", "间隔留空")):
+            row = stats[side]
+            lines.append(f"视频 {index} {label}  {row['images']} 张 · 正例 {row['positive']} 张"
+                         f"（{row['positive_groups']} 组） · 正常 {row['normal']} 张 · {row['boxes']} 框"
+                         f"  [{video}]")
+    if limit is not None:
+        lines.append("短训实际读取 " + " / ".join(f"{side} {len(rows)} 张" for side, rows in splits.items()))
+    valid = [stats["valid"] for stats in manifest["videos"].values()]
+    validation_summary = (f"正例 {sum(row['positive_groups'] for row in valid)} 组 / "
+                          f"{sum(row['positive'] for row in valid)} 张 / {sum(row['boxes'] for row in valid)} 框")
+    emit("split", mode=mode, validation_summary=validation_summary,
+         detail="\n".join(lines), path=str(manifest_path))
+    print("\n".join(lines), flush=True)
+    print(f"Split manifest: {manifest_path}", flush=True)
     cats = summary["classes"]
     names = [category["name"] for category in cats]
     yolo = model == "yolo"
@@ -246,5 +246,5 @@ def prepare(path, output, model, summary, frames, limit=None):
         config = output / "data.yaml"
         config.write_text(yaml.safe_dump({"path": output.as_posix(), "train": "images/train",
                          "val": "images/valid", "names": names}, allow_unicode=True), encoding="utf-8")
-        return config
-    return output
+        return config, manifest
+    return output, manifest

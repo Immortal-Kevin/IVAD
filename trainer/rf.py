@@ -34,7 +34,7 @@ def predictor(args):
     return names, predict
 
 
-def train(args, dataset, output, classes, evidence):
+def train(args, dataset, output, classes, evidence, validate):
     import torch
     from pytorch_lightning import Callback, seed_everything
     from rfdetr.config import RFDETRNanoConfig, TrainConfig
@@ -85,8 +85,12 @@ def train(args, dataset, output, classes, evidence):
         strategy["strategy"] = SingleDeviceStrategy(device=torch.device("xpu:0"))
     module = RFDETRModelModule(model_config, config, load_encoder_weights=False)
     data = RFDETRDataModule(model_config, config)
+    if validate:
+        strategy["extra_callbacks"] = [Observe()]
+    else:
+        strategy.update(callbacks=[Observe()], enable_checkpointing=False, limit_val_batches=0)
     runner = build_trainer(config, model_config, accelerator=accelerator, devices=1,
-                           extra_callbacks=[Observe()], num_sanity_val_steps=0, **strategy)
+                           num_sanity_val_steps=0, **strategy)
     actual_device = runner.strategy.root_device
     if actual_device.type != args.device:
         raise RuntimeError(f"RF-DETR selected {actual_device} for requested {args.device}")
@@ -95,8 +99,15 @@ def train(args, dataset, output, classes, evidence):
         print("Lightning's GPU availability line refers to CUDA. This run uses Intel XPU.", flush=True)
     emit("stage", value="正在训练")
     runner.fit(module, data)
-    weights = destination / "checkpoint_best_total.pth"
-    checkpoint = torch.load(weights, map_location="cpu", weights_only=False)
+    weights = destination / ("checkpoint_best_total.pth" if validate else "checkpoint_last.pth")
+    if not validate:
+        runner.save_checkpoint(weights, weights_only=True)
+        checkpoint = torch.load(weights, map_location="cpu", weights_only=False)
+        checkpoint["model"] = {key.removeprefix("model."): value for key, value in checkpoint["state_dict"].items()
+                               if key.startswith("model.")}
+        torch.save(checkpoint, weights)
+    else:
+        checkpoint = torch.load(weights, map_location="cpu", weights_only=False)
     if not checkpoint.get("model"):
         raise RuntimeError("RF-DETR checkpoint has no trained model weights")
     return weights, measured

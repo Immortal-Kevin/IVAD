@@ -88,17 +88,18 @@ def train(args):
           f"size: {args.size}; batch: {args.batch}; epochs: {args.epochs}", flush=True)
     from evidence import UpdateEvidence
 
-    dataset = prepare(args.ids, run / "dataset", args.model, summary, frames, args.limit)
+    dataset, split = prepare(args.ids, run / "dataset", args.model, summary, frames, args.limit)
     adapter = importlib.import_module(args.model)
     evidence = UpdateEvidence(args.device)
-    checkpoint, measured = adapter.train(args, dataset, run, summary["classes"], evidence)
+    checkpoint, measured = adapter.train(args, dataset, run, summary["classes"], evidence, split["validation"])
     if evidence.result is None:
         raise RuntimeError(f"No finite gradient and changed parameter observed on {args.device}")
     with checkpoint.open("rb") as stream:
         digest = hashlib.file_digest(stream, "sha256").hexdigest()
     result = {"model": args.model, "device": args.device, "torch": torch.__version__,
               "checkpoint": str(checkpoint.relative_to(run)), "checkpoint_sha256": digest,
-              "update": evidence.result, "ids": summary, "metrics": measured}
+              "update": evidence.result, "ids": summary, "metrics": measured,
+              "validation": split["validation"], "split_manifest": "split-manifest.json"}
     (run / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
     emit("checkpoint", path=str(checkpoint), model=args.model, metrics=measured)
     print(f"CHECKPOINT {checkpoint}\nSHA256 {digest}", flush=True)

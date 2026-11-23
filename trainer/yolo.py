@@ -33,16 +33,34 @@ def predictor(args):
     return model.names, predict
 
 
-def train(args, dataset, output, classes, evidence):
+def train(args, dataset, output, classes, evidence, validate):
     import math
+    from types import SimpleNamespace
     from unittest.mock import patch
 
     import torch
     from ultralytics import YOLO
     from ultralytics.data import utils as data_utils
     from ultralytics.models.yolo.detect import DetectionTrainer
+    from ultralytics.utils.torch_utils import strip_optimizer
 
     class ObservedTrainer(DetectionTrainer):
+        def get_dataloader(self, dataset_path, batch_size=16, rank=0, mode="train"):
+            if mode == "val" and not validate:
+                # Ultralytics builds this slot even with val=False. No images enter it.
+                return SimpleNamespace(dataset=())
+            return super().get_dataloader(dataset_path, batch_size, rank, mode)
+
+        def validate(self):
+            # Ultralytics also calls validate unconditionally at the final epoch.
+            return super().validate() if validate else ({}, 0.0)
+
+        def final_eval(self):
+            if validate:
+                super().final_eval()
+            else:
+                strip_optimizer(self.last)
+
         def optimizer_step(self):
             evidence.before(self.optimizer)
             super().optimizer_step()
@@ -56,6 +74,9 @@ def train(args, dataset, output, classes, evidence):
         actual = trainer.device
         if actual.type != args.device:
             raise RuntimeError(f"YOLOv8 选择了 {actual}，请求设备为 {args.device}")
+        if not validate:
+            trainer.metrics = {}
+            trainer.best_fitness = -math.inf
         emit("stage", value="正在训练")
 
     def epoch(trainer):
@@ -72,6 +93,9 @@ def train(args, dataset, output, classes, evidence):
             loss = math.fsum(trainer.label_loss_items(trainer.tloss).values())
             if math.isfinite(loss):
                 measured["loss"] = loss
+        if not validate:
+            emit("metrics", values=measured)
+            return
         measured.update(metrics(trainer.metrics or {}, {
             "map50": ("metrics/mAP50(B)",), "map": ("metrics/mAP50-95(B)",),
             "precision": ("metrics/precision(B)",), "recall": ("metrics/recall(B)",),
@@ -87,7 +111,7 @@ def train(args, dataset, output, classes, evidence):
     with patch.object(data_utils, "check_font", return_value=None):
         model.train(trainer=ObservedTrainer, data=str(dataset), project=str(output), name="weights-yolo",
                     exist_ok=True, device=device, epochs=args.epochs, imgsz=args.size, batch=args.batch,
-                    workers=0, amp=False, plots=False, mosaic=0.0, pretrained=bool(args.weights),
+                    workers=0, amp=False, plots=False, mosaic=0.0, pretrained=bool(args.weights), val=validate,
                     warmup_epochs=0, nbs=args.batch, deterministic=False, verbose=True)
     weights = output / "weights-yolo" / "weights" / "last.pt"
     checkpoint = torch.load(weights, map_location="cpu", weights_only=False)

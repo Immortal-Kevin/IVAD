@@ -16,6 +16,7 @@ internal sealed partial class TrainerForm
     private readonly NumericUpDown trainEpochs = Views.Number("Epochs", 1, 10000, 1, 1);
     private readonly Label trainProject = Views.Single("");
     private readonly Label trainStatus = Views.Single("任务状态   ·   就绪");
+    private readonly Label splitStatus = Views.Single("自动拆分   ·   等待训练任务");
     private readonly Label actualDevice = Views.Single("实际设备   ·   —");
     private readonly Label epochStatus = Views.Single("Epoch   ·   —");
     private readonly ProgressBar progressBar = new ProgressBar { Dock = DockStyle.Fill, Margin = Views.Pads(0, 5, 5, 5) };
@@ -87,6 +88,8 @@ internal sealed partial class TrainerForm
         Views.Row(right, Views.Text("训练监控", 16, true), 43);
         Views.Wrap(right, trainStatus);
         Views.Row(right, trainStatus, 32);
+        Views.Wrap(right, splitStatus);
+        Views.Row(right, splitStatus, 30);
         Views.Row(right, actualDevice, 30);
         Views.Row(right, epochStatus, 30);
         var controls = Views.Grid(2);
@@ -183,6 +186,8 @@ internal sealed partial class TrainerForm
         progressBar.Value = 0;
         trainLog.Clear();
         ShowMetrics(null);
+        SetStatus(splitStatus, "自动拆分   ·   正在分析 IDS", Views.Muted);
+        tooltips.SetToolTip(splitStatus, "");
         actualDevice.Text = "实际设备   ·   正在检查";
         epochStatus.Text = "Epoch   ·   — / " + Project.Epochs;
         SetStatus(trainStatus, "任务状态   ·   正在检查设备", Views.Blue);
@@ -193,6 +198,12 @@ internal sealed partial class TrainerForm
                 if (kind == "stage") SetStatus(trainStatus, project + "  ·  " + Workspace.Value(message, "value"), Views.Blue);
                 else if (kind == "device") actualDevice.Text = "实际设备   ·   " + Workspace.Value(message, "value") +
                     "   " + Workspace.Value(message, "hardware");
+                else if (kind == "split")
+                {
+                    SetStatus(splitStatus, "自动拆分   ·   " + Workspace.Value(message, "mode") +
+                        "   ·   " + Workspace.Value(message, "validation_summary"), Views.Blue);
+                    tooltips.SetToolTip(splitStatus, Workspace.Value(message, "detail"));
+                }
                 else if (kind == "progress") ShowProgress(message);
                 else if (kind == "metrics") ShowMetrics(Workspace.Object(message, "values"));
                 else if (kind == "error") failure = Workspace.Value(message, "value");
