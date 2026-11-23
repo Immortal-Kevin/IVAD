@@ -20,7 +20,8 @@ Expand-Archive -LiteralPath $sourceZip -DestinationPath $stage
 $runtime = Join-Path $stage 'runtime'
 
 if ($PreparedRuntime) {
-    Copy-Item -LiteralPath (Resolve-Path -LiteralPath $PreparedRuntime).Path -Destination $runtime -Recurse
+    robocopy.exe (Resolve-Path -LiteralPath $PreparedRuntime).Path $runtime /E /MT:12 /NFL /NDL /NJH /NJS /NP
+    if ($LASTEXITCODE -gt 7) { throw 'Prepared runtime copy failed.' }
 } else {
     $embed = Join-Path $build 'python.zip'
     curl.exe --fail --location --retry 2 --silent --show-error https://www.python.org/ftp/python/3.12.10/python-3.12.10-embed-amd64.zip --output $embed
@@ -40,6 +41,10 @@ $embedded = Join-Path $runtime 'python.exe'
 if ($LASTEXITCODE) { throw 'Runtime dependency check failed.' }
 Get-ChildItem -LiteralPath (Join-Path $runtime 'Lib\site-packages\cv2') -File -Filter 'opencv_videoio_ffmpeg*.dll' |
     ForEach-Object { Remove-Item -LiteralPath $_.FullName }
+$optionalMetricWeights = Join-Path $runtime 'Lib\site-packages\torchmetrics\functional\image\dists_models\weights.pt'
+if (Test-Path -LiteralPath $optionalMetricWeights) { Remove-Item -LiteralPath $optionalMetricWeights }
+$packageFixture = Join-Path $runtime 'Lib\site-packages\pkg_resources\tests\data\my-test-package-zip\my-test-package.zip'
+if (Test-Path -LiteralPath $packageFixture) { Remove-Item -LiteralPath $packageFixture }
 & $embedded -B (Join-Path $stage 'scripts\inventory.py') $stage
 if ($LASTEXITCODE) { throw 'Runtime inventory failed.' }
 Get-ChildItem -LiteralPath $runtime -Recurse -File -Filter '*.pyc' |
