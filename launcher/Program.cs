@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Windows.Forms;
+
+[assembly: TargetFramework(".NETFramework,Version=v4.8")]
 
 internal static class Program
 {
@@ -40,6 +43,7 @@ internal static class Program
 
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
+        Views.Initialize(Screen.FromPoint(Cursor.Position));
         Application.Run(new TrainerForm());
         return 0;
     }

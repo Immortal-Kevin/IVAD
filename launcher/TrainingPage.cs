@@ -85,6 +85,7 @@ internal sealed partial class TrainerForm
 
         var right = Views.Grid();
         Views.Row(right, Views.Text("训练监控", 16, true), 43);
+        Views.Wrap(right, trainStatus);
         Views.Row(right, trainStatus, 32);
         Views.Row(right, actualDevice, 30);
         Views.Row(right, epochStatus, 30);
@@ -127,7 +128,7 @@ internal sealed partial class TrainerForm
             catch (Exception error) { SetStatus(trainStatus, "无法打开目录：" + error.Message, Views.Error); }
         };
         Views.Row(right, tabs, -1);
-        return Views.Columns(Views.Card(left, true), Views.Card(right));
+        return Views.PageColumns(Views.Card(left, true), Views.Card(right));
     }
 
     private void LoadTrainingFields()

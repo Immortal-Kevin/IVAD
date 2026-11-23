@@ -75,6 +75,7 @@ internal sealed partial class TrainerForm
 
         var right = Views.Grid();
         Views.Row(right, Views.Text("视频验证监控", 16, true), 43);
+        Views.Wrap(right, videoStatus);
         Views.Row(right, videoStatus, 31);
         var fps = Views.Grid(3);
         for (int i = 0; i < 3; i++) fps.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f / 3));
@@ -84,8 +85,8 @@ internal sealed partial class TrainerForm
             item.BackColor = Views.Canvas;
             item.ForeColor = Views.Blue;
             item.Font = new Font(Font.FontFamily, 10, FontStyle.Bold);
-            item.Padding = new Padding(6, 0, 0, 0);
-            item.Margin = new Padding(0, 0, 5, 0);
+            item.Padding = Views.Pads(6, 0, 0, 0);
+            item.Margin = Views.Pads(0, 0, 5, 0);
             fps.Controls.Add(item, index++, 0);
         }
         Views.Row(right, fps, 37);
@@ -99,7 +100,7 @@ internal sealed partial class TrainerForm
         Views.Row(right, Views.Columns(annotated, original, 74), -1);
         Views.Row(right, videoTimestamp, 32);
         previewTimer.Tick += delegate { ReadPreviews(); };
-        return Views.Columns(Views.Card(left, true), Views.Card(right), 38);
+        return Views.PageColumns(Views.Card(left, true), Views.Card(right), 38);
     }
 
     private static PictureBox Picture(string name)

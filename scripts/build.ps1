@@ -61,11 +61,12 @@ $launcher = Join-Path $stage 'launcher'
 $sources = @(Get-ChildItem -LiteralPath $launcher -File -Filter '*.cs' | ForEach-Object FullName)
 & $compiler /nologo /target:winexe /platform:x64 /optimize+ /codepage:65001 "/out:$exe" "/win32manifest:$launcher\app.manifest" /r:System.Windows.Forms.dll /r:System.Drawing.dll /r:System.Web.Extensions.dll $sources
 if ($LASTEXITCODE) { throw 'EXE compilation failed.' }
+Copy-Item -LiteralPath (Join-Path $launcher 'app.config') -Destination "$exe.config"
 Set-Content -LiteralPath (Join-Path $stage 'SOURCE-COMMIT.txt') -Value $stamp -Encoding ascii
 
 $dist = Join-Path $root 'dist'
 New-Item -ItemType Directory -Path $dist -Force | Out-Null
-$name = 'IVAD-Open-Trainer-v0.2.0-win11-x64.zip'
+$name = 'IVAD-Open-Trainer-v0.2.1-win11-x64.zip'
 $archive = Join-Path $dist $name
 if (Test-Path $archive) { throw "Existing package: $archive" }
 tar.exe -a -cf $archive -C $build 'IVAD Open Trainer'

@@ -43,33 +43,34 @@ internal sealed partial class TrainerForm : Form
 
     internal TrainerForm()
     {
+        SuspendLayout();
         importer = new WorkerJob(this);
         trainer = new WorkerJob(this);
         verifier = new WorkerJob(this);
-        Text = "IVAD Open Trainer v0.2";
+        Text = "IVAD Open Trainer v0.2.1";
         Font = new Font("Microsoft YaHei UI", 10);
-        AutoScaleDimensions = new SizeF(96, 96);
-        AutoScaleMode = AutoScaleMode.Dpi;
-        ClientSize = new Size(1170, 740);
-        MinimumSize = new Size(850, 560);
-        StartPosition = FormStartPosition.CenterScreen;
+        StartPosition = FormStartPosition.Manual;
         BackColor = Views.Canvas;
         ForeColor = Views.Ink;
 
         var layout = Views.Grid(2);
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 192));
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         Controls.Add(layout);
         layout.Controls.Add(Sidebar(), 0, 0);
 
         var main = Views.Grid();
-        main.Padding = new Padding(21, 17, 21, 19);
+        main.Padding = Views.Pads(18, 14, 18, 16);
         var head = Views.ScrollBody();
-        Views.Row(head, Views.Text("IVAD Open Trainer", 24, true));
+        head.Dock = DockStyle.Fill;
+        var productTitle = Views.Text("IVAD Open Trainer", 24, true);
+        Views.Wrap(head, productTitle);
+        Views.Row(head, productTitle);
         context.ForeColor = Views.Muted;
+        Views.Wrap(head, context);
         Views.Row(head, context, 28);
-        Views.Row(main, head, 85);
+        Views.Row(main, head);
         Views.Row(main, pages, -1);
         layout.Controls.Add(main, 1, 0);
 
@@ -79,49 +80,77 @@ internal sealed partial class TrainerForm : Form
         foreach (var screen in screens) pages.Controls.Add(screen);
         LoadProject();
         Navigate(0);
+        // Controls are created in physical pixels for the initial monitor.
+        // WinForms starts from that baseline when changing monitors.
+        AutoScaleDimensions = new SizeF(Views.StartupDpi, Views.StartupDpi);
+        AutoScaleMode = AutoScaleMode.Dpi;
+        FitInitialWindow(Views.StartupScreen.WorkingArea);
+        ResumeLayout(true);
         Shown += delegate {
             if (!String.IsNullOrEmpty(workspace.LoadError)) SetStatus(importState, workspace.LoadError, Views.Error);
             else if (!String.IsNullOrEmpty(Project.Ids)) Import(Project.Ids);
         };
     }
 
+    private void FitInitialWindow(Rectangle work)
+    {
+        SetWindowMinimum(work, Views.StartupDpi);
+        int width = Math.Min(Views.Px(1170), Math.Max(MinimumSize.Width, work.Width - Views.Px(28)));
+        int height = Math.Min(Views.Px(740), Math.Max(MinimumSize.Height, work.Height - Views.Px(24)));
+        Bounds = new Rectangle(work.Left + (work.Width - width) / 2, work.Top + (work.Height - height) / 2,
+                               width, height);
+    }
+
+    private void SetWindowMinimum(Rectangle work, int dpi)
+    {
+        MinimumSize = new Size(Math.Min(Views.Scale(610, dpi), work.Width),
+                               Math.Min(Views.Scale(360, dpi), work.Height));
+    }
+
+    protected override void OnDpiChanged(DpiChangedEventArgs e)
+    {
+        SetWindowMinimum(Screen.FromRectangle(e.SuggestedRectangle).WorkingArea, e.DeviceDpiNew);
+        base.OnDpiChanged(e);
+    }
+
     private Control Sidebar()
     {
         var grid = Views.Grid();
         grid.BackColor = Views.Navy;
-        grid.Padding = new Padding(14, 20, 14, 12);
+        grid.AutoSize = true;
+        grid.MinimumSize = new Size(Views.Px(174), 0);
+        grid.Padding = Views.Pads(12, 16, 12, 10);
         var brand = Views.Text("IVAD", 28, true);
         brand.ForeColor = Color.White;
-        brand.Margin = new Padding(8, 4, 0, 0);
+        brand.Margin = Views.Pads(7, 2, 0, 0);
         var subtitle = Views.Text("OPEN TRAINER", 10);
         subtitle.ForeColor = Color.FromArgb(166, 200, 229);
-        subtitle.Margin = new Padding(10, 0, 0, 0);
-        Views.Row(grid, brand, 51);
-        Views.Row(grid, subtitle, 49);
+        subtitle.Margin = Views.Pads(8, 0, 0, 6);
+        Views.Row(grid, brand);
+        Views.Row(grid, subtitle, 35);
         var directory = Views.Text("软件目录", 9);
         directory.ForeColor = subtitle.ForeColor;
-        directory.Margin = new Padding(10, 0, 0, 0);
+        directory.Margin = Views.Pads(8, 0, 0, 0);
         Views.Row(grid, directory, 28);
         for (int i = 0; i < nav.Length; i++)
         {
             int index = i;
             var button = Views.Button(PageNames[i]);
             button.Dock = DockStyle.Fill;
-            button.AutoSize = false;
             button.TextAlign = ContentAlignment.MiddleLeft;
-            button.Padding = new Padding(11, 0, 0, 0);
-            button.Margin = new Padding(0, 2, 0, 5);
+            button.Padding = Views.Pads(8, 2, 8, 2);
+            button.Margin = Views.Pads(0, 2, 0, 4);
             button.ForeColor = Color.White;
             button.FlatAppearance.BorderSize = 0;
             button.FlatAppearance.MouseOverBackColor = Color.FromArgb(38, 78, 117);
             button.Click += delegate { Navigate(index); };
-            Views.Row(grid, button, 51);
+            Views.Row(grid, button, 42);
             nav[i] = button;
         }
         Views.Row(grid, new Panel(), -1);
-        var bottom = Views.Text("本地工作区   ·   v0.2", 9);
+        var bottom = Views.Text("本地工作区   ·   v0.2.1", 9);
         bottom.ForeColor = subtitle.ForeColor;
-        bottom.Margin = new Padding(8, 0, 0, 0);
+        bottom.Margin = Views.Pads(7, 0, 0, 0);
         Views.Row(grid, bottom, 24);
         return grid;
     }
@@ -147,6 +176,7 @@ internal sealed partial class TrainerForm : Form
         idsPath = new PathView("IDS 文件", tooltips);
         Views.Field(left, "IDS 文件", idsPath);
         Views.Row(left, Views.Actions(chooseIds, recheckIds), 48);
+        Views.Wrap(left, importState);
         Views.Row(left, importState, 38);
         Views.Row(left, Views.Actions(goTrain), 48);
         projectChoice.SelectedIndexChanged += delegate {
@@ -170,8 +200,10 @@ internal sealed partial class TrainerForm : Form
         Views.Row(right, Views.Text("导入统计", 16, true), 43);
         importSummary.ForeColor = Views.Blue;
         importSummary.Font = new Font(Font.FontFamily, 12, FontStyle.Bold);
+        Views.Wrap(right, importSummary);
         Views.Row(right, importSummary, 41);
         importDetail.ForeColor = Views.Muted;
+        Views.Wrap(right, importDetail);
         Views.Row(right, importDetail, 35);
         classList.Columns.Add("类别", 215);
         classList.Columns.Add("有效标注", 104);
@@ -186,7 +218,7 @@ internal sealed partial class TrainerForm : Form
             }
         };
         Views.Row(right, classList, -1);
-        return Views.Columns(Views.Card(left, true), Views.Card(right), 38);
+        return Views.PageColumns(Views.Card(left, true), Views.Card(right), 38);
     }
 
     private void LoadProject()
