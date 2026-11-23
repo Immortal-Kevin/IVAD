@@ -6,6 +6,7 @@ from events import emit, metrics, progress
 def predictor(args):
     import torch
     from rfdetr import RFDETR
+    from rfdetr.utilities.class_names import prediction_labels
 
     checkpoint = torch.load(args.weights, map_location="cpu", weights_only=False)
     if not isinstance(checkpoint, dict) or not isinstance(checkpoint.get("model"), dict):
@@ -19,16 +20,16 @@ def predictor(args):
     actual = next(model.model.model.parameters()).device
     if actual.type != args.device:
         raise RuntimeError(f"RF-DETR 选择了 {actual}，请求设备为 {args.device}")
-    names = dict(enumerate(model.class_names))
+    names = prediction_labels(model).class_id_to_name
 
     def predict(frame):
         result = model.predict(frame[:, :, ::-1].copy(), threshold=args.confidence,
                                shape=(args.size, args.size), include_source_image=False)
-        names_from_results = result.data.get("class_name")
-        if names_from_results is not None:
-            for ident, name in zip(result.class_id, names_from_results):
-                names[int(ident)] = str(name)
-        return list(zip(result.xyxy.tolist(), result.class_id.tolist(), result.confidence.tolist()))
+        # RF-DETR can return its no-object slot at low thresholds. Only IDs
+        # from the checkpoint's foreground label map are valid detections.
+        return [(box, ident, score) for box, ident, score in
+                zip(result.xyxy.tolist(), result.class_id.tolist(), result.confidence.tolist())
+                if ident in names]
 
     return names, predict
 
