@@ -49,7 +49,9 @@ internal sealed partial class TrainerForm : Form
         verifier = new WorkerJob(this);
         Text = "IVAD Open Trainer v0.2.1";
         Font = new Font("Microsoft YaHei UI", 10);
+        AutoScaleMode = AutoScaleMode.None;
         StartPosition = FormStartPosition.Manual;
+        FitInitialWindow(Views.StartupScreen.WorkingArea);
         BackColor = Views.Canvas;
         ForeColor = Views.Ink;
 
@@ -80,16 +82,22 @@ internal sealed partial class TrainerForm : Form
         foreach (var screen in screens) pages.Controls.Add(screen);
         LoadProject();
         Navigate(0);
-        // Controls are created in physical pixels for the initial monitor.
-        // WinForms starts from that baseline when changing monitors.
-        AutoScaleDimensions = new SizeF(Views.StartupDpi, Views.StartupDpi);
-        AutoScaleMode = AutoScaleMode.Dpi;
-        FitInitialWindow(Views.StartupScreen.WorkingArea);
         ResumeLayout(true);
         Shown += delegate {
             if (!String.IsNullOrEmpty(workspace.LoadError)) SetStatus(importState, workspace.LoadError, Views.Error);
             else if (!String.IsNullOrEmpty(Project.Ids)) Import(Project.Ids);
         };
+    }
+
+    protected override void OnLoad(EventArgs e)
+    {
+        // Use the window's DPI after its handle is on the launch monitor.
+        // Before then WinForms can measure against the primary display.
+        SuspendLayout();
+        AutoScaleDimensions = new SizeF(DeviceDpi, DeviceDpi);
+        AutoScaleMode = AutoScaleMode.Dpi;
+        ResumeLayout(true);
+        base.OnLoad(e);
     }
 
     private void FitInitialWindow(Rectangle work)
