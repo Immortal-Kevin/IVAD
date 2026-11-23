@@ -1,0 +1,8 @@
+.build/
+dist/
+__pycache__/
+*.pyc
+*.ids
+*.pt
+*.pth
+*.ckpt
