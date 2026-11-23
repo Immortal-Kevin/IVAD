@@ -107,7 +107,7 @@ internal static class Views
     internal static void Field(TableLayoutPanel grid, string name, Control input)
     {
         var row = Grid(2);
-        row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 112));
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 126));
         row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         row.Controls.Add(Single(name), 0, 0);
         row.Controls.Add(input, 1, 0);
@@ -123,7 +123,7 @@ internal static class Views
     }
 }
 
-internal sealed class PathView : Panel
+internal sealed class PathView : TableLayoutPanel
 {
     private readonly Label title;
     private readonly ToolTip tooltip;
@@ -134,23 +134,24 @@ internal sealed class PathView : Panel
         AccessibleName = name;
         Dock = DockStyle.Fill;
         Margin = new Padding(0, 1, 0, 3);
-        var contents = Views.Grid(picker == null ? 1 : 2);
-        contents.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        ColumnCount = picker == null ? 1 : 2;
+        RowCount = 1;
+        RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         title = Views.Single("未选择", 32);
         title.AccessibleName = name;
         title.BackColor = Views.Canvas;
         title.Padding = new Padding(7, 0, 4, 0);
         title.Margin = new Padding(0, 0, 5, 0);
-        contents.Controls.Add(title, 0, 0);
+        Controls.Add(title, 0, 0);
         if (picker != null)
         {
-            contents.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             picker.Dock = DockStyle.Fill;
             picker.MinimumSize = new Size(60, 0);
             picker.Margin = new Padding(0);
-            contents.Controls.Add(picker, 1, 0);
+            Controls.Add(picker, 1, 0);
         }
-        Controls.Add(contents);
     }
 
     internal void ShowPath(string path, string empty = "未选择")

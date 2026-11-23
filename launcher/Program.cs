@@ -15,6 +15,8 @@ internal static class Program
         {
             try
             {
+                Console.SetOut(new StreamWriter(Console.OpenStandardOutput(), new UTF8Encoding(false)) { AutoFlush = true });
+                Console.SetError(new StreamWriter(Console.OpenStandardError(), new UTF8Encoding(false)) { AutoFlush = true });
                 using (var process = Process.Start(Worker.StartInfo(args)))
                 {
                     process.OutputDataReceived += delegate(object sender, DataReceivedEventArgs line) {

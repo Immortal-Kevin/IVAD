@@ -5,7 +5,8 @@ import math
 
 
 def emit(kind, **fields):
-    print("EVENT " + json.dumps({"kind": kind, **fields}, ensure_ascii=False), flush=True)
+    # Framework progress bars can leave an unterminated line on stdout.
+    print("\nEVENT " + json.dumps({"kind": kind, **fields}, ensure_ascii=False), flush=True)
 
 
 def progress(epoch, epochs, batch=0, batches=1):

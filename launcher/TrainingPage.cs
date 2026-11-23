@@ -253,6 +253,7 @@ internal sealed partial class TrainerForm
 
     private void AppendLog(string line)
     {
+        if (String.IsNullOrWhiteSpace(line)) return;
         if (trainLog.TextLength > 85000)
         {
             trainLog.Select(0, 30000);
