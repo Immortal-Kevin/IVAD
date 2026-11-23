@@ -1,14 +1,17 @@
-# IVAD Open Trainer v0.1
+# IVAD Open Trainer v0.2
 
 IVAD Open Trainer trains object detectors from full IVAD Annotator IDS 1.0 packages on Windows 11 x64. It supports YOLOv8n and RF-DETR Nano.
 
 ## Run
 
 1. Extract the entire portable ZIP and double-click **IVAD Open Trainer.exe**.
-2. Select an Annotator full `.ids` package, then click **Import / validate IDS**. The log shows fault class IDs, image and annotation counts, and the eligible training data.
-3. Choose a model, device, image size, batch, epochs, and output folder. Start with CPU, 384 pixels and batch 1. Image size must be a multiple of 32.
+2. In **IDS 选取与导入**, select a project preset and import the full Annotator `.ids` export. A successful import binds the package to this local project and displays the actual class and image counts.
+3. In **项目训练**, choose a model, device, image size, batch, epochs, and output folder. Start with CPU, 384 pixels and batch 1. Image size must be a multiple of 32.
 4. To fine-tune, select a trusted local [YOLOv8n checkpoint](https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8n.pt) or [RF-DETR Nano checkpoint](https://repo.roboflow.com/rfdetr/nano_coco/checkpoint_best_regular.pth). An empty weights field starts from random initialization. Use only checkpoints you trust, since native checkpoints can carry serialized Python objects.
-5. Click **Start training**. **Cancel** stops the background process and may leave a partial run. **Open output** opens the latest run directory. Successful runs contain a native `last.pt` or `checkpoint_best_total.pth`, plus a `result.json` with the checkpoint hash and measured parameter update.
+5. Click **开始训练**. **取消训练** stops the background process and may leave a partial run. The monitor uses actual framework events to show epoch, batch and metrics. **模型导出** copies a successfully completed native `last.pt` or `checkpoint_best_total.pth`. Each successful run also writes a local `result.json` with metrics, the checkpoint hash and measured parameter update.
+6. In **训练视频验证**, select the current project's generated checkpoint or a trusted local weight file. Choose a supported local video, device, input size, confidence threshold and maximum verification FPS. **保存项目预设** keeps the settings for that project. The playback preview and detection view update separately. The latest-frame queue holds at most one pending inference frame. Source FPS and measured inference FPS are reported separately.
+
+Project bindings and presets are stored in `%LOCALAPPDATA%\IVAD Open Trainer\projects.json`. On first launch, the **刮板机机头** preset is ready for a local IDS binding. The video decoder uses Windows Media Foundation, with a Motion JPEG AVI fallback. Supported video formats depend on the codecs available in Windows.
 
 Python and the CPU training dependencies are in the ZIP. Windows 11 supplies .NET Framework for the launcher. Microsoft C++ runtime libraries used by native wheels are an OS prerequisite. If they are missing, install the [Microsoft Visual C++ x64 Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist). The ZIP contains no pretrained checkpoints. The small `examples/synthetic.ids` fixture contains only generated images and local demonstration labels.
 
@@ -40,6 +43,7 @@ For automated checks, call the same EXE with arguments and wait for its exit cod
 ```text
 "IVAD Open Trainer.exe" inspect --ids "examples/synthetic.ids"
 "IVAD Open Trainer.exe" train --ids "examples/synthetic.ids" --model rf --device cpu --size 128 --batch 1 --epochs 1 --output "runs" --limit 2
+"IVAD Open Trainer.exe" video --model yolo --device cpu --weights "runs/detector.pt" --video "test.mp4" --size 384 --confidence 0.25 --sample-fps 5
 ```
 
 ## Licenses

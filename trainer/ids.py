@@ -164,7 +164,11 @@ def inspect_package(path):
         else:
             excluded["unknown or abnormal without targets"] += 1
     fault_map = [{"id": fault["id"], "name": fault["data"]["name"]} for fault in faults]
-    summary = {"target_sha256": digest, "images": len(all_frames), "assets": len(assets),
+    states = Counter(entry["data"]["state"] for entry in kinds["Frame"])
+    annotations = Counter(box[0] for frame in all_frames.values() for box in frame.boxes)
+    for index, label in enumerate(fault_map):
+        label["annotations"] = annotations[index]
+    summary = {"target_sha256": digest, "images": len(all_frames), "assets": len(assets), "states": dict(states),
                "annotations": sum(len(frame.boxes) for frame in all_frames.values()),
                "classes": fault_map, "eligible": len(eligible), "excluded": dict(excluded)}
     return summary, eligible

@@ -1,5 +1,37 @@
 """RF-DETR Nano adapter using the upstream Lightning training components."""
 
+from events import emit, metrics, progress
+
+
+def predictor(args):
+    import torch
+    from rfdetr import RFDETR
+
+    checkpoint = torch.load(args.weights, map_location="cpu", weights_only=False)
+    if not isinstance(checkpoint, dict) or not isinstance(checkpoint.get("model"), dict):
+        raise ValueError("权重不是 RF-DETR 原生检测 checkpoint")
+    if "class_embed.weight" not in checkpoint["model"]:
+        raise ValueError("RF-DETR 权重缺少检测分类头")
+    del checkpoint
+    model = RFDETR.from_checkpoint(args.weights, trust_checkpoint=True, device=args.device)
+    if model.model_config.segmentation_head or model.model_config.use_grouppose_keypoints:
+        raise ValueError("请选择 RF-DETR 检测权重")
+    actual = next(model.model.model.parameters()).device
+    if actual.type != args.device:
+        raise RuntimeError(f"RF-DETR 选择了 {actual}，请求设备为 {args.device}")
+    names = dict(enumerate(model.class_names))
+
+    def predict(frame):
+        result = model.predict(frame[:, :, ::-1].copy(), threshold=args.confidence,
+                               shape=(args.size, args.size), include_source_image=False)
+        names_from_results = result.data.get("class_name")
+        if names_from_results is not None:
+            for ident, name in zip(result.class_id, names_from_results):
+                names[int(ident)] = str(name)
+        return list(zip(result.xyxy.tolist(), result.class_id.tolist(), result.confidence.tolist()))
+
+    return names, predict
+
 
 def train(args, dataset, output, classes, evidence):
     import torch
@@ -7,16 +39,31 @@ def train(args, dataset, output, classes, evidence):
     from rfdetr.config import RFDETRNanoConfig, TrainConfig
     from rfdetr.training import RFDETRDataModule, RFDETRModelModule, build_trainer
 
+    measured = {}
+
     class Observe(Callback):
+        def on_train_epoch_start(self, trainer, pl_module):
+            progress(trainer.current_epoch + 1, args.epochs, batches=trainer.num_training_batches)
+
         def on_before_optimizer_step(self, trainer, pl_module, optimizer):
             evidence.before(optimizer)
 
         def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
             evidence.after()
-            if batch_idx % 10 == 0:
-                loss = outputs["loss"].detach().item()
+            if batch_idx % 5 == 0 or batch_idx + 1 == trainer.num_training_batches:
+                progress(trainer.current_epoch + 1, args.epochs, batch_idx + 1, trainer.num_training_batches)
+                loss = float(outputs["loss"].detach())
+                measured["loss"] = loss
+                emit("metrics", values=measured)
                 print(f"Epoch {trainer.current_epoch + 1}/{args.epochs}, step {trainer.global_step}, loss {loss:.5g}",
                       flush=True)
+
+        def on_validation_end(self, trainer, pl_module):
+            measured.update(metrics(trainer.callback_metrics, {
+                "map": ("val/mAP_50_95",), "map50": ("val/mAP_50",),
+                "recall": ("val/mAR", "val/AR_100"),
+            }))
+            emit("metrics", values=measured)
 
     destination = output / "weights-rfdetr"
     seed_everything(42, workers=True)
@@ -45,9 +92,10 @@ def train(args, dataset, output, classes, evidence):
     print(f"RF-DETR training device: {actual_device}", flush=True)
     if args.device == "xpu":
         print("Lightning's GPU availability line refers to CUDA. This run uses Intel XPU.", flush=True)
+    emit("stage", value="正在训练")
     runner.fit(module, data)
     weights = destination / "checkpoint_best_total.pth"
     checkpoint = torch.load(weights, map_location="cpu", weights_only=False)
     if not checkpoint.get("model"):
         raise RuntimeError("RF-DETR checkpoint has no trained model weights")
-    return weights
+    return weights, measured
