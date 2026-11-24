@@ -14,9 +14,11 @@ internal sealed partial class TrainerForm
     private readonly NumericUpDown trainSize = Views.Number("输入尺寸", 64, 2048, 384, 32);
     private readonly NumericUpDown trainBatch = Views.Number("Batch Size", 1, 512, 1, 1);
     private readonly NumericUpDown trainEpochs = Views.Number("Epochs", 1, 10000, 1, 1);
+    private readonly CheckBox earlyStop = new CheckBox { Text = "自动早停", AutoSize = true, Checked = true };
     private readonly Label trainProject = Views.Single("");
     private readonly Label trainStatus = Views.Single("任务状态   ·   就绪");
     private readonly Label splitStatus = Views.Single("自动拆分   ·   等待训练任务");
+    private readonly Label earlyStopStatus = Views.Single("自动早停   ·   等待拆分");
     private readonly Label actualDevice = Views.Single("实际设备   ·   —");
     private readonly Label epochStatus = Views.Single("Epoch   ·   —");
     private readonly ProgressBar progressBar = new ProgressBar { Dock = DockStyle.Fill, Margin = Views.Pads(0, 5, 5, 5) };
@@ -44,6 +46,7 @@ internal sealed partial class TrainerForm
         Views.Field(left, "输入尺寸", trainSize);
         Views.Field(left, "Batch Size", trainBatch);
         Views.Field(left, "Epochs", trainEpochs);
+        Views.Row(left, earlyStop, 32);
         var browseOutput = Views.Button("选择");
         var browseInitial = Views.Button("选择");
         var clearInitial = Views.Button("清除初始权重");
@@ -73,6 +76,7 @@ internal sealed partial class TrainerForm
                 initialWeights = null;
                 initialPath.ShowPath(null, "从头训练");
             }
+            earlyStop.Enabled = Key(Models, trainModel) == "rf";
             RefreshArtifacts();
         };
         trainStart.Click += delegate { StartTraining(); };
@@ -90,6 +94,8 @@ internal sealed partial class TrainerForm
         Views.Row(right, trainStatus, 32);
         Views.Wrap(right, splitStatus);
         Views.Row(right, splitStatus, 30);
+        Views.Wrap(right, earlyStopStatus);
+        Views.Row(right, earlyStopStatus, 30);
         Views.Row(right, actualDevice, 30);
         Views.Row(right, epochStatus, 30);
         var controls = Views.Grid(2);
@@ -140,7 +146,9 @@ internal sealed partial class TrainerForm
         SelectKey(Devices, trainDevice, Project.Device);
         SetNumber(trainSize, Project.Size, 384);
         SetNumber(trainBatch, Project.Batch, 1);
-        SetNumber(trainEpochs, Project.Epochs, 1);
+        SetNumber(trainEpochs, Project.Epochs, ProjectName == Workspace.Preset ? 3 : 1);
+        earlyStop.Checked = Project.AutoEarlyStop ?? true;
+        earlyStop.Enabled = Key(Models, trainModel) == "rf";
         trainingOutput = Project.Output ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "IVAD Training", ProjectName);
         initialWeights = Project.InitialWeights;
@@ -157,6 +165,7 @@ internal sealed partial class TrainerForm
         Project.Epochs = trainEpochs.Value;
         Project.Output = trainingOutput;
         Project.InitialWeights = initialWeights;
+        Project.AutoEarlyStop = earlyStop.Checked;
     }
 
     private static string WeightFilter(string model)
@@ -171,6 +180,9 @@ internal sealed partial class TrainerForm
         StoreTrainingFields();
         if (!verified.ContainsKey(project) || !File.Exists(Project.Ids))
         { SetStatus(trainStatus, "请选择并校验存在的 IDS 文件", Views.Error); return; }
+        var sources = CheckedSources();
+        if (sources.Count == 0)
+        { SetStatus(trainStatus, "请至少选择一个源视频", Views.Error); return; }
         if (Project.Size % 32 != 0)
         { SetStatus(trainStatus, "输入尺寸必须为 32 的倍数", Views.Error); return; }
         if (!String.IsNullOrEmpty(initialWeights) && (!WeightSuffix(initialWeights, Project.Model) || !File.Exists(initialWeights)))
@@ -178,9 +190,12 @@ internal sealed partial class TrainerForm
         string model = Project.Model;
         string failure = null;
         string checkpoint = null;
+        bool stoppedEarly = false;
         var args = new List<string> { "train", "--ids", Project.Ids, "--model", model, "--device", Project.Device,
             "--size", DecimalArg(Project.Size), "--batch", DecimalArg(Project.Batch),
             "--epochs", DecimalArg(Project.Epochs), "--output", trainingOutput };
+        foreach (string source in sources) args.AddRange(new[] { "--source-video", source });
+        if (!earlyStop.Checked) args.Add("--no-early-stop");
         if (!String.IsNullOrEmpty(initialWeights)) args.AddRange(new[] { "--weights", initialWeights });
         if (!SaveWorkspace(trainStatus)) return;
         progressBar.Value = 0;
@@ -188,6 +203,7 @@ internal sealed partial class TrainerForm
         ShowMetrics(null);
         SetStatus(splitStatus, "自动拆分   ·   正在分析 IDS", Views.Muted);
         tooltips.SetToolTip(splitStatus, "");
+        SetStatus(earlyStopStatus, "自动早停   ·   等待拆分", Views.Muted);
         actualDevice.Text = "实际设备   ·   正在检查";
         epochStatus.Text = "Epoch   ·   — / " + Project.Epochs;
         SetStatus(trainStatus, "任务状态   ·   正在检查设备", Views.Blue);
@@ -203,6 +219,7 @@ internal sealed partial class TrainerForm
                     SetStatus(splitStatus, "自动拆分   ·   " + Workspace.Value(message, "mode") +
                         "   ·   " + Workspace.Value(message, "validation_summary"), Views.Blue);
                     tooltips.SetToolTip(splitStatus, Workspace.Value(message, "detail"));
+                    SetStatus(earlyStopStatus, "自动早停   ·   " + Workspace.Value(message, "early_stop_status"), Views.Blue);
                 }
                 else if (kind == "progress") ShowProgress(message);
                 else if (kind == "metrics") ShowMetrics(Workspace.Object(message, "values"));
@@ -210,6 +227,9 @@ internal sealed partial class TrainerForm
                 else if (kind == "checkpoint")
                 {
                     checkpoint = Workspace.Value(message, "path");
+                    var stop = Workspace.Object(message, "early_stop");
+                    stoppedEarly = stop != null;
+                    if (stoppedEarly) SetStatus(earlyStopStatus, Workspace.Value(stop, "reason"), Views.Good);
                     ShowMetrics(Workspace.Object(message, "metrics"));
                 }
             }, (code, cancelled) => {
@@ -223,7 +243,7 @@ internal sealed partial class TrainerForm
                     if (resultProject.Artifacts == null) resultProject.Artifacts = new Dictionary<string, string>();
                     resultProject.Artifacts[model] = checkpoint;
                     progressBar.Value = 100;
-                    SetStatus(trainStatus, project + "  ·  训练完成", Views.Good);
+                    SetStatus(trainStatus, project + "  ·  训练完成" + (stoppedEarly ? " · 自动早停" : ""), Views.Good);
                     SaveWorkspace(trainStatus);
                 }
                 RefreshArtifacts();
@@ -240,7 +260,7 @@ internal sealed partial class TrainerForm
     private void SetTrainingBusy(bool busy)
     {
         trainCancel.Enabled = busy;
-        trainStart.Enabled = !busy && verified.ContainsKey(ProjectName) && !importer.Active;
+        RefreshSourceActions();
     }
 
     private void ShowProgress(Dictionary<string, object> message)

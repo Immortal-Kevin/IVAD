@@ -31,12 +31,16 @@ internal sealed partial class TrainerForm : Form
     private readonly ComboBox projectChoice = Views.Choice("项目预设", Workspace.Preset, Workspace.Custom);
     private readonly ListView classList = new ListView { Dock = DockStyle.Fill, View = View.Details,
         FullRowSelect = true, HeaderStyle = ColumnHeaderStyle.Nonclickable, BorderStyle = BorderStyle.FixedSingle };
+    private readonly ListView sourceList = new ListView { Dock = DockStyle.Fill, View = View.Details,
+        CheckBoxes = true, FullRowSelect = true, AccessibleName = "源视频",
+        HeaderStyle = ColumnHeaderStyle.Nonclickable, BorderStyle = BorderStyle.FixedSingle };
     private readonly Button chooseIds = Views.Button("导入 IDS", true);
     private readonly Button recheckIds = Views.Button("重新校验");
     private readonly Button goTrain = Views.Button("进入项目训练", true);
     private PathView idsPath;
     private string candidate;
     private bool loading;
+    private bool loadingSources;
     private int page;
     private ProjectSettings Project { get { return workspace.Data.Projects[ProjectName]; } }
     private string ProjectName { get { return workspace.Data.Current; } }
@@ -47,7 +51,7 @@ internal sealed partial class TrainerForm : Form
         importer = new WorkerJob(this);
         trainer = new WorkerJob(this);
         verifier = new WorkerJob(this);
-        Text = "IVAD Open Trainer v0.2.2";
+        Text = "IVAD Open Trainer v0.2.4";
         Font = Views.UiFont(10);
         AutoScaleMode = AutoScaleMode.None;
         StartPosition = FormStartPosition.Manual;
@@ -156,7 +160,7 @@ internal sealed partial class TrainerForm : Form
             nav[i] = button;
         }
         Views.Row(grid, new Panel(), -1);
-        var bottom = Views.Text("本地工作区   ·   v0.2.2", 9);
+        var bottom = Views.Text("本地工作区   ·   v0.2.4", 9);
         bottom.ForeColor = subtitle.ForeColor;
         bottom.Margin = Views.Pads(7, 0, 0, 0);
         Views.Row(grid, bottom, 24);
@@ -213,6 +217,22 @@ internal sealed partial class TrainerForm : Form
         importDetail.ForeColor = Views.Muted;
         Views.Wrap(right, importDetail);
         Views.Row(right, importDetail, 35);
+        Views.Row(right, Views.Text("源视频", 12, true), 31);
+        sourceList.Columns.Add("文件名", Views.Px(235));
+        sourceList.Columns.Add("总图数", Views.Px(78));
+        sourceList.Columns.Add("正例图数", Views.Px(88));
+        sourceList.Columns.Add("有效框数", Views.Px(88));
+        sourceList.Resize += delegate {
+            int nameWidth = sourceList.ClientSize.Width - Views.Scale(274, sourceList.DeviceDpi);
+            sourceList.Columns[0].Width = Math.Max(Views.Scale(140, sourceList.DeviceDpi), nameWidth);
+        };
+        sourceList.ItemChecked += delegate {
+            if (loadingSources) return;
+            Project.SourceVideos = CheckedSources();
+            RefreshSourceActions();
+            SaveWorkspace(importState);
+        };
+        Views.Row(right, sourceList, 145);
         classList.Columns.Add("类别", Views.Px(215));
         classList.Columns.Add("有效标注", Views.Px(104));
         classList.Columns.Add("IDS 类别 ID", Views.Px(285));
@@ -266,13 +286,12 @@ internal sealed partial class TrainerForm : Form
     {
         Dictionary<string, object> data;
         bool ready = verified.TryGetValue(ProjectName, out data);
-        goTrain.Enabled = ready && !importer.Active;
         chooseIds.Enabled = projectChoice.Enabled = !importer.Active;
         recheckIds.Enabled = !importer.Active && !String.IsNullOrEmpty(candidate);
-        trainStart.Enabled = ready && !trainer.Active && !importer.Active;
         boundIds.ShowPath(ready ? Project.Ids : null, "尚无已校验 IDS");
         trainProject.Text = ProjectName;
         classList.Items.Clear();
+        RefreshSources(data);
         if (!ready)
         {
             importSummary.Text = "图像 —      类别 —      标注 —";
@@ -292,6 +311,48 @@ internal sealed partial class TrainerForm : Form
                 Workspace.Value(row, "annotations"), Workspace.Value(row, "id") }));
         }
         SetStatus(importState, "校验通过  ·  IDS 完整包", Views.Good);
+    }
+
+    private void RefreshSources(Dictionary<string, object> data)
+    {
+        loadingSources = true;
+        sourceList.BeginUpdate();
+        try
+        {
+            sourceList.Items.Clear();
+            var videos = data == null ? null : data["videos"] as IList;
+            if (videos == null) return;
+            foreach (var item in videos)
+            {
+                var video = item as Dictionary<string, object>;
+                string id = Workspace.Value(video, "id");
+                var row = new ListViewItem(new[] { Workspace.Value(video, "name"), Workspace.Value(video, "images"),
+                    Workspace.Value(video, "positive"), Workspace.Value(video, "boxes") }) { Tag = id };
+                sourceList.Items.Add(row);
+                row.Checked = Project.SourceVideos == null || Project.SourceVideos.Contains(id);
+            }
+        }
+        finally
+        {
+            sourceList.EndUpdate();
+            loadingSources = false;
+            RefreshSourceActions();
+        }
+    }
+
+    private List<string> CheckedSources()
+    {
+        var selected = new List<string>();
+        foreach (ListViewItem item in sourceList.CheckedItems) selected.Add((string)item.Tag);
+        return selected;
+    }
+
+    private void RefreshSourceActions()
+    {
+        bool ready = verified.ContainsKey(ProjectName) && !importer.Active;
+        sourceList.Enabled = ready && !trainer.Active;
+        goTrain.Enabled = ready && sourceList.CheckedItems.Count != 0;
+        trainStart.Enabled = goTrain.Enabled && !trainer.Active;
     }
 
     private void Import(string path)
@@ -314,7 +375,9 @@ internal sealed partial class TrainerForm : Form
                 if (code == 0 && data != null)
                 {
                     verified[project] = data;
-                    workspace.Data.Projects[project].Ids = path;
+                    var settings = workspace.Data.Projects[project];
+                    if (!String.Equals(settings.Ids, path, StringComparison.OrdinalIgnoreCase)) settings.SourceVideos = null;
+                    settings.Ids = path;
                 }
                 RefreshImport();
                 if (code == 0 && data != null) SaveWorkspace(importState);

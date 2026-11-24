@@ -11,7 +11,7 @@ import traceback
 from uuid import uuid4
 from zipfile import BadZipFile
 
-from ids import inspect_package, prepare
+from ids import inspect_package, prepare, select_videos
 from events import emit
 
 
@@ -32,6 +32,8 @@ def options():
     parser.add_argument("--seconds", type=float, help="Optional maximum source-video duration for verification")
     parser.add_argument("--preview", type=Path, help="Directory for two bounded preview JPEG files")
     parser.add_argument("--limit", type=int, help="Use at most this many images per split for short verification")
+    parser.add_argument("--source-video", action="append", help="Retain this IDS video ID (repeat for multiple videos)")
+    parser.add_argument("--early-stop", action=argparse.BooleanOptionalAction, default=True)
     return parser.parse_args()
 
 
@@ -82,16 +84,17 @@ def train(args):
     torch = device(args)
     emit("stage", value="正在重新校验 IDS")
     summary, frames = load_ids(args)
+    videos, frames = select_videos(summary, frames, args.source_video)
     emit("stage", value="正在准备训练数据")
     print(f"OUTPUT {run}", flush=True)
     print(f"Model: {args.model}; device: {args.device}; PyTorch: {torch.__version__}; "
           f"size: {args.size}; batch: {args.batch}; epochs: {args.epochs}", flush=True)
     from evidence import UpdateEvidence
 
-    dataset, split = prepare(args.ids, run / "dataset", args.model, summary, frames, args.limit)
+    dataset, split = prepare(args.ids, run / "dataset", args.model, summary, frames, videos, args.early_stop, args.limit)
     adapter = importlib.import_module(args.model)
     evidence = UpdateEvidence(args.device)
-    checkpoint, measured = adapter.train(args, dataset, run, summary["classes"], evidence, split)
+    checkpoint, measured, completion = adapter.train(args, dataset, run, summary["classes"], evidence, split)
     if evidence.result is None:
         raise RuntimeError(f"No finite gradient and changed parameter observed on {args.device}")
     with checkpoint.open("rb") as stream:
@@ -99,9 +102,9 @@ def train(args):
     result = {"model": args.model, "device": args.device, "torch": torch.__version__,
               "checkpoint": str(checkpoint.relative_to(run)), "checkpoint_sha256": digest,
               "update": evidence.result, "ids": summary, "metrics": measured,
-              "validation": split["validation"], "split_manifest": "split-manifest.json"}
+              "validation": split["validation"], "split_manifest": "split-manifest.json", **completion}
     (run / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-    emit("checkpoint", path=str(checkpoint), model=args.model, metrics=measured)
+    emit("checkpoint", path=str(checkpoint), model=args.model, metrics=measured, **completion)
     print(f"CHECKPOINT {checkpoint}\nSHA256 {digest}", flush=True)
 
 

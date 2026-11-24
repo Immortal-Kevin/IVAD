@@ -17,6 +17,8 @@ public sealed class ProjectSettings
     public decimal Epochs { get; set; }
     public string Output { get; set; }
     public string InitialWeights { get; set; }
+    public List<string> SourceVideos { get; set; }
+    public bool? AutoEarlyStop { get; set; }
     public Dictionary<string, string> Artifacts { get; set; }
     public string Video { get; set; }
     public string VideoWeights { get; set; }

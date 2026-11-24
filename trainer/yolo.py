@@ -119,4 +119,4 @@ def train(args, dataset, output, classes, evidence, split):
     checkpoint = torch.load(weights, map_location="cpu", weights_only=False)
     if checkpoint.get("model") is None:
         raise RuntimeError("YOLO checkpoint has no trained model")
-    return weights, measured
+    return weights, measured, {}

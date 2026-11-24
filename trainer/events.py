@@ -17,7 +17,7 @@ def metrics(values, fields):
     result = {}
     for name, candidates in fields.items():
         for key in candidates:
-            if key in values:
+            if values.get(key) is not None:
                 value = float(values[key])
                 if math.isfinite(value):
                     result[name] = value

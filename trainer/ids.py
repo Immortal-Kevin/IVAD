@@ -13,7 +13,7 @@ from zipfile import ZipFile
 
 from PIL import Image
 
-from split import automatic_split
+from split import automatic_split, counts
 
 ASSET_PATH = re.compile(r"assets/([0-9a-f]{64})\.[a-zA-Z0-9]{1,12}\Z")
 MAX_METADATA = 16 * 1024**2
@@ -170,36 +170,56 @@ def inspect_package(path):
     fault_map = [{"id": fault["id"], "name": fault["data"]["name"]} for fault in faults]
     states = Counter(entry["data"]["state"] for entry in kinds["Frame"])
     annotations = Counter(box[0] for frame in all_frames.values() for box in frame.boxes)
+    totals = Counter(frame.video for frame in all_frames.values())
+    by_video = defaultdict(list)
+    for frame in eligible:
+        by_video[frame.video].append(frame)
+    videos = []
+    for entry in kinds["Video"]:
+        video = str(UUID(entry["id"]))
+        stats = counts(by_video[video])
+        videos.append({"id": video, "name": entry["data"].get("original_name") or video,
+                       "images": totals[video], "positive": stats["positive"], "boxes": stats["boxes"]})
     for index, label in enumerate(fault_map):
         label["annotations"] = annotations[index]
     summary = {"target_sha256": digest, "images": len(all_frames), "assets": len(assets), "states": dict(states),
                "annotations": sum(len(frame.boxes) for frame in all_frames.values()),
                "classes": fault_map, "eligible": len(eligible), "excluded": dict(excluded),
-               "video_names": {str(UUID(entry["id"])): entry["data"].get("original_name")
-                               for entry in kinds["Video"]}}
+               "videos": videos}
     return summary, eligible
 
 
-def prepare(path, output, model, summary, frames, limit=None):
+def select_videos(summary, frames, requested):
+    videos = {row["id"]: row["name"] for row in summary["videos"]}
+    selected = videos.keys() if requested is None else set(requested)
+    require(selected, "请至少选择一个源视频")
+    require(selected <= videos.keys(), "所选源视频与当前 IDS 不匹配，请重新导入 IDS")
+    return {key: name for key, name in videos.items() if key in selected}, [f for f in frames if f.video in selected]
+
+
+def prepare(path, output, model, summary, frames, videos, early_stop, limit=None):
     import yaml
 
     from events import emit
 
     splits, manifest = automatic_split(frames, summary["target_sha256"], limit)
-    mode = "同源视频留出验证" if manifest["validation"] else "无独立正例验证"
+    manifest["selected_videos"] = videos
+    mode = "同源视频留出验证" if manifest["validation"] else "无正例验证"
+    stop_status = ("不可用（无正例验证）" if not manifest["validation"] else
+                   "仅支持 RF-DETR" if model != "rf" else "开启" if early_stop else "关闭")
     output.mkdir(parents=True)
     manifest_path = output.parent / "split-manifest.json"
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
-    lines = [f"自动拆分 · {mode}"]
-    for index, (video, stats) in enumerate(manifest["videos"].items(), 1):
-        name = summary["video_names"].get(video) or video
+    lines = [f"纳入源视频：{'、'.join(videos.values())}", f"自动拆分 · {mode}", f"自动早停 · {stop_status}"]
+    for index, (video, name) in enumerate(videos.items(), 1):
+        stats = manifest["videos"].get(video, {})
         for side, label in (("train", "训练"), ("valid", "验证"), ("embargo", "间隔留空")):
-            row = stats[side]
+            row = stats.get(side, {"images": 0, "positive": 0, "positive_groups": 0, "normal": 0, "boxes": 0})
             lines.append(f"视频 {index} [{name}] {label}  {row['images']} 张 · 正例 {row['positive']} 张"
                          f"（{row['positive_groups']} 组） · 正常 {row['normal']} 张 · {row['boxes']} 框")
     if limit is not None:
         for video, stats in manifest["used_videos"].items():
-            name = summary["video_names"].get(video) or video
+            name = videos[video]
             for side, label in (("train", "训练"), ("valid", "验证")):
                 row = stats[side]
                 lines.append(f"短训 [{name}] {label}  {row['images']} 张 · 正例 {row['positive']} 张"
@@ -207,7 +227,7 @@ def prepare(path, output, model, summary, frames, limit=None):
     valid = [stats["valid"] for stats in manifest["used_videos"].values()]
     validation_summary = (f"正例 {sum(row['positive_groups'] for row in valid)} 组 / "
                           f"{sum(row['positive'] for row in valid)} 张 / {sum(row['boxes'] for row in valid)} 框")
-    emit("split", mode=mode, validation_summary=validation_summary,
+    emit("split", mode=mode, validation_summary=validation_summary, early_stop_status=stop_status,
          detail="\n".join(lines), path=str(manifest_path))
     print("\n".join(lines), flush=True)
     print(f"Split manifest: {manifest_path}", flush=True)
