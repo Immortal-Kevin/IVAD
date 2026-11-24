@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -15,6 +16,8 @@ internal sealed partial class TrainerForm
     private readonly NumericUpDown trainBatch = Views.Number("Batch Size", 1, 512, 1, 1);
     private readonly NumericUpDown trainEpochs = Views.Number("Epochs", 1, 10000, 1, 1);
     private readonly CheckBox earlyStop = new CheckBox { Text = "自动早停", AutoSize = true, Checked = true };
+    private readonly TextBox anomalyRoi = new TextBox { Text = "0, 0, 1, 1", Dock = DockStyle.Fill,
+        AccessibleName = "异常检测 ROI，左、上、右、下归一化坐标" };
     private readonly Label trainProject = Views.Single("");
     private readonly Label trainStatus = Views.Single("任务状态   ·   就绪");
     private readonly Label splitStatus = Views.Single("自动拆分   ·   等待训练任务");
@@ -41,12 +44,14 @@ internal sealed partial class TrainerForm
         boundIds = new PathView("已绑定 IDS", tooltips);
         Views.Field(left, "项目名称", trainProject);
         Views.Field(left, "已绑定 IDS", boundIds);
-        Views.Field(left, "模型", trainModel);
+        Views.Field(left, "模式与模型", trainModel);
         Views.Field(left, "设备", trainDevice);
         Views.Field(left, "输入尺寸", trainSize);
         Views.Field(left, "Batch Size", trainBatch);
         Views.Field(left, "Epochs", trainEpochs);
         Views.Row(left, earlyStop, 32);
+        Views.Field(left, "异常 ROI（左,上,右,下）", anomalyRoi);
+        tooltips.SetToolTip(anomalyRoi, "在 0–1 范围内输入左、上、右、下。默认 0,0,1,1 为全图，回放沿用已拟合的 ROI。");
         var browseOutput = Views.Button("选择");
         var browseInitial = Views.Button("选择");
         var clearInitial = Views.Button("清除初始权重");
@@ -65,6 +70,7 @@ internal sealed partial class TrainerForm
                 }
         };
         browseInitial.Click += delegate {
+            if (Key(Models, trainModel) == "anomaly") return;
             string picked = Pick("选择可信的本地初始权重", WeightFilter(Key(Models, trainModel)));
             if (picked != null) { initialWeights = picked; initialPath.ShowPath(picked); }
         };
@@ -76,7 +82,7 @@ internal sealed partial class TrainerForm
                 initialWeights = null;
                 initialPath.ShowPath(null, "从头训练");
             }
-            earlyStop.Enabled = Key(Models, trainModel) == "rf";
+            RefreshModeFields();
             RefreshArtifacts();
         };
         trainStart.Click += delegate { StartTraining(); };
@@ -148,7 +154,8 @@ internal sealed partial class TrainerForm
         SetNumber(trainBatch, Project.Batch, 1);
         SetNumber(trainEpochs, Project.Epochs, ProjectName == Workspace.Preset ? 3 : 1);
         earlyStop.Checked = Project.AutoEarlyStop ?? true;
-        earlyStop.Enabled = Key(Models, trainModel) == "rf";
+        anomalyRoi.Text = Project.AnomalyRoi ?? "0, 0, 1, 1";
+        RefreshModeFields();
         trainingOutput = Project.Output ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "IVAD Training", ProjectName);
         initialWeights = Project.InitialWeights;
@@ -166,12 +173,22 @@ internal sealed partial class TrainerForm
         Project.Output = trainingOutput;
         Project.InitialWeights = initialWeights;
         Project.AutoEarlyStop = earlyStop.Checked;
+        Project.AnomalyRoi = anomalyRoi.Text;
+    }
+
+    private void RefreshModeFields()
+    {
+        string model = Key(Models, trainModel);
+        bool detection = model != "anomaly";
+        trainDevice.Enabled = trainSize.Enabled = trainBatch.Enabled = trainEpochs.Enabled = detection;
+        anomalyRoi.Enabled = !detection;
+        earlyStop.Enabled = model == "rf";
     }
 
     private static string WeightFilter(string model)
-    { return model == "rf" ? "RF-DETR 权重 (*.pth)|*.pth" : "YOLOv8 权重 (*.pt)|*.pt"; }
+    { return model == "anomaly" ? "正常模型 (*.npz)|*.npz" : model == "rf" ? "RF-DETR 权重 (*.pth)|*.pth" : "YOLOv8 权重 (*.pt)|*.pt"; }
     private static bool WeightSuffix(string file, string model)
-    { return file != null && Path.GetExtension(file).Equals(model == "rf" ? ".pth" : ".pt", StringComparison.OrdinalIgnoreCase); }
+    { return file != null && Path.GetExtension(file).Equals(model == "anomaly" ? ".npz" : model == "rf" ? ".pth" : ".pt", StringComparison.OrdinalIgnoreCase); }
 
     private void StartTraining()
     {
@@ -183,20 +200,36 @@ internal sealed partial class TrainerForm
         var sources = CheckedSources();
         if (sources.Count == 0)
         { SetStatus(trainStatus, "请至少选择一个源视频", Views.Error); return; }
-        if (Project.Size % 32 != 0)
-        { SetStatus(trainStatus, "输入尺寸必须为 32 的倍数", Views.Error); return; }
-        if (!String.IsNullOrEmpty(initialWeights) && (!WeightSuffix(initialWeights, Project.Model) || !File.Exists(initialWeights)))
-        { SetStatus(trainStatus, "初始权重不存在或文件扩展名与模型不匹配", Views.Error); return; }
         string model = Project.Model;
+        bool detection = model != "anomaly";
+        if (detection && Project.Size % 32 != 0)
+        { SetStatus(trainStatus, "输入尺寸必须为 32 的倍数", Views.Error); return; }
+        if (detection && !String.IsNullOrEmpty(initialWeights) && (!WeightSuffix(initialWeights, model) || !File.Exists(initialWeights)))
+        { SetStatus(trainStatus, "初始权重不存在或文件扩展名与模型不匹配", Views.Error); return; }
         string failure = null;
         string checkpoint = null;
         bool stoppedEarly = false;
-        var args = new List<string> { "train", "--ids", Project.Ids, "--model", model, "--device", Project.Device,
-            "--size", DecimalArg(Project.Size), "--batch", DecimalArg(Project.Batch),
-            "--epochs", DecimalArg(Project.Epochs), "--output", trainingOutput };
+        var args = new List<string> { "train", "--ids", Project.Ids, "--model", model, "--output", trainingOutput };
+        if (detection)
+            args.AddRange(new[] { "--device", Project.Device, "--size", DecimalArg(Project.Size), "--batch",
+                DecimalArg(Project.Batch), "--epochs", DecimalArg(Project.Epochs) });
+        else
+        {
+            string[] coordinates = anomalyRoi.Text.Split(',');
+            if (coordinates.Length != 4)
+            { SetStatus(trainStatus, "请输入四个逗号分隔的 ROI 坐标", Views.Error); return; }
+            args.Add("--roi");
+            foreach (string coordinate in coordinates)
+            {
+                decimal value;
+                if (!Decimal.TryParse(coordinate.Trim(), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out value))
+                { SetStatus(trainStatus, "ROI 坐标应使用 0 到 1 的小数", Views.Error); return; }
+                args.Add(DecimalArg(value));
+            }
+        }
         foreach (string source in sources) args.AddRange(new[] { "--source-video", source });
         if (!earlyStop.Checked) args.Add("--no-early-stop");
-        if (!String.IsNullOrEmpty(initialWeights)) args.AddRange(new[] { "--weights", initialWeights });
+        if (detection && !String.IsNullOrEmpty(initialWeights)) args.AddRange(new[] { "--weights", initialWeights });
         if (!SaveWorkspace(trainStatus)) return;
         progressBar.Value = 0;
         trainLog.Clear();
@@ -219,7 +252,7 @@ internal sealed partial class TrainerForm
                     SetStatus(splitStatus, "自动拆分   ·   " + Workspace.Value(message, "mode") +
                         "   ·   " + Workspace.Value(message, "validation_summary"), Views.Blue);
                     tooltips.SetToolTip(splitStatus, Workspace.Value(message, "detail"));
-                    SetStatus(earlyStopStatus, "自动早停   ·   " + Workspace.Value(message, "early_stop_status"), Views.Blue);
+                    SetStatus(earlyStopStatus, detection ? "自动早停   ·   " + Workspace.Value(message, "early_stop_status") : "阈值仅由独立正常 Val 校准", Views.Blue);
                 }
                 else if (kind == "progress") ShowProgress(message);
                 else if (kind == "metrics") ShowMetrics(Workspace.Object(message, "values"));
@@ -279,7 +312,9 @@ internal sealed partial class TrainerForm
         foreach (var label in metricLabels)
         {
             string text = Workspace.Value(values, label.Key);
-            label.Value.Text = String.IsNullOrEmpty(text) ? "暂无" : Workspace.Number(values, label.Key).ToString("0.0000");
+            label.Value.Text = String.IsNullOrEmpty(text) ?
+                (values != null && (label.Key == "map" || label.Key == "map50" || label.Key == "recall") ? "不可计算" : "暂无") :
+                Workspace.Number(values, label.Key).ToString("0.0000");
         }
     }
 

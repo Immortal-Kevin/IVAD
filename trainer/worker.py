@@ -11,15 +11,15 @@ import traceback
 from uuid import uuid4
 from zipfile import BadZipFile
 
-from ids import inspect_package, prepare, select_videos
+from ids import inspect_package, prepare, select_videos, write_plan
 from events import emit
 
 
 def options():
     parser = argparse.ArgumentParser()
-    parser.add_argument("action", choices=["inspect", "train", "video"])
+    parser.add_argument("action", choices=["inspect", "plan", "train", "video", "evaluate"])
     parser.add_argument("--ids", type=Path)
-    parser.add_argument("--model", choices=["yolo", "rf"], default="yolo")
+    parser.add_argument("--model", choices=["yolo", "rf", "anomaly"], default="yolo")
     parser.add_argument("--device", choices=["cpu", "xpu", "cuda"], default="cpu")
     parser.add_argument("--size", type=int, default=384)
     parser.add_argument("--batch", type=int, default=1)
@@ -34,6 +34,9 @@ def options():
     parser.add_argument("--limit", type=int, help="Use at most this many images per split for short verification")
     parser.add_argument("--source-video", action="append", help="Retain this IDS video ID (repeat for multiple videos)")
     parser.add_argument("--early-stop", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--roi", nargs=4, type=float, default=(0, 0, 1, 1))
+    parser.add_argument("--manifest", type=Path)
+    parser.add_argument("--evaluation-set", choices=["valid", "test"], default="test")
     return parser.parse_args()
 
 
@@ -71,7 +74,7 @@ def device(args):
     return torch
 
 
-def train(args):
+def train(args, plan_only=False):
     validate_size(args)
     if args.output is None:
         raise ValueError("请选择输出目录")
@@ -80,18 +83,27 @@ def train(args):
     args.weights = weights_path(args.weights, args.model) if args.weights else None
     run = args.output.resolve() / f"{args.model}-{args.device}-{uuid4().hex[:12]}"
     run.mkdir(parents=True)
-    configure(run)
-    torch = device(args)
     emit("stage", value="正在重新校验 IDS")
     summary, frames = load_ids(args)
     videos, frames = select_videos(summary, frames, args.source_video)
     emit("stage", value="正在准备训练数据")
     print(f"OUTPUT {run}", flush=True)
+    mode = "anomaly" if args.model == "anomaly" else "detection"
+    splits, split = write_plan(run, summary, frames, videos, mode, args.model, args.early_stop, args.limit)
+    if plan_only:
+        return
+    if mode == "anomaly":
+        from anomaly import fit
+        emit("device", value="cpu", hardware="OpenCV / NumPy")
+        fit(args, run, splits, split)
+        return
+    configure(run)
+    torch = device(args)
     print(f"Model: {args.model}; device: {args.device}; PyTorch: {torch.__version__}; "
           f"size: {args.size}; batch: {args.batch}; epochs: {args.epochs}", flush=True)
     from evidence import UpdateEvidence
 
-    dataset, split = prepare(args.ids, run / "dataset", args.model, summary, frames, videos, args.early_stop, args.limit)
+    dataset = prepare(args.ids, run / "dataset", args.model, summary, splits)
     adapter = importlib.import_module(args.model)
     evidence = UpdateEvidence(args.device)
     checkpoint, measured, completion = adapter.train(args, dataset, run, summary["classes"], evidence, split)
@@ -109,7 +121,7 @@ def train(args):
 
 
 def weights_path(path, model):
-    suffix = ".pt" if model == "yolo" else ".pth"
+    suffix = {"yolo": ".pt", "rf": ".pth", "anomaly": ".npz"}[model]
     if path is None or not path.is_file() or path.suffix.lower() != suffix:
         raise ValueError(f"请选择与架构匹配的本地 {suffix} 权重文件")
     return path.resolve()
@@ -129,8 +141,11 @@ def load_ids(args):
 
 def main():
     args = options()
-    if args.action == "train":
-        train(args)
+    if args.action in ("train", "plan"):
+        train(args, plan_only=args.action == "plan")
+    elif args.action == "evaluate":
+        from evaluation import evaluate
+        evaluate(args)
     elif args.action == "video":
         from video import verify
         verify(args)

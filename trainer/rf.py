@@ -21,6 +21,8 @@ def predictor(args):
     model = RFDETR.from_checkpoint(args.weights, trust_checkpoint=True, device=args.device)
     if model.model_config.segmentation_head or model.model_config.use_grouppose_keypoints:
         raise ValueError("请选择 RF-DETR 检测权重")
+    # Checkpoint deserialization starts on CPU even when the requested inference device differs.
+    model.model.model.to(model.model.device)
     actual = next(model.model.model.parameters()).device
     if actual.type != args.device:
         raise RuntimeError(f"RF-DETR 选择了 {actual}，请求设备为 {args.device}")

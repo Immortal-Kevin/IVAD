@@ -10,9 +10,9 @@ using System.Windows.Forms;
 internal sealed partial class TrainerForm : Form
 {
     private static readonly string[] PageNames = { "IDS 选取与导入", "项目训练", "训练视频验证" };
-    private static readonly string[] Models = { "yolo", "rf" };
+    private static readonly string[] Models = { "yolo", "rf", "anomaly" };
     private static readonly string[] Devices = { "cpu", "xpu", "cuda" };
-    private static readonly string[] ModelLabels = { "YOLOv8n", "RF-DETR Nano" };
+    private static readonly string[] ModelLabels = { "有框目标检测 · YOLOv8n", "有框目标检测 · RF-DETR Nano", "正常样本异常检测" };
     private static readonly string[] DeviceLabels = { "CPU", "Intel XPU", "NVIDIA CUDA" };
     private readonly Workspace workspace = new Workspace();
     private readonly ToolTip tooltips = new ToolTip { AutoPopDelay = 15000, InitialDelay = 300 };
@@ -51,7 +51,7 @@ internal sealed partial class TrainerForm : Form
         importer = new WorkerJob(this);
         trainer = new WorkerJob(this);
         verifier = new WorkerJob(this);
-        Text = "IVAD Open Trainer v0.2.4";
+        Text = "IVAD Open Trainer v0.2.5";
         Font = Views.UiFont(10);
         AutoScaleMode = AutoScaleMode.None;
         StartPosition = FormStartPosition.Manual;
@@ -160,7 +160,7 @@ internal sealed partial class TrainerForm : Form
             nav[i] = button;
         }
         Views.Row(grid, new Panel(), -1);
-        var bottom = Views.Text("本地工作区   ·   v0.2.4", 9);
+        var bottom = Views.Text("本地工作区   ·   v0.2.5", 9);
         bottom.ForeColor = subtitle.ForeColor;
         bottom.Margin = Views.Pads(7, 0, 0, 0);
         Views.Row(grid, bottom, 24);

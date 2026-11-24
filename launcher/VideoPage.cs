@@ -47,6 +47,11 @@ internal sealed partial class TrainerForm
         Views.Field(left, "每秒验证帧数上限", sampleRate);
         Views.Row(left, Views.Actions(savePreset), 45);
         Views.Row(left, Views.Actions(videoStart, videoStop), 47);
+        var evaluateVal = Views.Button("评估留出 Val");
+        var evaluateTest = Views.Button("评估留出 Test");
+        Views.Row(left, Views.Actions(evaluateVal, evaluateTest), 45);
+        evaluateVal.Click += delegate { EvaluateHoldout("valid"); };
+        evaluateTest.Click += delegate { EvaluateHoldout("test"); };
         videoStop.Enabled = false;
         chooseWeights.Click += delegate {
             string value = Pick("选择可信的本地检测权重", WeightFilter(Key(Models, videoModel)));
@@ -142,6 +147,8 @@ internal sealed partial class TrainerForm
 
     private void RefreshVideoWeights()
     {
+        bool detection = Key(Models, videoModel) != "anomaly";
+        videoDevice.Enabled = videoSize.Enabled = confidence.Enabled = detection;
         videoWeightView.ShowPath(SelectedVideoWeights(),
             weightSource.SelectedIndex == 0 ? "本项目暂无该模型权重" : "尚未选择权重");
     }
@@ -155,13 +162,13 @@ internal sealed partial class TrainerForm
         { SetStatus(videoStatus, "请为所选模型选择匹配的本地权重或项目产物", Views.Error); return; }
         if (!File.Exists(videoFile))
         { SetStatus(videoStatus, "请选择存在的测试视频", Views.Error); return; }
-        if (videoSize.Value % 32 != 0)
+        if (model != "anomaly" && videoSize.Value % 32 != 0)
         { SetStatus(videoStatus, "推理输入尺寸必须为 32 的倍数", Views.Error); return; }
         StoreVideoFields();
         ClearPreviews();
         previewFolder = Path.Combine(Path.GetTempPath(), "ivad-preview-" + Guid.NewGuid().ToString("N"));
-        var args = new[] { "video", "--model", model, "--device", Key(Devices, videoDevice),
-            "--weights", weight, "--video", videoFile, "--size", DecimalArg(videoSize.Value),
+        var args = new[] { "video", "--model", model, "--device", model == "anomaly" ? "cpu" : Key(Devices, videoDevice),
+            "--weights", weight, "--video", videoFile, "--size", model == "anomaly" ? "384" : DecimalArg(videoSize.Value),
             "--confidence", DecimalArg(confidence.Value), "--sample-fps", DecimalArg(sampleRate.Value),
             "--preview", previewFolder };
         sourceFps.Text = "源视频 FPS   —";
@@ -201,6 +208,54 @@ internal sealed partial class TrainerForm
             previewTimer.Start();
         }
         catch (Exception error) { SetStatus(videoStatus, "无法启动视频验证：" + error.Message, Views.Error); }
+    }
+
+    private void EvaluateHoldout(string side)
+    {
+        if (verifier.Active) return;
+        string model = Key(Models, videoModel);
+        string chosen = SelectedVideoWeights();
+        string artifact = Artifact(Project, model);
+        if (model == "anomaly" || !File.Exists(chosen) || !WeightSuffix(chosen, model) || artifact == null || !File.Exists(Project.Ids))
+        { SetStatus(videoStatus, "请先完成有框检测训练，并选择检测权重和固定置信度阈值", Views.Error); return; }
+        var directory = new DirectoryInfo(Path.GetDirectoryName(artifact));
+        string manifest = null;
+        for (int depth = 0; depth < 4 && directory != null; depth++, directory = directory.Parent)
+        {
+            string path = Path.Combine(directory.FullName, "split-manifest.json");
+            if (File.Exists(path)) { manifest = path; break; }
+        }
+        if (manifest == null) { SetStatus(videoStatus, "本项目权重没有关联三套拆分清单", Views.Error); return; }
+        string label = side == "test" ? "Test" : "Val";
+        var args = new[] { "evaluate", "--ids", Project.Ids, "--manifest", manifest, "--evaluation-set", side,
+            "--model", model, "--device", Key(Devices, videoDevice), "--weights", chosen,
+            "--size", DecimalArg(videoSize.Value), "--confidence", DecimalArg(confidence.Value) };
+        string failure = null, summary = null, report = null;
+        try
+        {
+            verifier.Start(args, delegate { }, message => {
+                string kind = Workspace.Value(message, "kind");
+                if (kind == "evaluation")
+                {
+                    string map = Workspace.Value(message, "map"), recall = Workspace.Value(message, "recall");
+                    summary = label + " · mAP " + (map == "" ? "不可计算" : map) + " · 召回 " +
+                        (recall == "" ? "不可计算" : recall) + " · 正常误报框 " + Workspace.Value(message, "false_positive_boxes");
+                    report = Workspace.Value(message, "path");
+                }
+                else if (kind == "error") failure = Workspace.Value(message, "value");
+            }, (code, cancelled) => {
+                videoStart.Enabled = true;
+                videoStop.Enabled = false;
+                bool ok = code == 0 && summary != null;
+                SetStatus(videoStatus, cancelled ? "评估已取消" : ok ? summary : "评估失败 · " + (failure ?? "退出 " + code),
+                    cancelled ? Views.Muted : ok ? Views.Good : Views.Error);
+                if (ok) tooltips.SetToolTip(videoStatus, summary + Environment.NewLine + report);
+            });
+            videoStart.Enabled = false;
+            videoStop.Enabled = true;
+            SetStatus(videoStatus, "正在使用已选权重及阈值评估留出 " + label, Views.Blue);
+        }
+        catch (Exception error) { SetStatus(videoStatus, "无法启动评估 · " + error.Message, Views.Error); }
     }
 
     private void ShowVideoMetrics(Dictionary<string, object> metrics)

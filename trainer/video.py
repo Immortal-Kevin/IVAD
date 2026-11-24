@@ -3,6 +3,7 @@
 import importlib
 import math
 import os
+import shutil
 from collections import Counter
 from pathlib import Path
 from queue import Empty, Full, Queue
@@ -13,7 +14,7 @@ from time import monotonic, sleep
 from events import emit
 
 
-def jpeg(path, frame, boxes=None, names=None, timestamp=0.0):
+def jpeg(path, frame, boxes=None, names=None, timestamp=0.0, anomaly=None):
     import cv2
     from PIL import Image, ImageDraw, ImageFont
 
@@ -26,9 +27,13 @@ def jpeg(path, frame, boxes=None, names=None, timestamp=0.0):
         font = ImageFont.truetype(str(font_path), 17) if font_path.exists() else ImageFont.load_default()
         draw.rectangle((6, 6, 135, 31), fill="#13283e")
         draw.text((12, 8), f"{timestamp:.3f} s", fill="white", font=font)
+        if anomaly:
+            score, threshold = anomaly
+            draw.rectangle((6, 32, 310, 57), fill="#13283e")
+            draw.text((12, 34), f"异常分数 {score:.4f} / 阈值 {threshold:.4f}", fill="white", font=font)
         for bounds, ident, score in boxes:
             x1, y1, x2, y2 = (round(value * scale) for value in bounds)
-            label = f"{names.get(ident, str(ident))}  {score:.1%}"
+            label = f"{names.get(ident, str(ident))}  " + (f"{score:.4f}" if anomaly else f"{score:.1%}")
             draw.rectangle((x1, y1, x2, y2), outline="#55e9bf", width=3)
             x, y = max(x1, 0), max(y1 - 24, 0)
             draw.rectangle((x, y, x + int(draw.textlength(label, font=font)) + 10, y + 23), fill="#13283e")
@@ -57,21 +62,42 @@ def verify(args):
 
     with TemporaryDirectory(prefix="ivad-video-") as temporary:
         configure(Path(temporary))
-        device(args)
+        if args.model != "anomaly":
+            device(args)
         emit("stage", value="正在加载检测权重")
         names, predict = importlib.import_module(args.model).predictor(args)
         if args.preview:
             args.preview.mkdir(parents=True, exist_ok=True)
-        cap = cv2.VideoCapture(str(args.video.resolve()), cv2.CAP_MSMF)
-        if not cap.isOpened():
-            cap.release()
-            cap = cv2.VideoCapture(str(args.video.resolve()), cv2.CAP_OPENCV_MJPEG)
-        if not cap.isOpened():
-            raise ValueError("Windows 无法打开此视频，请检查文件或使用受支持的 MP4 / AVI 编码")
+        cap = open_video(args.video.resolve(), Path(temporary))
         try:
             stream(args, cap, names, predict)
         finally:
             cap.release()
+
+
+def open_video(path, temporary):
+    import cv2
+
+    def open_path(source):
+        for backend in (cv2.CAP_MSMF, cv2.CAP_OPENCV_MJPEG):
+            capture = cv2.VideoCapture(str(source), backend)
+            if capture.isOpened():
+                return capture
+            capture.release()
+        return None
+
+    capture = open_path(path)
+    if capture is None and not str(path).isascii():
+        # Media Foundation may reject non-ASCII filenames passed by OpenCV.
+        alias = temporary / ("source" + path.suffix)
+        try:
+            os.link(path, alias)
+        except OSError:
+            shutil.copyfile(path, alias)
+        capture = open_path(alias)
+    if capture is None:
+        raise ValueError("Windows 无法打开此视频，请检查文件或使用受支持的 MP4 / AVI 编码")
+    return capture
 
 
 def stream(args, cap, names, predict):
@@ -131,15 +157,17 @@ def stream(args, cap, names, predict):
     class_counts = Counter()
     last_timestamp = -1.0
     next_start = 0.0
+    anomaly = None
 
     def update(kind):
         rate = (processed - 1) / max(elapsed - first_start, 0.001) if processed >= 2 else None
         summary = {"classes": {names.get(ident, str(ident)): count for ident, count in class_counts.items()}}
+        extra = {"anomaly_score": anomaly[0], "anomaly_threshold": anomaly[1]} if anomaly else {}
         emit(kind, source_fps=fps, limit=args.sample_fps, actual_fps=rate,
              processed=processed, detections=detections, timestamp=last_timestamp,
              decoded=counters["decoded"], dropped=counters["dropped"], offered=counters["offered"],
              source_seconds=counters["timestamp"], wall_seconds=elapsed,
-             **(summary if kind == "video_result" else {}))
+             **(summary if kind == "video_result" else {}), **extra)
 
     emit("stage", value="正在验证视频")
     update("video")
@@ -155,13 +183,17 @@ def stream(args, cap, names, predict):
             if first_start is None:
                 first_start = started - begun
             next_start = started + period
-            boxes = predict(frame)
+            if args.model == "anomaly":
+                boxes, view, score, threshold = predict(frame)
+                anomaly = (score, threshold)
+            else:
+                boxes, view = predict(frame), frame
             processed += 1
             detections += len(boxes)
             class_counts.update(ident for _, ident, _ in boxes)
             last_timestamp = timestamp
             if args.preview:
-                jpeg(args.preview / "detected.jpg", frame, boxes, names, timestamp)
+                jpeg(args.preview / "detected.jpg", view, boxes, names, timestamp, anomaly)
             elapsed = monotonic() - begun
             update("video")
     finally:
