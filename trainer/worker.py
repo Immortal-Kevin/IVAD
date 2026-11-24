@@ -91,7 +91,7 @@ def train(args):
     dataset, split = prepare(args.ids, run / "dataset", args.model, summary, frames, args.limit)
     adapter = importlib.import_module(args.model)
     evidence = UpdateEvidence(args.device)
-    checkpoint, measured = adapter.train(args, dataset, run, summary["classes"], evidence, split["validation"])
+    checkpoint, measured = adapter.train(args, dataset, run, summary["classes"], evidence, split)
     if evidence.result is None:
         raise RuntimeError(f"No finite gradient and changed parameter observed on {args.device}")
     with checkpoint.open("rb") as stream:

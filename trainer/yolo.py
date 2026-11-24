@@ -33,7 +33,7 @@ def predictor(args):
     return model.names, predict
 
 
-def train(args, dataset, output, classes, evidence, validate):
+def train(args, dataset, output, classes, evidence, split):
     import math
     from types import SimpleNamespace
     from unittest.mock import patch
@@ -44,6 +44,8 @@ def train(args, dataset, output, classes, evidence, validate):
     from ultralytics.models.yolo.detect import DetectionTrainer
     from ultralytics.utils.torch_utils import strip_optimizer
 
+    validate = split["validation"]
+
     class ObservedTrainer(DetectionTrainer):
         def get_dataloader(self, dataset_path, batch_size=16, rank=0, mode="train"):
             if mode == "val" and not validate:
@@ -53,7 +55,7 @@ def train(args, dataset, output, classes, evidence, validate):
 
         def validate(self):
             # Ultralytics also calls validate unconditionally at the final epoch.
-            return super().validate() if validate else ({}, 0.0)
+            return super().validate() if validate else ({}, None)
 
         def final_eval(self):
             if validate:

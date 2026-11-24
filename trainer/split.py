@@ -16,17 +16,23 @@ def counts(frames):
 
 
 def video_groups(frames):
-    if any(type(frame.pts) is not int or frame.pts < 0 for frame in frames):
-        return sorted(frames, key=lambda f: f.id), [0, len(frames)], None
-    frames.sort(key=lambda frame: (frame.pts, frame.id))
-    times = [frame.pts for frame in frames]
+    for field, minimum_gap, maximum_duration in (
+            ("pts", 5_000_000, 30_000_000),
+            ("source_timestamp", 50_000_000, 300_000_000),
+            ("decode_index", 0, 0)):
+        times = [getattr(frame, field) for frame in frames]
+        if (len(times) > 1 and all(type(value) is int and value >= 0 for value in times)
+                and len(set(times)) == len(times)):
+            break
+    else:
+        return sorted(frames, key=lambda f: f.id), [0, len(frames)], None, None, None
+    frames = sorted(frames, key=lambda frame: getattr(frame, field))
+    times = [getattr(frame, field) for frame in frames]
     deltas = [b - a for a, b in zip(times, times[1:])]
-    if not deltas or min(deltas) <= 0:
-        return frames, [0, len(frames)], None
     cadence = int(median(deltas))
-    gap = max(5_000_000, 5 * cadence)
+    gap = max(minimum_gap, 5 * cadence)
     min_frames = min(32, max(4, len(frames) // 5))
-    duration = max(min_frames * cadence, min(30_000_000, (times[-1] - times[0]) // 5))
+    duration = max(min_frames * cadence, min(maximum_duration, (times[-1] - times[0]) // 5))
     positives = [i for i, frame in enumerate(frames) if frame.boxes]
     blocked = {cut for a, b in zip(positives, positives[1:]) if times[b] - times[a] <= 3 * cadence
                for cut in range(a + 1, b + 1)}
@@ -34,14 +40,13 @@ def video_groups(frames):
     for i in range(1, len(frames)):
         if i not in blocked and (deltas[i - 1] > gap or times[i] - times[cuts[-1]] >= duration):
             cuts.append(i)
-    return frames, cuts + [len(frames)], gap
+    return frames, cuts + [len(frames)], field, times, gap
 
 
-def holdouts(frames, cuts, gap):
+def holdouts(frames, cuts, times, gap):
     """Return the best positive, normal-only and relaxed positive windows."""
     if gap is None or len(cuts) <= 2:
         return None, None, None
-    times = [f.pts for f in frames]
     positives = list(accumulate((bool(f.boxes) for f in frames), initial=0))
     target = max(1, round(len(frames) / 5))
     target_pos = min(max(1, positives[-1] - 1), max(2, round(positives[-1] / 5)))
@@ -108,13 +113,13 @@ def automatic_split(frames, document_sha256, limit):
     planned = {}
     selected = {}
     for video, items in sources.items():
-        ordered, cuts, gap = video_groups(items)
-        positive, normal, relaxed = holdouts(ordered, cuts, gap)
-        planned[video] = (ordered, cuts, gap, positive, relaxed)
+        ordered, cuts, field, times, gap = video_groups(items)
+        positive, normal, relaxed = holdouts(ordered, cuts, times, gap)
+        planned[video] = (ordered, cuts, field, gap, positive, relaxed)
         selected[video] = positive or normal
 
-    if not any(plan[3] for plan in planned.values()):
-        for video, (_, _, _, _, relaxed) in planned.items():
+    if not any(plan[4] for plan in planned.values()):
+        for video, (_, _, _, _, _, relaxed) in planned.items():
             if relaxed and any(other != video and any(f.boxes for f in items)
                                for other, items in sources.items()):
                 selected[video] = relaxed
@@ -126,7 +131,7 @@ def automatic_split(frames, document_sha256, limit):
     report = {}
     assignment = {"train": [], "valid": [], "embargo": []}
     groups = {}
-    for video, (ordered, cuts, gap, _, _) in planned.items():
+    for video, (ordered, cuts, field, gap, _, _) in planned.items():
         window = selected[video]
         parts = {"train": [], "valid": [], "embargo": []}
         positive_groups = dict.fromkeys(parts, 0)
@@ -147,18 +152,33 @@ def automatic_split(frames, document_sha256, limit):
                     group_positive.add(bucket)
             for bucket in group_positive:
                 positive_groups[bucket] += 1
-        report[video] = {"gap_us": gap, **{bucket: {**counts(items), "positive_groups": positive_groups[bucket]}
-                                           for bucket, items in parts.items()}}
+        report[video] = {"ordering": field, "gap": gap,
+                         **{bucket: {**counts(items), "positive_groups": positive_groups[bucket]}
+                            for bucket, items in parts.items()}}
         for bucket, items in parts.items():
             assignment[bucket].extend(items)
-    valid = bool(assignment["valid"])
     splits = {side: sample(assignment[side], limit, side == "train") for side in ("train", "valid")}
+    train_groups = {groups[frame.id] for frame in assignment["train"]}
+    valid_groups = {groups[frame.id] for frame in assignment["valid"]}
+    if train_groups & valid_groups:
+        raise RuntimeError("IDS split assigned a temporal group to both training and validation")
+    used_by_video = {video: {side: [] for side in splits} for video in sources}
+    for side, rows in splits.items():
+        for frame in rows:
+            used_by_video[frame.video][side].append(frame)
+    used_report = {video: {side: {**counts(rows),
+                                   "positive_groups": len({groups[f.id] for f in rows if f.boxes})}
+                           for side, rows in parts.items()} for video, parts in used_by_video.items()}
+
     def entry(frame):
         return {"frame": frame.id, "video": frame.video, "pts_us": frame.pts,
+                "source_timestamp_100ns": frame.source_timestamp, "decode_index": frame.decode_index,
                 "group": groups[frame.id], "asset": frame.asset, "boxes": len(frame.boxes)}
+
     manifest = {
-        "method": "automatic_temporal_groups_v1", "seed": SEED,
-        "document_sha256": document_sha256, "validation": valid, "limit_per_split": limit,
+        "method": "automatic_temporal_groups_v2", "seed": SEED,
+        "document_sha256": document_sha256, "validation": any(f.boxes for f in splits["valid"]),
+        "limit_per_split": limit, "used_videos": used_report,
         "duplicate_assets_removed": len(frames) - len(unique), "videos": report,
         "planned": {side: [entry(frame) for frame in rows] for side, rows in assignment.items()},
         "used": {side: [frame.id for frame in rows] for side, rows in splits.items()},

@@ -69,6 +69,8 @@ class Frame:
     width: int
     height: int
     boxes: list
+    source_timestamp: int | None = None
+    decode_index: int | None = None
 
 
 def annotation_box(data, frame):
@@ -127,7 +129,7 @@ def inspect_package(path):
             for field in ("width", "height"):
                 require(type(data[field]) is int and data[field] > 0, "Invalid IDS frame dimensions")
             frame = Frame(UUID(entry["id"]).hex, data["asset_path"], str(UUID(data["video_id"])), data.get("pts_us"),
-                          data["width"], data["height"], [])
+                          data["width"], data["height"], [], data.get("source_timestamp_100ns"), data.get("decode_index"))
             all_frames[frame.id] = frame
         for entry in kinds["Annotation"]:
             data = entry["data"]
@@ -172,7 +174,9 @@ def inspect_package(path):
         label["annotations"] = annotations[index]
     summary = {"target_sha256": digest, "images": len(all_frames), "assets": len(assets), "states": dict(states),
                "annotations": sum(len(frame.boxes) for frame in all_frames.values()),
-               "classes": fault_map, "eligible": len(eligible), "excluded": dict(excluded)}
+               "classes": fault_map, "eligible": len(eligible), "excluded": dict(excluded),
+               "video_names": {str(UUID(entry["id"])): entry["data"].get("original_name")
+                               for entry in kinds["Video"]}}
     return summary, eligible
 
 
@@ -188,14 +192,19 @@ def prepare(path, output, model, summary, frames, limit=None):
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     lines = [f"自动拆分 · {mode}"]
     for index, (video, stats) in enumerate(manifest["videos"].items(), 1):
+        name = summary["video_names"].get(video) or video
         for side, label in (("train", "训练"), ("valid", "验证"), ("embargo", "间隔留空")):
             row = stats[side]
-            lines.append(f"视频 {index} {label}  {row['images']} 张 · 正例 {row['positive']} 张"
-                         f"（{row['positive_groups']} 组） · 正常 {row['normal']} 张 · {row['boxes']} 框"
-                         f"  [{video}]")
+            lines.append(f"视频 {index} [{name}] {label}  {row['images']} 张 · 正例 {row['positive']} 张"
+                         f"（{row['positive_groups']} 组） · 正常 {row['normal']} 张 · {row['boxes']} 框")
     if limit is not None:
-        lines.append("短训实际读取 " + " / ".join(f"{side} {len(rows)} 张" for side, rows in splits.items()))
-    valid = [stats["valid"] for stats in manifest["videos"].values()]
+        for video, stats in manifest["used_videos"].items():
+            name = summary["video_names"].get(video) or video
+            for side, label in (("train", "训练"), ("valid", "验证")):
+                row = stats[side]
+                lines.append(f"短训 [{name}] {label}  {row['images']} 张 · 正例 {row['positive']} 张"
+                             f"（{row['positive_groups']} 组） · 正常 {row['normal']} 张 · {row['boxes']} 框")
+    valid = [stats["valid"] for stats in manifest["used_videos"].values()]
     validation_summary = (f"正例 {sum(row['positive_groups'] for row in valid)} 组 / "
                           f"{sum(row['positive'] for row in valid)} 张 / {sum(row['boxes'] for row in valid)} 框")
     emit("split", mode=mode, validation_summary=validation_summary,

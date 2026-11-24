@@ -1,5 +1,7 @@
 """RF-DETR Nano adapter using the upstream Lightning training components."""
 
+from pathlib import Path
+
 from events import emit, metrics, progress
 
 
@@ -34,15 +36,27 @@ def predictor(args):
     return names, predict
 
 
-def train(args, dataset, output, classes, evidence, validate):
+def train(args, dataset, output, classes, evidence, split):
     import torch
     from pytorch_lightning import Callback, seed_everything
     from rfdetr.config import RFDETRNanoConfig, TrainConfig
     from rfdetr.training import RFDETRDataModule, RFDETRModelModule, build_trainer
 
+    validate = split["validation"]
     measured = {}
 
     class Observe(Callback):
+        def on_train_start(self, trainer, pl_module):
+            loaded = {"train": data._dataset_train, "valid": data._dataset_val}
+            for side, projection in loaded.items():
+                expected = {frame + ".png" for frame in split["used"][side]}
+                actual = [item["file_name"] for item in projection.coco.imgs.values()]
+                expected_root = (dataset / side).resolve()
+                if Path(projection.root).resolve() != expected_root or len(actual) != len(expected) or set(actual) != expected:
+                    raise RuntimeError(f"RF-DETR {side} differs from the IDS split manifest")
+            emit("dataset", train=len(split["used"]["train"]), valid=len(split["used"]["valid"]),
+                 validation=validate, manifest="split-manifest.json")
+
         def on_train_epoch_start(self, trainer, pl_module):
             progress(trainer.current_epoch + 1, args.epochs, batches=trainer.num_training_batches)
 
