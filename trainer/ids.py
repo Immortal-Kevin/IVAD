@@ -190,9 +190,18 @@ def inspect_package(path):
     videos = []
     for entry in kinds["Video"]:
         video = str(UUID(entry["id"]))
+        data = entry["data"]
+        asset = ASSET_PATH.fullmatch(data.get("asset_path", ""))
+        origin = data.get("source_asset_sha256")
+        offset = data.get("source_start_us")
+        if isinstance(origin, str) and re.fullmatch(r"[0-9a-f]{64}", origin):
+            offset = offset if type(offset) is int and offset >= 0 else None
+        else:
+            origin, offset = (asset[1], 0) if asset else (None, None)
         stats = counts(by_video[video])
         videos.append({"id": video, "name": entry["data"].get("original_name") or video,
-                       "images": totals[video], "positive": stats["positive"], "boxes": stats["boxes"]})
+                       "images": totals[video], "positive": stats["positive"], "boxes": stats["boxes"],
+                       "source_origin": origin, "source_offset_us": offset})
     for index, label in enumerate(fault_map):
         label["annotations"] = annotations[index]
     summary = {"target_sha256": digest, "images": len(all_frames), "assets": len(assets), "states": dict(states),
@@ -210,10 +219,16 @@ def select_videos(summary, frames, requested):
     return {key: name for key, name in videos.items() if key in selected}, [f for f in frames if f.video in selected]
 
 
-def write_plan(run, summary, frames, videos, mode, model, early_stop, limit=None):
+def source_timelines(summary):
+    return {row["id"]: (row["source_origin"], row["source_offset_us"]) for row in summary["videos"]
+            if row["source_origin"]}
+
+
+def write_plan(run, summary, frames, videos, mode, model, early_stop, limit=None, test_only=()):
     from events import emit
 
-    splits, manifest = partition(frames, videos, summary["target_sha256"], mode, limit)
+    splits, manifest = partition(frames, videos, summary["target_sha256"], mode, limit, test_only,
+                                 source_timelines(summary))
     status = ("正常片段校准阈值" if mode == "anomaly" else
               "同源视频留出验证" if manifest["validation"] else "无正例验证")
     stop_status = ("不可用（无正例验证）" if not manifest["validation"] else
@@ -225,6 +240,9 @@ def write_plan(run, summary, frames, videos, mode, model, early_stop, limit=None
         lines.append(f"自动早停 · {stop_status}")
     for index, (video, name) in enumerate(videos.items(), 1):
         stats = manifest["videos"][video]
+        purpose = "仅测试" if stats["purpose"] == "test_only" else "参与自动拆分"
+        destinations = "/".join(side.title() if side != "valid" else "Val" for side in stats["destinations"])
+        lines.append(f"[{name}] 用途 {purpose} · 最终去向 {destinations or '无可用帧'}")
         if not stats["ordering"]:
             lines.append(f"[{name}] 时间戳及帧序号不足，整段作为一个片段")
         elif stats["ordering"] == "decode_index":

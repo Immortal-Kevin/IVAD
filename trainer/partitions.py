@@ -101,7 +101,47 @@ def place_normals(clips):
             clip.side = side
 
 
-def partition(frames, videos, digest, mode, limit=None):
+def check_source_overlap(plan, timelines):
+    """Compare source times only when two records have common media provenance."""
+    if not timelines:
+        return
+    ranges = defaultdict(dict)
+    for side in SIDES:
+        for row in plan[side]:
+            video = row["video"]
+            provenance = timelines.get(video)
+            if not provenance:
+                continue
+            origin, offset = provenance
+            key = (side, video, row["group"])
+            t = row["pts_us"]
+            if type(t) is not int or offset is None:
+                ranges[origin][key] = None
+            elif key not in ranges[origin]:
+                ranges[origin][key] = (t + offset, t + offset)
+            elif ranges[origin][key] is not None:
+                lo, hi = ranges[origin][key]
+                ranges[origin][key] = (min(lo, t + offset), max(hi, t + offset))
+    for clips in ranges.values():
+        if len({video for _, video, _ in clips}) < 2:
+            continue
+        items = list(clips.items())
+        for i, ((side, video, _), interval) in enumerate(items):
+            for (other, other_video, _), candidate in items[i + 1:]:
+                if side == other or video == other_video:
+                    continue
+                if interval is None or candidate is None:
+                    raise ValueError(f"同源视频 {video} 与 {other_video} 跨 {side}/{other}，缺少可核查的源时间区间")
+                if max(interval[0], candidate[0]) <= min(interval[1], candidate[1]):
+                    raise ValueError(f"同源视频 {video} 与 {other_video} 在 {side}/{other} 的时间区间重叠")
+
+
+def partition(frames, videos, digest, mode, limit=None, test_only=(), timelines=None):
+    test_only = set(test_only)
+    if test_only - videos.keys():
+        raise ValueError("仅测试源必须是已勾选的 IDS 源视频")
+    if not (videos.keys() - test_only):
+        raise ValueError("只有仅测试源。请至少勾选一个参与自动拆分的源视频才能开始训练")
     sources = defaultdict(list)
     for frame in frames:
         sources[frame.video].append(frame)
@@ -110,25 +150,31 @@ def partition(frames, videos, digest, mode, limit=None):
         if sources[video]:
             clocks[video] = clock(sources[video])
             clips[video] = source_clips(sources[video], *clocks[video][1:3])
-    all_clips = [clip for items in clips.values() for clip in items]
+    automatic = [clip for video, items in clips.items() if video not in test_only for clip in items]
+    if not automatic:
+        raise ValueError("参与自动拆分的源没有可用的已审核帧")
+    for video in test_only:
+        for clip in clips.get(video, []):
+            clip.side = "test"
     if mode == "anomaly":
-        for clip in all_clips:
+        for clip in automatic:
             if clip.abnormal:
                 clip.side = "test"
     else:
-        positive = sorted((c for c in all_clips if c.boxes), key=lambda c: (-c.boxes, c.id))
+        positive = sorted((c for c in automatic if c.boxes), key=lambda c: (-c.boxes, c.id))
         if not positive:
             raise ValueError("所选视频没有已确认的有效正例框")
         if len(positive) >= 2:
             positive[-1].side = "valid"
         if len(positive) >= 3:
             positive[-2].side = "test"
-    for items in clips.values():
-        place_normals(items)
+    for video, items in clips.items():
+        if video not in test_only:
+            place_normals(items)
 
     # If multiple source IDs refer to the same explicit event, use a common side.
     event_clips = defaultdict(list)
-    for clip in all_clips:
+    for clip in automatic:
         for key in {e for f in clip.frames for e in f.events}:
             event_clips[key].append(clip)
     while True:
@@ -143,20 +189,17 @@ def partition(frames, videos, digest, mode, limit=None):
 
     assignment = {side: [] for side in (*SIDES, "embargo")}
     plan = {side: [] for side in assignment}
-    asset_sides = {}
     priority = ("test", "valid", "train") if mode == "anomaly" else SIDES
     for side in priority:
         for video, items in clips.items():
             field, values, gap, scale, step = clocks[video]
             for clip in (c for c in items if c.side == side):
-                # If copied images occur in multiple clips, keep them in one set only.
-                duplicate = any(asset_sides.get(f.asset, side) != side for f in clip.frames)
                 others = sorted(values[f.id] for c in items if c.side != side
                                 and (c.abnormal or priority.index(c.side) < priority.index(side)) for f in c.frames)
                 explicit = {event for f in clip.frames for event in f.events}
                 for frame in clip.frames:
                     bucket = side
-                    if duplicate or (mode == "detection" and frame.state == "abnormal" and not frame.boxes):
+                    if video not in test_only and mode == "detection" and frame.state == "abnormal" and not frame.boxes:
                         bucket = "embargo"
                     elif others and not clip.abnormal:
                         t = values[frame.id]
@@ -164,8 +207,6 @@ def partition(frames, videos, digest, mode, limit=None):
                         if any(abs(t - q) <= gap for q in others[max(0, i - 1):i + 1]):
                             bucket = "embargo"
                     assignment[bucket].append(frame)
-                    if bucket != "embargo":
-                        asset_sides[frame.asset] = side
                     events = (list(frame.events) or ([] if explicit else [clip.id])) if frame.state == "abnormal" else []
                     plan[bucket].append({"frame": frame.id, "asset": frame.asset, "video": video,
                                          "group": clip.id, "events": list(frame.events), "state": frame.state,
@@ -177,7 +218,10 @@ def partition(frames, videos, digest, mode, limit=None):
         for other in SIDES[i + 1:]:
             for key in ("frame", "asset", "group"):
                 if {p[key] for p in plan[side]} & {p[key] for p in plan[other]}:
-                    raise RuntimeError(f"{side}/{other} 共用 {key}")
+                    raise ValueError(f"{side}/{other} 存在跨集合重复{'图像资产' if key == 'asset' else '帧或片段组'}，已阻止拆分")
+            hashes = {p["asset"].rsplit("/", 1)[-1].split(".", 1)[0] for p in plan[side]}
+            if any(p["asset"].rsplit("/", 1)[-1].split(".", 1)[0] in hashes for p in plan[other]):
+                raise ValueError(f"{side}/{other} 存在跨集合重复图像内容，已阻止拆分")
             if {e for p in plan[side] for e in p["events"]} & {e for p in plan[other] for e in p["events"]}:
                 raise RuntimeError(f"{side}/{other} 共用事件，无法安全拆分")
             for video, (_, values, gap, _, _) in clocks.items():
@@ -189,6 +233,7 @@ def partition(frames, videos, digest, mode, limit=None):
                         if any(abs(t - q) <= gap for q in first[max(0, j - 1):j + 1]):
                             raise RuntimeError(f"{side}/{other} 无法保留时间间隔")
 
+    check_source_overlap(plan, timelines)
     used = {side: sample(assignment[side], limit if mode == "detection" and side != "test" else None, side == "train")
             for side in SIDES}
     if mode == "detection" and not any(f.boxes for f in used["train"]):
@@ -204,9 +249,12 @@ def partition(frames, videos, digest, mode, limit=None):
                             "positive": sum(p["boxes"] > 0 for p in rows), "boxes": sum(p["boxes"] for p in rows),
                             "event_groups": len({e for p in rows for e in p["event_keys"]}),
                             "positive_groups": len({p["group"] for p in rows if p["boxes"]})}
+        report["purpose"] = "test_only" if video in test_only else "automatic"
+        report["destinations"] = [side for side in SIDES if report[side]["images"]]
         reports[video] = report
-    manifest = {"method": "temporal_three_way_v1", "mode": mode, "seed": SEED, "document_sha256": digest,
+    manifest = {"method": "temporal_three_way_v2", "mode": mode, "seed": SEED, "document_sha256": digest,
                 "selected_videos": videos, "videos": reports, "planned": plan,
+                "test_only_videos": sorted(test_only),
                 "used": {k: [f.id for f in rows] for k, rows in used.items()},
                 "validation": mode == "detection" and any(f.boxes for f in used["valid"])}
     return used, manifest

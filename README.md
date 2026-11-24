@@ -21,6 +21,8 @@ IDS is opened read-only. The trainer verifies the manifest checksum, asset list,
 
 Choose the source videos on the IDS page, then choose the mode on the training page. The trainer records three disjoint temporal holdouts in `split-manifest.json` before fitting. Box detection trains YOLOv8n or RF-DETR on Train. Use the video page to evaluate Val while tuning, then evaluate Test after the checkpoint and confidence threshold are fixed. A holdout without positive annotations can report false positives but cannot report mAP or recall.
 
+Set each checked source to automatic splitting or Test only. Test-only frames are isolated before assigning Train and Val. Source choices are saved by IDS video ID. New or unmatched IDs require confirmation when replacing an IDS. A training-page preview writes the manifest without running training. Exact image duplicates and overlapping intervals with known common video provenance are rejected across sets.
+
 Normal-sample anomaly detection fits a local OpenCV/NumPy appearance model on confirmed-normal Train frames. It calibrates the threshold on separate confirmed-normal Val frames and then plays back Test to count known event hits and false-alarm episodes on normal clips. Set the ROI as normalized left, top, right, bottom coordinates, or keep the default full frame. The native `.npz` model stores the fixed ROI and threshold for video playback with scores, heatmaps and suspected anomaly boxes. Replay time reflects sampled IDS frame coverage rather than the full source-video runtime.
 
 ## GPU runtimes

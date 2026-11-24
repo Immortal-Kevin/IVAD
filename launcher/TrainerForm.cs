@@ -34,6 +34,11 @@ internal sealed partial class TrainerForm : Form
     private readonly ListView sourceList = new ListView { Dock = DockStyle.Fill, View = View.Details,
         CheckBoxes = true, FullRowSelect = true, AccessibleName = "源视频",
         HeaderStyle = ColumnHeaderStyle.Nonclickable, BorderStyle = BorderStyle.FixedSingle };
+    private const int PurposeColumn = 4;
+    private const string TestOnly = "test_only";
+    private readonly Label sourceTotals = Views.Single("");
+    private readonly Button batchTest = Views.Button("勾选项设为仅测试");
+    private readonly Button batchAuto = Views.Button("勾选项参与自动拆分");
     private readonly Button chooseIds = Views.Button("导入 IDS", true);
     private readonly Button recheckIds = Views.Button("重新校验");
     private readonly Button goTrain = Views.Button("进入项目训练", true);
@@ -51,7 +56,7 @@ internal sealed partial class TrainerForm : Form
         importer = new WorkerJob(this);
         trainer = new WorkerJob(this);
         verifier = new WorkerJob(this);
-        Text = "IVAD Open Trainer v0.2.6";
+        Text = "IVAD Open Trainer v0.2.7";
         Font = Views.UiFont(10);
         AutoScaleMode = AutoScaleMode.None;
         StartPosition = FormStartPosition.Manual;
@@ -160,7 +165,7 @@ internal sealed partial class TrainerForm : Form
             nav[i] = button;
         }
         Views.Row(grid, new Panel(), -1);
-        var bottom = Views.Text("本地工作区   ·   v0.2.6", 9);
+        var bottom = Views.Text("本地工作区   ·   v0.2.7", 9);
         bottom.ForeColor = subtitle.ForeColor;
         bottom.Margin = Views.Pads(7, 0, 0, 0);
         Views.Row(grid, bottom, 24);
@@ -222,17 +227,46 @@ internal sealed partial class TrainerForm : Form
         sourceList.Columns.Add("总图数", Views.Px(78));
         sourceList.Columns.Add("正例图数", Views.Px(88));
         sourceList.Columns.Add("有效框数", Views.Px(88));
+        sourceList.Columns.Add("用途 ▾", Views.Px(125));
         sourceList.Resize += delegate {
-            int nameWidth = sourceList.ClientSize.Width - Views.Scale(274, sourceList.DeviceDpi);
-            sourceList.Columns[0].Width = Math.Max(Views.Scale(140, sourceList.DeviceDpi), nameWidth);
+            int nameWidth = sourceList.ClientSize.Width - Views.Scale(385, sourceList.DeviceDpi);
+            sourceList.Columns[0].Width = Math.Max(Views.Scale(112, sourceList.DeviceDpi), nameWidth);
         };
-        sourceList.ItemChecked += delegate {
+        sourceList.ItemChecked += delegate(object sender, ItemCheckedEventArgs e) {
             if (loadingSources) return;
-            Project.SourceVideos = CheckedSources();
+            string id = (string)e.Item.Tag;
+            Project.SourceVideos.Remove(id);
+            if (e.Item.Checked)
+            {
+                ConfirmSource(id);
+                Project.SourceVideos.Add(id);
+            }
+            e.Item.SubItems[PurposeColumn].Text = PurposeText(id);
             RefreshSourceActions();
             SaveWorkspace(importState);
         };
+        var purposeMenu = new ContextMenuStrip();
+        ListViewItem editingSource = null;
+        purposeMenu.Items.Add("参与自动拆分", null, delegate { if (editingSource != null) SetPurposes(new[] { editingSource }, false); });
+        purposeMenu.Items.Add("仅测试", null, delegate { if (editingSource != null) SetPurposes(new[] { editingSource }, true); });
+        sourceList.MouseClick += delegate(object sender, MouseEventArgs e) {
+            var hit = sourceList.HitTest(e.Location);
+            if (hit.Item == null || (e.Button != MouseButtons.Right && hit.SubItem != hit.Item.SubItems[PurposeColumn])) return;
+            editingSource = hit.Item;
+            purposeMenu.Show(sourceList, e.Location);
+        };
+        sourceList.KeyDown += delegate(object sender, KeyEventArgs e) {
+            if (e.KeyCode != Keys.F2 || sourceList.FocusedItem == null) return;
+            editingSource = sourceList.FocusedItem;
+            purposeMenu.Show(sourceList, editingSource.SubItems[PurposeColumn].Bounds.Location);
+            e.Handled = true;
+        };
+        batchTest.Click += delegate { SetPurposes(sourceList.CheckedItems, true); };
+        batchAuto.Click += delegate { SetPurposes(sourceList.CheckedItems, false); };
         Views.Row(right, sourceList, 145);
+        Views.Row(right, Views.Actions(batchTest, batchAuto), 44);
+        Views.Wrap(right, sourceTotals);
+        Views.Row(right, sourceTotals, 57);
         classList.Columns.Add("类别", Views.Px(215));
         classList.Columns.Add("有效标注", Views.Px(104));
         classList.Columns.Add("IDS 类别 ID", Views.Px(285));
@@ -327,9 +361,9 @@ internal sealed partial class TrainerForm : Form
                 var video = item as Dictionary<string, object>;
                 string id = Workspace.Value(video, "id");
                 var row = new ListViewItem(new[] { Workspace.Value(video, "name"), Workspace.Value(video, "images"),
-                    Workspace.Value(video, "positive"), Workspace.Value(video, "boxes") }) { Tag = id };
+                    Workspace.Value(video, "positive"), Workspace.Value(video, "boxes"), PurposeText(id) }) { Tag = id };
                 sourceList.Items.Add(row);
-                row.Checked = Project.SourceVideos == null || Project.SourceVideos.Contains(id);
+                row.Checked = Project.SourceVideos.Contains(id) && Project.KnownSourceVideos.Contains(id);
             }
         }
         finally
@@ -347,12 +381,62 @@ internal sealed partial class TrainerForm : Form
         return selected;
     }
 
+    private bool IsTestOnly(string id)
+    {
+        string purpose;
+        return Project.SourcePurposes != null && Project.SourcePurposes.TryGetValue(id, out purpose) && purpose == TestOnly;
+    }
+
+    private string PurposeText(string id)
+    {
+        if (Project.KnownSourceVideos == null || !Project.KnownSourceVideos.Contains(id)) return "待确认";
+        return IsTestOnly(id) ? "仅测试" : "参与自动拆分";
+    }
+
+    private void ConfirmSource(string id)
+    {
+        if (!Project.KnownSourceVideos.Contains(id)) Project.KnownSourceVideos.Add(id);
+    }
+
+    private void SetPurposes(IEnumerable rows, bool testOnly)
+    {
+        foreach (ListViewItem row in rows)
+        {
+            string id = (string)row.Tag;
+            ConfirmSource(id);
+            if (testOnly) Project.SourcePurposes[id] = TestOnly;
+            else Project.SourcePurposes.Remove(id);
+            row.SubItems[PurposeColumn].Text = PurposeText(id);
+        }
+        RefreshSourceActions();
+        SaveWorkspace(importState);
+    }
+
     private void RefreshSourceActions()
     {
         bool ready = verified.ContainsKey(ProjectName) && !importer.Active;
         sourceList.Enabled = ready && !trainer.Active;
         goTrain.Enabled = ready && sourceList.CheckedItems.Count != 0;
-        trainStart.Enabled = goTrain.Enabled && !trainer.Active;
+        batchTest.Enabled = batchAuto.Enabled = goTrain.Enabled && !trainer.Active;
+        var current = new HashSet<string>();
+        int autoImages = 0, autoPositive = 0, testImages = 0, testPositive = 0, autoSources = 0, pending = 0;
+        foreach (ListViewItem row in sourceList.Items)
+        {
+            string id = (string)row.Tag;
+            current.Add(id);
+            if (!Project.KnownSourceVideos.Contains(id)) pending++;
+            if (!row.Checked) continue;
+            int images = Int32.Parse(row.SubItems[1].Text, CultureInfo.InvariantCulture);
+            int positive = Int32.Parse(row.SubItems[2].Text, CultureInfo.InvariantCulture);
+            if (IsTestOnly(id)) { testImages += images; testPositive += positive; }
+            else { autoImages += images; autoPositive += positive; autoSources++; }
+        }
+        int missing = ready ? Project.KnownSourceVideos.FindAll(id => !current.Contains(id)).Count : 0;
+        sourceTotals.Text = !ready ? "" : String.Format("自动拆分 {0} 图 / {1} 正例   ·   仅测试 {2} 图 / {3} 正例",
+            autoImages, autoPositive, testImages, testPositive) + (pending + missing == 0 ? "" :
+            String.Format("\n待确认：新源 {0} 个，当前 IDS 无法匹配的旧源 {1} 个", pending, missing));
+        trainStart.Enabled = planStart.Enabled = ready && autoSources > 0 && !trainer.Active;
+        sourceGate.Text = goTrain.Enabled && autoSources == 0 ? "只有仅测试源，请勾选至少一个参与自动拆分的源视频。" : "";
     }
 
     private void Import(string path)
@@ -376,7 +460,7 @@ internal sealed partial class TrainerForm : Form
                 {
                     verified[project] = data;
                     var settings = workspace.Data.Projects[project];
-                    if (!String.Equals(settings.Ids, path, StringComparison.OrdinalIgnoreCase)) settings.SourceVideos = null;
+                    InitializeSources(settings, path, (IList)data["videos"]);
                     settings.Ids = path;
                 }
                 RefreshImport();
@@ -386,6 +470,19 @@ internal sealed partial class TrainerForm : Form
             RefreshImport();
         }
         catch (Exception error) { SetStatus(importState, "无法启动校验：" + error.Message, Views.Error); }
+    }
+
+    private static void InitializeSources(ProjectSettings settings, string path, IList videos)
+    {
+        if (settings.SourcePurposes == null) settings.SourcePurposes = new Dictionary<string, string>();
+        if (settings.KnownSourceVideos == null)
+        {
+            bool sameIds = String.IsNullOrEmpty(settings.Ids) || String.Equals(settings.Ids, path, StringComparison.OrdinalIgnoreCase);
+            var ids = new List<string>();
+            foreach (var video in videos) ids.Add(Workspace.Value(video as Dictionary<string, object>, "id"));
+            settings.KnownSourceVideos = sameIds ? ids : new List<string>(settings.SourceVideos ?? new List<string>());
+        }
+        if (settings.SourceVideos == null) settings.SourceVideos = new List<string>(settings.KnownSourceVideos);
     }
 
     private static void SetStatus(Label label, string message, Color color)

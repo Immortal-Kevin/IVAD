@@ -28,6 +28,8 @@ internal sealed partial class TrainerForm
     private readonly RichTextBox trainLog = new RichTextBox { Dock = DockStyle.Fill, ReadOnly = true,
         BackColor = Color.FromArgb(245, 249, 253), BorderStyle = BorderStyle.None, DetectUrls = false };
     private readonly Button trainStart = Views.Button("开始训练", true);
+    private readonly Button planStart = Views.Button("预览拆分");
+    private readonly Label sourceGate = Views.Single("");
     private readonly Button trainCancel = Views.Button("取消训练");
     private readonly Button exportModel = Views.Button("导出原生权重", true);
     private readonly Button openRun = Views.Button("打开权重目录");
@@ -60,7 +62,9 @@ internal sealed partial class TrainerForm
         Views.Field(left, "输出目录", outputPath);
         Views.Field(left, "初始权重", initialPath);
         Views.Row(left, Views.Actions(clearInitial), 43);
-        Views.Row(left, Views.Actions(trainStart), 48);
+        Views.Wrap(left, sourceGate);
+        Views.Row(left, sourceGate, 37);
+        Views.Row(left, Views.Actions(trainStart, planStart), 48);
         browseOutput.Click += delegate {
             using (var dialog = new FolderBrowserDialog { SelectedPath = trainingOutput ?? "" })
                 if (dialog.ShowDialog(this) == DialogResult.OK)
@@ -85,7 +89,8 @@ internal sealed partial class TrainerForm
             RefreshModeFields();
             RefreshArtifacts();
         };
-        trainStart.Click += delegate { StartTraining(); };
+        trainStart.Click += delegate { StartTraining(false); };
+        planStart.Click += delegate { StartTraining(true); };
         trainCancel.Enabled = false;
         trainCancel.Click += delegate {
             if (!trainer.Active) return;
@@ -190,7 +195,7 @@ internal sealed partial class TrainerForm
     private static bool WeightSuffix(string file, string model)
     { return file != null && Path.GetExtension(file).Equals(model == "anomaly" ? ".npz" : model == "rf" ? ".pth" : ".pt", StringComparison.OrdinalIgnoreCase); }
 
-    private void StartTraining()
+    private void StartTraining(bool planOnly)
     {
         if (trainer.Active) return;
         string project = ProjectName;
@@ -200,20 +205,23 @@ internal sealed partial class TrainerForm
         var sources = CheckedSources();
         if (sources.Count == 0)
         { SetStatus(trainStatus, "请至少选择一个源视频", Views.Error); return; }
+        if (sources.TrueForAll(IsTestOnly))
+        { SetStatus(trainStatus, "只有仅测试源，请勾选至少一个参与自动拆分的源视频。", Views.Error); return; }
         string model = Project.Model;
         bool detection = model != "anomaly";
-        if (detection && Project.Size % 32 != 0)
+        if (!planOnly && detection && Project.Size % 32 != 0)
         { SetStatus(trainStatus, "输入尺寸必须为 32 的倍数", Views.Error); return; }
-        if (detection && !String.IsNullOrEmpty(initialWeights) && (!WeightSuffix(initialWeights, model) || !File.Exists(initialWeights)))
+        if (!planOnly && detection && !String.IsNullOrEmpty(initialWeights) && (!WeightSuffix(initialWeights, model) || !File.Exists(initialWeights)))
         { SetStatus(trainStatus, "初始权重不存在或文件扩展名与模型不匹配", Views.Error); return; }
         string failure = null;
         string checkpoint = null;
+        string manifest = null;
         bool stoppedEarly = false;
-        var args = new List<string> { "train", "--ids", Project.Ids, "--model", model, "--output", trainingOutput };
-        if (detection)
+        var args = new List<string> { planOnly ? "plan" : "train", "--ids", Project.Ids, "--model", model, "--output", trainingOutput };
+        if (!planOnly && detection)
             args.AddRange(new[] { "--device", Project.Device, "--size", DecimalArg(Project.Size), "--batch",
                 DecimalArg(Project.Batch), "--epochs", DecimalArg(Project.Epochs) });
-        else
+        else if (!planOnly)
         {
             string[] coordinates = anomalyRoi.Text.Split(',');
             if (coordinates.Length != 4)
@@ -227,9 +235,13 @@ internal sealed partial class TrainerForm
                 args.Add(DecimalArg(value));
             }
         }
-        foreach (string source in sources) args.AddRange(new[] { "--source-video", source });
+        foreach (string source in sources)
+        {
+            args.AddRange(new[] { "--source-video", source });
+            if (IsTestOnly(source)) args.AddRange(new[] { "--test-only-video", source });
+        }
         if (!earlyStop.Checked) args.Add("--no-early-stop");
-        if (detection && !String.IsNullOrEmpty(initialWeights)) args.AddRange(new[] { "--weights", initialWeights });
+        if (!planOnly && detection && !String.IsNullOrEmpty(initialWeights)) args.AddRange(new[] { "--weights", initialWeights });
         if (!SaveWorkspace(trainStatus)) return;
         progressBar.Value = 0;
         trainLog.Clear();
@@ -237,9 +249,9 @@ internal sealed partial class TrainerForm
         SetStatus(splitStatus, "自动拆分   ·   正在分析 IDS", Views.Muted);
         tooltips.SetToolTip(splitStatus, "");
         SetStatus(earlyStopStatus, "自动早停   ·   等待拆分", Views.Muted);
-        actualDevice.Text = "实际设备   ·   正在检查";
-        epochStatus.Text = "Epoch   ·   — / " + Project.Epochs;
-        SetStatus(trainStatus, "任务状态   ·   正在检查设备", Views.Blue);
+        actualDevice.Text = planOnly ? "仅生成拆分清单" : "实际设备   ·   正在检查";
+        epochStatus.Text = planOnly ? "" : "Epoch   ·   — / " + Project.Epochs;
+        SetStatus(trainStatus, planOnly ? "正在预览拆分" : "任务状态   ·   正在检查设备", Views.Blue);
         try
         {
             trainer.Start(args.ToArray(), AppendLog, message => {
@@ -249,6 +261,7 @@ internal sealed partial class TrainerForm
                     "   " + Workspace.Value(message, "hardware");
                 else if (kind == "split")
                 {
+                    manifest = Workspace.Value(message, "path");
                     SetStatus(splitStatus, "自动拆分   ·   " + Workspace.Value(message, "mode") +
                         "   ·   " + Workspace.Value(message, "validation_summary"), Views.Blue);
                     tooltips.SetToolTip(splitStatus, Workspace.Value(message, "detail"));
@@ -268,6 +281,13 @@ internal sealed partial class TrainerForm
             }, (code, cancelled) => {
                 SetTrainingBusy(false);
                 if (cancelled) SetStatus(trainStatus, project + "  ·  已取消", Views.Muted);
+                else if (planOnly)
+                {
+                    bool ok = code == 0 && File.Exists(manifest);
+                    SetStatus(trainStatus, ok ? "拆分预览完成 · 清单已保存" : "拆分预览失败：" + (failure ?? "清单未生成"),
+                        ok ? Views.Good : Views.Error);
+                    if (ok) progressBar.Value = 100;
+                }
                 else if (code != 0 || !File.Exists(checkpoint))
                     SetStatus(trainStatus, "训练失败：" + (failure ?? "未生成可用权重，退出码 " + code), Views.Error);
                 else
@@ -286,7 +306,7 @@ internal sealed partial class TrainerForm
         catch (Exception error)
         {
             actualDevice.Text = "实际设备   ·   —";
-            SetStatus(trainStatus, "无法启动训练：" + error.Message, Views.Error);
+            SetStatus(trainStatus, (planOnly ? "无法预览拆分：" : "无法启动训练：") + error.Message, Views.Error);
         }
     }
 

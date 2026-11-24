@@ -13,7 +13,7 @@ import numpy as np
 
 from anomaly import read_image
 from events import emit
-from ids import inspect_package, select_videos
+from ids import inspect_package, select_videos, source_timelines
 from partitions import partition
 
 
@@ -48,7 +48,8 @@ def evaluate(args):
     summary, frames = inspect_package(args.ids)
     videos, frames = select_videos(summary, frames, stored["selected_videos"])
     lookup = {f.id: f for f in frames}
-    _, rebuilt = partition(frames, videos, summary["target_sha256"], "detection")
+    _, rebuilt = partition(frames, videos, summary["target_sha256"], "detection",
+                           test_only=stored.get("test_only_videos", ()), timelines=source_timelines(summary))
     if (stored.get("mode") != "detection" or stored["document_sha256"] != summary["target_sha256"]
             or rebuilt["planned"] != stored["planned"]):
         raise ValueError("IDS 与检测拆分清单不匹配")
