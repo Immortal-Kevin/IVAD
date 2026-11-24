@@ -19,7 +19,7 @@ from events import emit
 
 def options():
     parser = argparse.ArgumentParser()
-    parser.add_argument("action", choices=["inspect", "plan", "train", "video", "probe-video", "evaluate"])
+    parser.add_argument("action", choices=["inspect", "plan", "train", "video", "probe-video", "evaluate", "angle-clip"])
     parser.add_argument("--ids", type=Path)
     parser.add_argument("--model", choices=["yolo", "rf", "anomaly"], default="yolo")
     parser.add_argument("--device", choices=["cpu", "xpu", "cuda"], default="cpu")
@@ -43,6 +43,8 @@ def options():
     parser.add_argument("--roi", nargs=4, type=float, default=(0, 0, 1, 1))
     parser.add_argument("--manifest", type=Path)
     parser.add_argument("--evaluation-set", choices=["valid", "test"], default="test")
+    parser.add_argument("--at", type=float, default=0)
+    parser.add_argument("--angle-profile", type=Path)
     return parser.parse_args()
 
 
@@ -164,6 +166,11 @@ def load_ids(args):
 
 def main():
     args = options()
+    if args.action == "angle-clip":
+        from angle import load_clip
+
+        load_clip(args)
+        return
     if args.action in ("train", "plan"):
         train(args, plan_only=args.action == "plan")
     elif args.action == "evaluate":

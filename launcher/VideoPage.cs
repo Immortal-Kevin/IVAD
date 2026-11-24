@@ -51,6 +51,9 @@ internal sealed partial class TrainerForm
         var evaluateVal = Views.Button("评估留出 Val");
         var evaluateTest = Views.Button("评估留出 Test");
         Views.Row(left, Views.Actions(evaluateVal, evaluateTest), 45);
+        var angleReview = Views.Button("离线两点测角");
+        Views.Row(left, Views.Actions(angleReview), 45);
+        angleReview.Click += delegate { OpenAngleReview(); };
         evaluateVal.Click += delegate { EvaluateHoldout("valid"); };
         evaluateTest.Click += delegate { EvaluateHoldout("test"); };
         videoStop.Enabled = false;
