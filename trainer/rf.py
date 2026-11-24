@@ -9,7 +9,7 @@ from events import emit, metrics, progress
 
 def predictor(args):
     import torch
-    from rfdetr import RFDETR
+    from rfdetr import RFDETR, RFDETRNano
     from rfdetr.utilities.class_names import prediction_labels
 
     checkpoint = torch.load(args.weights, map_location="cpu", weights_only=False)
@@ -21,11 +21,14 @@ def predictor(args):
     model = RFDETR.from_checkpoint(args.weights, trust_checkpoint=True, device=args.device)
     if model.model_config.segmentation_head or model.model_config.use_grouppose_keypoints:
         raise ValueError("请选择 RF-DETR 检测权重")
+    if not isinstance(model, RFDETRNano):
+        raise ValueError(f"所选模型为 RF-DETR Nano，权重实际为 {type(model).__name__}。请选择 Nano 检测权重。")
     # Checkpoint deserialization starts on CPU even when the requested inference device differs.
     model.model.model.to(model.model.device)
     actual = next(model.model.model.parameters()).device
     if actual.type != args.device:
         raise RuntimeError(f"RF-DETR 选择了 {actual}，请求设备为 {args.device}")
+    emit("weights", variant=type(model).__name__, resolution=model.model_config.resolution, device=str(actual))
     names = prediction_labels(model).class_id_to_name
 
     def predict(frame):

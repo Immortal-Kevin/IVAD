@@ -158,19 +158,20 @@ internal sealed partial class TrainerForm
         if (verifier.Active) return;
         string weight = SelectedVideoWeights();
         string model = Key(Models, videoModel);
-        if (!File.Exists(weight) || !WeightSuffix(weight, model))
-        { SetStatus(videoStatus, "请为所选模型选择匹配的本地权重或项目产物", Views.Error); return; }
         if (!File.Exists(videoFile))
-        { SetStatus(videoStatus, "请选择存在的测试视频", Views.Error); return; }
+        { SetStatus(videoStatus, "视频文件无法访问：请选择存在的本地测试视频", Views.Error); return; }
+        if (!File.Exists(weight) || !WeightSuffix(weight, model))
+        { SetStatus(videoStatus, "权重加载失败：请选择与模型匹配的本地权重或项目产物", Views.Error); return; }
         if (model != "anomaly" && videoSize.Value % 32 != 0)
         { SetStatus(videoStatus, "推理输入尺寸必须为 32 的倍数", Views.Error); return; }
         StoreVideoFields();
         ClearPreviews();
         previewFolder = Path.Combine(Path.GetTempPath(), "ivad-preview-" + Guid.NewGuid().ToString("N"));
+        string stopFile = Path.Combine(previewFolder, "stop");
         var args = new[] { "video", "--model", model, "--device", model == "anomaly" ? "cpu" : Key(Devices, videoDevice),
             "--weights", weight, "--video", videoFile, "--size", model == "anomaly" ? "384" : DecimalArg(videoSize.Value),
             "--confidence", DecimalArg(confidence.Value), "--sample-fps", DecimalArg(sampleRate.Value),
-            "--preview", previewFolder };
+            "--preview", previewFolder, "--stop-file", stopFile };
         sourceFps.Text = "源视频 FPS   —";
         targetFps.Text = "采样上限   " + sampleRate.Value.ToString("0.0");
         measuredFps.Text = "实际推理 FPS   —";
@@ -180,14 +181,22 @@ internal sealed partial class TrainerForm
         string hardware = "";
         string project = ProjectName;
         bool completed = false;
-        SetStatus(videoStatus, "正在初始化推理设备", Views.Blue);
+        SetStatus(videoStatus, "正在探测源视频并解码首帧", Views.Blue);
         try
         {
+            Directory.CreateDirectory(previewFolder);
             verifier.Start(args, delegate { }, message => {
                 string kind = Workspace.Value(message, "kind");
                 if (kind == "stage")
                     SetStatus(videoStatus, project + "  ·  " + Workspace.Value(message, "value") + hardware, Views.Blue);
                 else if (kind == "device") hardware = "  ·  " + Workspace.Value(message, "hardware");
+                else if (kind == "video_probe")
+                {
+                    sourceFps.Text = String.Format("源视频 FPS   {0:0.0}", Workspace.Number(message, "source_fps"));
+                    tooltips.SetToolTip(sourceFps, String.Format("{0} · {1}×{2} · {3}", Workspace.Value(message, "backend"),
+                        Workspace.Value(message, "width"), Workspace.Value(message, "height"), Workspace.Value(message, "codec_fourcc")));
+                    ReadPreviews();
+                }
                 else if (kind == "video" || kind == "video_result")
                 {
                     ShowVideoMetrics(message);
@@ -202,7 +211,7 @@ internal sealed partial class TrainerForm
                 if (cancelled) SetStatus(videoStatus, project + "  ·  已停止验证", Views.Muted);
                 else if (code == 0 && completed) SetStatus(videoStatus, project + "  ·  视频验证完成" + hardware, Views.Good);
                 else SetStatus(videoStatus, "视频验证失败：" + (failure ?? "进程退出 " + code), Views.Error);
-            });
+            }, stopFile);
             videoStart.Enabled = false;
             videoStop.Enabled = true;
             previewTimer.Start();
@@ -310,7 +319,7 @@ internal sealed partial class TrainerForm
         if (previewFolder == null || !Directory.Exists(previewFolder)) return;
         try
         {
-            foreach (string name in new[] { "source.jpg", "detected.jpg", "source.tmp", "detected.tmp" })
+            foreach (string name in new[] { "source.jpg", "detected.jpg", "source.tmp", "detected.tmp", "stop" })
                 File.Delete(Path.Combine(previewFolder, name));
             Directory.Delete(previewFolder);
         }

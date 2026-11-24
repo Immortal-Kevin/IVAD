@@ -17,7 +17,7 @@ from events import emit
 
 def options():
     parser = argparse.ArgumentParser()
-    parser.add_argument("action", choices=["inspect", "plan", "train", "video", "evaluate"])
+    parser.add_argument("action", choices=["inspect", "plan", "train", "video", "probe-video", "evaluate"])
     parser.add_argument("--ids", type=Path)
     parser.add_argument("--model", choices=["yolo", "rf", "anomaly"], default="yolo")
     parser.add_argument("--device", choices=["cpu", "xpu", "cuda"], default="cpu")
@@ -31,6 +31,7 @@ def options():
     parser.add_argument("--sample-fps", type=float, default=5)
     parser.add_argument("--seconds", type=float, help="Optional maximum source-video duration for verification")
     parser.add_argument("--preview", type=Path, help="Directory for two bounded preview JPEG files")
+    parser.add_argument("--stop-file", type=Path, help=argparse.SUPPRESS)
     parser.add_argument("--limit", type=int, help="Use at most this many images per split for short verification")
     parser.add_argument("--source-video", action="append", help="Retain this IDS video ID (repeat for multiple videos)")
     parser.add_argument("--early-stop", action=argparse.BooleanOptionalAction, default=True)
@@ -146,9 +147,9 @@ def main():
     elif args.action == "evaluate":
         from evaluation import evaluate
         evaluate(args)
-    elif args.action == "video":
-        from video import verify
-        verify(args)
+    elif args.action in ("video", "probe-video"):
+        from video import probe, verify
+        (probe if args.action == "probe-video" else verify)(args)
     else:
         load_ids(args)
 

@@ -102,16 +102,19 @@ internal sealed class WorkerJob
     private readonly Control owner;
     private Process process;
     private bool cancelled;
+    private string stopSignal;
+    private Timer stopTimeout;
     internal bool Active { get { return process != null; } }
 
     internal WorkerJob(Control owner) { this.owner = owner; }
 
     internal void Start(string[] args, Action<string> log, Action<Dictionary<string, object>> message,
-                        Action<int, bool> complete)
+                        Action<int, bool> complete, string gracefulStop = null)
     {
         if (Active) throw new InvalidOperationException("当前任务仍在运行");
         var child = new Process { StartInfo = Worker.StartInfo(args) };
         cancelled = false;
+        stopSignal = gracefulStop;
         child.OutputDataReceived += delegate(object sender, DataReceivedEventArgs line) {
             if (line.Data == null) return;
             Dispatch(delegate {
@@ -133,6 +136,7 @@ internal sealed class WorkerJob
             Dispatch(delegate {
                 if (process != child) return;
                 process = null;
+                if (stopTimeout != null) { stopTimeout.Dispose(); stopTimeout = null; }
                 child.Dispose();
                 complete(status, cancelled);
             });
@@ -155,10 +159,27 @@ internal sealed class WorkerJob
         }
     }
 
-    internal void Stop()
+    internal void Stop(bool force = false)
     {
         if (process == null || process.HasExited) return;
         cancelled = true;
+        if (!force && stopSignal != null)
+        {
+            try
+            {
+                File.WriteAllText(stopSignal, "stop");
+                if (stopTimeout != null) return;
+                stopTimeout = new Timer { Interval = 10000 };
+                stopTimeout.Tick += delegate {
+                    stopTimeout.Stop();
+                    if (process != null && !process.HasExited) process.Kill();
+                };
+                stopTimeout.Start();
+                return;
+            }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+        }
         process.Kill();
     }
 
