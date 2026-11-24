@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -14,6 +15,8 @@ internal sealed partial class TrainerForm
     private static readonly string[] DetectionSplits = { "events", "frames" };
     private readonly ComboBox trainSplit = Views.Choice("检测拆分", "按事件分组", "按帧分层（Val / Test 各约 20% 正例）");
     private readonly Label splitHint = Views.Single("");
+    private readonly CheckBox diagnosticReuse = new CheckBox { Text = "样本不足时允许复用训练图做诊断", AutoSize = true };
+    private readonly Label validationSources = Views.Single("");
     private readonly ComboBox trainDevice = Views.Choice("设备", DeviceLabels);
     private readonly NumericUpDown trainSize = Views.Number("输入尺寸", 64, 2048, 384, 32);
     private readonly NumericUpDown trainBatch = Views.Number("Batch Size", 1, 512, 1, 1);
@@ -53,6 +56,7 @@ internal sealed partial class TrainerForm
         Views.Field(left, "检测拆分", trainSplit);
         Views.Wrap(left, splitHint);
         Views.Row(left, splitHint, 32);
+        Views.Row(left, diagnosticReuse, 34);
         Views.Field(left, "设备", trainDevice);
         Views.Field(left, "输入尺寸", trainSize);
         Views.Field(left, "Batch Size", trainBatch);
@@ -138,6 +142,8 @@ internal sealed partial class TrainerForm
             metricLabels[keys[i]] = value;
             Views.Field(measured, labels[i], value);
         }
+        Views.Wrap(measured, validationSources);
+        Views.Row(measured, validationSources, 112);
         metrics.Controls.Add(measured);
         tabs.TabPages.Add(metrics);
         var exports = new TabPage("模型导出") { BackColor = Color.White, Padding = Views.Pads(12) };
@@ -162,6 +168,7 @@ internal sealed partial class TrainerForm
     {
         SelectKey(Models, trainModel, Project.Model);
         SelectKey(DetectionSplits, trainSplit, Project.DetectionSplit);
+        diagnosticReuse.Checked = Project.AllowDiagnosticReuse;
         SelectKey(Devices, trainDevice, Project.Device);
         SetNumber(trainSize, Project.Size, 384);
         SetNumber(trainBatch, Project.Batch, 1);
@@ -180,6 +187,7 @@ internal sealed partial class TrainerForm
     {
         Project.Model = Key(Models, trainModel);
         Project.DetectionSplit = Key(DetectionSplits, trainSplit);
+        Project.AllowDiagnosticReuse = diagnosticReuse.Checked;
         Project.Device = Key(Devices, trainDevice);
         Project.Size = trainSize.Value;
         Project.Batch = trainBatch.Value;
@@ -196,6 +204,7 @@ internal sealed partial class TrainerForm
         bool detection = model != "anomaly";
         trainDevice.Enabled = trainSize.Enabled = trainBatch.Enabled = trainEpochs.Enabled = detection;
         trainSplit.Enabled = detection;
+        diagnosticReuse.Enabled = detection && Key(DetectionSplits, trainSplit) == "frames";
         splitHint.Text = detection && Key(DetectionSplits, trainSplit) == "frames" ?
             "同源帧评估 · 同一事件的不同帧可跨集合" : "";
         anomalyRoi.Enabled = !detection;
@@ -231,6 +240,7 @@ internal sealed partial class TrainerForm
         bool stoppedEarly = false;
         var args = new List<string> { planOnly ? "plan" : "train", "--ids", Project.Ids, "--model", model, "--output", trainingOutput };
         if (detection) args.AddRange(new[] { "--split-strategy", Project.DetectionSplit });
+        if (detection && Project.DetectionSplit == "frames" && Project.AllowDiagnosticReuse) args.Add("--allow-diagnostic-reuse");
         if (!planOnly && detection)
             args.AddRange(new[] { "--device", Project.Device, "--size", DecimalArg(Project.Size), "--batch",
                 DecimalArg(Project.Batch), "--epochs", DecimalArg(Project.Epochs) });
@@ -259,6 +269,7 @@ internal sealed partial class TrainerForm
         progressBar.Value = 0;
         trainLog.Clear();
         ShowMetrics(null);
+        validationSources.Text = "";
         SetStatus(splitStatus, "自动拆分   ·   正在分析 IDS", Views.Muted);
         tooltips.SetToolTip(splitStatus, "");
         SetStatus(earlyStopStatus, "自动早停   ·   等待拆分", Views.Muted);
@@ -276,12 +287,24 @@ internal sealed partial class TrainerForm
                 {
                     manifest = Workspace.Value(message, "path");
                     SetStatus(splitStatus, "自动拆分   ·   " + Workspace.Value(message, "mode") +
-                        "   ·   " + Workspace.Value(message, "validation_summary"), Views.Blue);
+                        "   ·   " + Workspace.Value(message, "validation_summary") + "   ·   复用 " +
+                        Workspace.Value(message, "reused") + " 张", Views.Blue);
                     tooltips.SetToolTip(splitStatus, Workspace.Value(message, "detail"));
                     SetStatus(earlyStopStatus, detection ? "自动早停   ·   " + Workspace.Value(message, "early_stop_status") : "阈值仅由独立正常 Val 校准", Views.Blue);
                 }
                 else if (kind == "progress") ShowProgress(message);
                 else if (kind == "metrics") ShowMetrics(Workspace.Object(message, "values"));
+                else if (kind == "evaluation")
+                {
+                    var diag = Workspace.Object(message, "diagnostic_metrics");
+                    string title = diag == null ? "Val · 已保存权重" : "Val · 训练内诊断 mAP@50 " +
+                        FormatMetric(diag, "map50") + " · mAP@50–95 " + FormatMetric(diag, "map");
+                    validationSources.Text = title + " · 阈值 " + Workspace.Value(message, "threshold") +
+                        Environment.NewLine + SourceHits(message);
+                    tooltips.SetToolTip(validationSources, validationSources.Text);
+                }
+                else if (kind == "source_evaluation_error")
+                    validationSources.Text = "Val 来源评估失败 · " + Workspace.Value(message, "value");
                 else if (kind == "error") failure = Workspace.Value(message, "value");
                 else if (kind == "checkpoint")
                 {
@@ -358,6 +381,22 @@ internal sealed partial class TrainerForm
             || Double.IsNaN(value) || Double.IsInfinity(value)) return "不可计算";
         return value.ToString(value == 0 ? "0" : Math.Abs(value) < 0.0001 ? "0.###E+0" : "0.0000",
             CultureInfo.InvariantCulture);
+    }
+
+    private static string SourceHits(Dictionary<string, object> values)
+    {
+        object raw;
+        if (!values.TryGetValue("sources", out raw)) return "";
+        var lines = new List<string>();
+        foreach (object item in raw as IList ?? new object[0])
+        {
+            var source = item as Dictionary<string, object>;
+            if (Workspace.Number(source, "images") == 0) continue;
+            string count = Workspace.Value(source, "positive_images");
+            lines.Add(Workspace.Value(source, "name") + " · 正例命中 " + (count == "0" ? "无正例" :
+                Workspace.Value(source, "positive_hits") + "/" + count) + " · 复用 " + Workspace.Value(source, "reused") + " 张");
+        }
+        return String.Join(Environment.NewLine, lines.ToArray());
     }
 
     private void AppendLog(string line)

@@ -224,17 +224,20 @@ def source_timelines(summary):
             if row["source_origin"]}
 
 
-def write_plan(run, summary, frames, videos, mode, model, early_stop, limit=None, test_only=(), strategy="events"):
+def write_plan(run, summary, frames, videos, mode, model, early_stop, limit=None, test_only=(), strategy="events", reuse=False):
     from events import emit
 
     splits, manifest = partition(frames, videos, summary["target_sha256"], mode, limit, test_only,
-                                 source_timelines(summary), strategy)
+                                 source_timelines(summary), strategy, reuse)
     status = ("正常片段校准阈值" if mode == "anomaly" else
               "同源视频留出验证" if manifest["validation"] else "无正例验证")
     if manifest["split_strategy"] == "frames":
         status = "同源帧评估" + (" · 无正例验证" if not manifest["validation"] else "")
     stop_status = ("不可用（无正例验证）" if not manifest["validation"] else
                    "仅支持 RF-DETR" if model != "rf" else "开启" if early_stop else "关闭")
+    if "valid" in manifest.get("diagnostic_sides", ()):
+        status = "同源帧评估 · Val 训练内诊断"
+        stop_status = "不可用（Val 含复用帧）"
     manifest_path = run / "split-manifest.json"
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     lines = [f"纳入源视频：{'、'.join(videos.values())}", f"自动拆分 · {status}"]
@@ -242,10 +245,11 @@ def write_plan(run, summary, frames, videos, mode, model, early_stop, limit=None
         lines.append(f"自动早停 · {stop_status}")
     if manifest["split_strategy"] == "frames":
         lines.append("按帧分层允许同一事件的不同帧跨集合（同源帧评估）")
-        for side, label in (("valid", "Val"), ("test", "Test")):
-            row = manifest["automatic_holdouts"][side]
-            lines.append(f"自动 {label} 目标 {row['target_images']} 张 / 正例 {row['target_positive']} 张"
-                         f" · 实得 {row['images']} 张 / 正例 {row['positive']} 张 / 正常 {row['normal']} 张 / {row['boxes']} 框")
+        for video, source in manifest["automatic_holdouts_by_source"].items():
+            for side, label in (("valid", "Val"), ("test", "Test")):
+                row = source[side]
+                lines.append(f"[{videos[video]}] 自动 {label} 目标 {row['target_images']} 张 / 正例 {row['target_positive']} 张"
+                             f" · 实得 {row['images']} 张 / 正例 {row['positive']} 张 · 复用 {row['reused']} 张")
         row = manifest["test_only_counts"]
         lines.append(f"整段仅测试源 Test {row['images']} 张 / 正例 {row['positive']} 张 / {row['boxes']} 框")
     for index, (video, name) in enumerate(videos.items(), 1):
@@ -265,6 +269,8 @@ def write_plan(run, summary, frames, videos, mode, model, early_stop, limit=None
         lines.append(f"短训实际读取 Train {len(splits['train'])} / Val {len(splits['valid'])} 张")
     if mode == "detection":
         for side, label in (("valid", "Val"), ("test", "Test")):
+            if side in manifest.get("diagnostic_sides", ()):
+                lines.append(f"{label} 含复用帧 · 只显示训练内诊断 mAP · 不参与早停、选权重或独立成绩")
             if not any(f.boxes for f in splits[side]):
                 lines.append(f"{label} 无正例 · mAP、召回率不可计算 · 正常片段可评估误报")
         lines.append("Test 在确认权重和阈值后单独评估")
@@ -272,7 +278,8 @@ def write_plan(run, summary, frames, videos, mode, model, early_stop, limit=None
         lines.append("仅 Train 拟合、仅 Val 定阈值，Test 用于事件命中和正常误报报告")
     validation_summary = " / ".join(f"{label} {len(splits[side])} 张" for side, label in
                                     (("train", "Train"), ("valid", "Val"), ("test", "Test")))
-    emit("split", mode=status, validation_summary=validation_summary, early_stop_status=stop_status,
+    reused = sum("reused_from" in p for side in ("valid", "test") for p in manifest["planned"][side])
+    emit("split", mode=status, validation_summary=validation_summary, early_stop_status=stop_status, reused=reused,
          detail="\n".join(lines), path=str(manifest_path))
     print("\n".join(lines), flush=True)
     print(f"Split manifest: {manifest_path}", flush=True)

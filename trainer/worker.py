@@ -1,6 +1,8 @@
 """Background worker invoked by IVAD Open Trainer.exe."""
 
 import argparse
+from copy import copy
+import gc
 import hashlib
 import importlib
 import json
@@ -36,6 +38,7 @@ def options():
     parser.add_argument("--source-video", action="append", help="Retain this IDS video ID (repeat for multiple videos)")
     parser.add_argument("--test-only-video", action="append", default=[], help="Isolate this selected video in Test")
     parser.add_argument("--split-strategy", choices=["events", "frames"], default="events")
+    parser.add_argument("--allow-diagnostic-reuse", action="store_true")
     parser.add_argument("--early-stop", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--roi", nargs=4, type=float, default=(0, 0, 1, 1))
     parser.add_argument("--manifest", type=Path)
@@ -93,7 +96,7 @@ def train(args, plan_only=False):
     print(f"OUTPUT {run}", flush=True)
     mode = "anomaly" if args.model == "anomaly" else "detection"
     splits, split = write_plan(run, summary, frames, videos, mode, args.model, args.early_stop, args.limit,
-                               args.test_only_video, args.split_strategy)
+                               args.test_only_video, args.split_strategy, args.allow_diagnostic_reuse)
     if plan_only:
         return
     if mode == "anomaly":
@@ -119,6 +122,22 @@ def train(args, plan_only=False):
               "checkpoint": str(checkpoint.relative_to(run)), "checkpoint_sha256": digest,
               "update": evidence.result, "ids": summary, "metrics": measured,
               "validation": split["validation"], "split_manifest": "split-manifest.json", **completion}
+    if split["split_strategy"] == "frames" and split["planned"]["valid"]:
+        from evaluation import evaluate_frozen
+
+        frozen = copy(args)
+        frozen.evaluation_set = "valid"
+        frozen.manifest = run / "split-manifest.json"
+        frozen.weights = checkpoint
+        try:
+            gc.collect()
+            if args.device != "cpu":
+                getattr(torch, args.device).empty_cache()
+            result["frozen_val_report"] = evaluate_frozen(frozen, summary, frames, videos, split)
+        except Exception as error:
+            result["frozen_val_error"] = str(error)
+            emit("source_evaluation_error", value=str(error))
+            traceback.print_exc()
     (run / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
     emit("checkpoint", path=str(checkpoint), model=args.model, metrics=measured, **completion)
     print(f"CHECKPOINT {checkpoint}\nSHA256 {digest}", flush=True)

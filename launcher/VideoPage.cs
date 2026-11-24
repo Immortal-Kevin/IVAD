@@ -20,6 +20,7 @@ internal sealed partial class TrainerForm
     private readonly Label targetFps = Views.Single("采样上限   —");
     private readonly Label measuredFps = Views.Single("实际推理 FPS   —");
     private readonly Label videoStatus = Views.Single("请选择权重与本地测试视频");
+    private readonly Label holdoutSources = Views.Single("");
     private readonly Label videoCounts = Views.Single("已验证 — 帧    ·    累计检测 — 个");
     private readonly Label videoTimestamp = Views.Single("检测时间戳   ·   —");
     private readonly PictureBox detectionView = Picture("实际检测画面");
@@ -82,6 +83,8 @@ internal sealed partial class TrainerForm
         Views.Row(right, Views.Text("视频验证监控", 16, true), 43);
         Views.Wrap(right, videoStatus);
         Views.Row(right, videoStatus, 31);
+        Views.Wrap(right, holdoutSources);
+        Views.Row(right, holdoutSources, 73);
         var fps = Views.Grid(3);
         for (int i = 0; i < 3; i++) fps.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f / 3));
         int index = 0;
@@ -156,6 +159,7 @@ internal sealed partial class TrainerForm
     private void StartVideo()
     {
         if (verifier.Active) return;
+        holdoutSources.Text = "";
         string weight = SelectedVideoWeights();
         string model = Key(Models, videoModel);
         if (!File.Exists(videoFile))
@@ -222,6 +226,7 @@ internal sealed partial class TrainerForm
     private void EvaluateHoldout(string side)
     {
         if (verifier.Active) return;
+        holdoutSources.Text = "";
         string model = Key(Models, videoModel);
         string chosen = SelectedVideoWeights();
         string artifact = Artifact(Project, model);
@@ -246,9 +251,13 @@ internal sealed partial class TrainerForm
                 string kind = Workspace.Value(message, "kind");
                 if (kind == "evaluation")
                 {
-                    summary = label + " · mAP@50 " + FormatMetric(message, "map50") + " · mAP@50–95 " +
-                        FormatMetric(message, "map") + " · 召回 " + FormatMetric(message, "recall") +
+                    var diagnostic = Workspace.Object(message, "diagnostic_metrics");
+                    var scores = diagnostic ?? message;
+                    summary = label + " · " + (diagnostic == null ? "" : "训练内诊断 ") + "mAP@50 " + FormatMetric(scores, "map50") + " · mAP@50–95 " +
+                        FormatMetric(scores, "map") + " · 召回 " + FormatMetric(scores, "recall") +
                         " · 正常误报框 " + Workspace.Value(message, "false_positive_boxes");
+                    holdoutSources.Text = SourceHits(message);
+                    tooltips.SetToolTip(holdoutSources, holdoutSources.Text);
                     report = Workspace.Value(message, "path");
                 }
                 else if (kind == "error") failure = Workspace.Value(message, "value");

@@ -66,7 +66,7 @@ Set-Content -LiteralPath (Join-Path $stage 'SOURCE-COMMIT.txt') -Value $stamp -E
 
 $dist = Join-Path $root 'dist'
 New-Item -ItemType Directory -Path $dist -Force | Out-Null
-$name = 'IVAD-Open-Trainer-v0.2.8-win11-x64.zip'
+$name = 'IVAD-Open-Trainer-v0.2.9-win11-x64.zip'
 $archive = Join-Path $dist $name
 if (Test-Path $archive) { throw "Existing package: $archive" }
 tar.exe -a -cf $archive -C $build 'IVAD Open Trainer'

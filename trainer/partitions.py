@@ -15,7 +15,7 @@ def asset_key(path):
     return path.rsplit("/", 1)[-1].split(".", 1)[0]
 
 
-def stratify_frames(plan, assignment, test_only):
+def stratify_frames_legacy(plan, assignment, test_only):
     """Reuse the event planner's holdout sizes, then sample unique detector images by class."""
     targets = {side: sum(row["video"] not in test_only for row in plan[side]) for side in ("valid", "test")}
     # Integer round-half-up of count / 5 (remainders 3 and 4 round up).
@@ -88,6 +88,88 @@ def stratify_frames(plan, assignment, test_only):
                      "boxes": sum(len(f.boxes) for f, _ in rows)} for side, rows in holdouts.items()}
     return ({side: [row for _, row in pairs] for side, pairs in selected.items()},
             {side: [frame for frame, _ in pairs] for side, pairs in selected.items()}, report)
+
+
+def source_holdouts(pools, video, allow_reuse):
+    sides = ("valid", "test")
+    targets = {s: len(pools[s]) for s in sides}
+    quotas = {s: (n + 2) // 5 for s, n in targets.items()}
+    combined = sorted((pair for rows in pools.values() for pair in rows), key=lambda p: p[0].id)
+    positive = [p for p in combined if p[0].boxes]
+    normal = [p for p in combined if p[0].state == "normal"]
+    rng = Random(f"{SEED}:{video}")
+    rng.shuffle(positive)
+    rng.shuffle(normal)
+
+    covered, keep_positive, spare_positive = set(), [], []
+    for pair in positive:
+        classes = {box[0] for box in pair[0].boxes}
+        if classes - covered:
+            keep_positive.append(pair)
+            covered.update(classes)
+        else:
+            spare_positive.append(pair)
+    reserve = max(0, (len(positive) + 1) // 2 - len(keep_positive))
+    keep_positive.extend(spare_positive[:reserve])
+    positive = iter(spare_positive[reserve:])
+    holdouts = {side: [] for side in sides}
+
+    def distribute(items, count, reused=False):
+        for i in range(max(count.values())):
+            for side in sides:
+                if i >= count[side]:
+                    continue
+                item = next(items, None)
+                if item is None:
+                    return
+                frame, row = item
+                if reused:
+                    row = {**row, "reused_from": {"set": "train", "frame": frame.id, "video": frame.video}}
+                holdouts[side].append((frame, row))
+
+    distribute(positive, quotas)
+    if allow_reuse:
+        distribute(iter(keep_positive), {s: quotas[s] - len(holdouts[s]) for s in sides}, True)
+    normal_need = {s: targets[s] - len(holdouts[s]) for s in sides}
+    # Keep one negative for training when the unique normal pool cannot fill both holdouts.
+    keep_normal = normal[:1] if allow_reuse and len(normal) < sum(normal_need.values()) else []
+    normal = iter(normal[len(keep_normal):])
+    distribute(normal, normal_need)
+    if allow_reuse:
+        distribute(iter(keep_normal), {s: targets[s] - len(holdouts[s]) for s in sides}, True)
+    report = {side: {"target_images": targets[side], "target_positive": quotas[side],
+                     "images": len(rows), "positive": sum(bool(f.boxes) for f, _ in rows),
+                     "normal": sum(f.state == "normal" for f, _ in rows),
+                     "boxes": sum(len(f.boxes) for f, _ in rows),
+                     "reused": sum("reused_from" in row for _, row in rows)} for side, rows in holdouts.items()}
+    return keep_positive + list(positive) + keep_normal + list(normal), holdouts, report
+
+
+def stratify_frames(plan, assignment, test_only, allow_reuse):
+    # The previous stratifier determines the existing frame counts for each source and holdout.
+    plan, assignment, _ = stratify_frames_legacy(plan, assignment, test_only)
+    grouped = defaultdict(lambda: {s: [] for s in SIDES})
+    selected = {s: [] for s in plan}
+    selected["embargo"] = list(zip(assignment["embargo"], plan["embargo"]))
+    for side in SIDES:
+        for pair in zip(assignment[side], plan[side]):
+            frame, _ = pair
+            if frame.video in test_only:
+                selected["test"].append(pair)
+            else:
+                grouped[frame.video][side].append(pair)
+    per_source = {}
+    for video, pools in sorted(grouped.items()):
+        train, holdouts, report = source_holdouts(pools, video, allow_reuse)
+        selected["train"].extend(train)
+        for side, rows in holdouts.items():
+            selected[side].extend(rows)
+        per_source[video] = report
+    for side in ("valid", "test"):
+        selected[side].sort(key=lambda pair: (pair[0].video, pair[1]["time_s"] is None,
+                                             pair[1]["time_s"] or 0, pair[0].id))
+    return ({side: [row for _, row in pairs] for side, pairs in selected.items()},
+            {side: [frame for frame, _ in pairs] for side, pairs in selected.items()}, per_source)
 
 
 @dataclass
@@ -216,8 +298,9 @@ def check_source_overlap(plan, timelines):
                     raise ValueError(f"同源视频 {video} 与 {other_video} 在 {side}/{other} 的时间区间重叠")
 
 
-def partition(frames, videos, digest, mode, limit=None, test_only=(), timelines=None, strategy="events"):
-    stratified = mode == "detection" and strategy == "frames"
+def partition(frames, videos, digest, mode, limit=None, test_only=(), timelines=None, strategy="events", reuse=False):
+    stratified = mode == "detection" and strategy in ("frames", "frames_legacy")
+    legacy_strata = stratified and strategy == "frames_legacy"
     test_only = set(test_only)
     if test_only - videos.keys():
         raise ValueError("仅测试源必须是已勾选的 IDS 源视频")
@@ -297,14 +380,27 @@ def partition(frames, videos, digest, mode, limit=None, test_only=(), timelines=
 
     holdouts = None
     if stratified:
-        plan, assignment, holdouts = stratify_frames(plan, assignment, test_only)
+        if legacy_strata:
+            plan, assignment, holdouts = stratify_frames_legacy(plan, assignment, test_only)
+        else:
+            plan, assignment, holdouts = stratify_frames(plan, assignment, test_only, reuse)
+    diagnostic = [s for s in ("valid", "test") if any("reused_from" in row for row in plan[s])]
+    if diagnostic and limit is not None:
+        raise ValueError("诊断复用需要完整训练清单，请取消短训样本上限")
+    train_origins = {p["frame"]: (p["asset"], p["video"]) for p in plan["train"]}
+    for side in diagnostic:
+        for row in plan[side]:
+            if "reused_from" in row and (row["video"] in test_only or
+                    train_origins.get(row["frame"]) != (row["asset"], row["video"])):
+                raise RuntimeError("诊断复用缺少同源训练行")
     for i, side in enumerate(SIDES):
         for other in SIDES[i + 1:]:
+            other_rows = [p for p in plan[other] if side != "train" or "reused_from" not in p]
             for key in (("frame", "asset") if stratified else ("frame", "asset", "group")):
-                if {p[key] for p in plan[side]} & {p[key] for p in plan[other]}:
+                if {p[key] for p in plan[side]} & {p[key] for p in other_rows}:
                     raise ValueError(f"{side}/{other} 存在跨集合重复{'图像资产' if key == 'asset' else '帧或片段组'}，已阻止拆分")
             hashes = {asset_key(p["asset"]) for p in plan[side]}
-            if any(asset_key(p["asset"]) in hashes for p in plan[other]):
+            if any(asset_key(p["asset"]) in hashes for p in other_rows):
                 raise ValueError(f"{side}/{other} 存在跨集合重复图像内容，已阻止拆分")
             if stratified:
                 left = {e for p in plan[side] for e in p["events"]}
@@ -342,14 +438,24 @@ def partition(frames, videos, digest, mode, limit=None, test_only=(), timelines=
         report["purpose"] = "test_only" if video in test_only else "automatic"
         report["destinations"] = [side for side in SIDES if report[side]["images"]]
         reports[video] = report
-    manifest = {"method": "frame_stratified_three_way_v1" if stratified else "temporal_three_way_v2",
+    method = "temporal_three_way_v2"
+    if stratified:
+        method = "frame_stratified_three_way_v1" if legacy_strata else "frame_stratified_three_way_v2"
+    manifest = {"method": method,
                 "split_strategy": "frames" if stratified else "events",
                 "mode": mode, "seed": SEED, "document_sha256": digest,
                 "selected_videos": videos, "videos": reports, "planned": plan,
                 "test_only_videos": sorted(test_only),
                 "used": {k: [f.id for f in rows] for k, rows in used.items()},
-                "validation": mode == "detection" and any(f.boxes for f in used["valid"])}
+                "validation": mode == "detection" and "valid" not in diagnostic and any(f.boxes for f in used["valid"])}
     if stratified:
+        if not legacy_strata:
+            manifest["automatic_holdouts_by_source"] = holdouts
+            manifest["allow_diagnostic_reuse"] = bool(reuse)
+            manifest["diagnostic_sides"] = diagnostic
+            holdouts = {side: {key: sum(v[side][key] for v in holdouts.values()) for key in
+                               ("target_images", "target_positive", "images", "positive", "normal", "boxes", "reused")}
+                        for side in ("valid", "test")}
         manifest["automatic_holdouts"] = holdouts
         manifest["test_only_counts"] = {"images": sum(p["video"] in test_only for p in plan["test"]),
                                         "positive": sum(p["video"] in test_only and p["boxes"] > 0 for p in plan["test"]),
