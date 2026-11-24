@@ -3,11 +3,91 @@
 from bisect import bisect_left
 from collections import defaultdict
 from dataclasses import dataclass
+from random import Random
 from statistics import median
 
 from split import SEED, sample
 
 SIDES = ("train", "valid", "test")
+
+
+def asset_key(path):
+    return path.rsplit("/", 1)[-1].split(".", 1)[0]
+
+
+def stratify_frames(plan, assignment, test_only):
+    """Reuse the event planner's holdout sizes, then sample unique detector images by class."""
+    targets = {side: sum(row["video"] not in test_only for row in plan[side]) for side in ("valid", "test")}
+    # Integer round-half-up of count / 5 (remainders 3 and 4 round up).
+    positive_targets = {side: (count + 2) // 5 for side, count in targets.items()}
+    selected = {side: [] for side in plan}
+    images = {}
+    prior_frames = set()
+    pairs = sorted(((frame, row) for side in plan for frame, row in zip(assignment[side], plan[side])),
+                   key=lambda pair: (pair[0].video not in test_only, pair[0].video, pair[0].id))
+    for frame, row in pairs:
+        if frame.id in prior_frames:
+            raise ValueError("按帧分层发现重复帧 ID")
+        prior_frames.add(frame.id)
+        if frame.video not in test_only and frame.state == "abnormal" and not frame.boxes:
+            selected["embargo"].append((frame, row))
+            continue
+        key = asset_key(frame.asset)
+        if key in images:
+            other, _ = images[key]
+            if frame.video in test_only or other.video in test_only:
+                raise ValueError("仅测试源含重复图像资产，无法安全整段加入 Test")
+            if frame.state != other.state or sorted(frame.boxes) != sorted(other.boxes):
+                raise ValueError("重复图像资产带有冲突的审核状态或标注")
+            selected["embargo"].append((frame, row))
+            continue
+        images[key] = (frame, row)
+    automatic = []
+    for pair in images.values():
+        (selected["test"] if pair[0].video in test_only else automatic).append(pair)
+    positive = [pair for pair in automatic if pair[0].boxes]
+    normal = [pair for pair in automatic if pair[0].state == "normal"]
+    rng = Random(SEED)
+    rng.shuffle(positive)
+    rng.shuffle(normal)
+
+    # Preserve class coverage and at least half the available positive images for training.
+    covered, reserved, available = set(), [], []
+    for pair in positive:
+        classes = {box[0] for box in pair[0].boxes}
+        if classes - covered:
+            reserved.append(pair)
+            covered.update(classes)
+        else:
+            available.append(pair)
+    extra = max(0, (len(positive) + 1) // 2 - len(reserved))
+    reserved.extend(available[:extra])
+    available = iter(available[extra:])
+    holdouts = {side: [] for side in targets}
+    for i in range(max(positive_targets.values())):
+        for side, count in positive_targets.items():
+            if i < count:
+                pair = next(available, None)
+                if pair is not None:
+                    holdouts[side].append(pair)
+    n = iter(normal)
+    for _ in range(max(targets.values())):
+        for side, count in targets.items():
+            if len(holdouts[side]) < count:
+                pair = next(n, None)
+                if pair is not None:
+                    holdouts[side].append(pair)
+    selected["train"].extend(reserved + list(available) + list(n))
+    for side, rows in holdouts.items():
+        selected[side].extend(rows)
+        selected[side].sort(key=lambda pair: (pair[0].video, pair[1]["time_s"] is None,
+                                              pair[1]["time_s"] or 0, pair[0].id))
+    report = {side: {"target_images": targets[side], "target_positive": positive_targets[side],
+                     "images": len(rows), "positive": sum(bool(f.boxes) for f, _ in rows),
+                     "normal": sum(f.state == "normal" for f, _ in rows),
+                     "boxes": sum(len(f.boxes) for f, _ in rows)} for side, rows in holdouts.items()}
+    return ({side: [row for _, row in pairs] for side, pairs in selected.items()},
+            {side: [frame for frame, _ in pairs] for side, pairs in selected.items()}, report)
 
 
 @dataclass
@@ -136,7 +216,8 @@ def check_source_overlap(plan, timelines):
                     raise ValueError(f"同源视频 {video} 与 {other_video} 在 {side}/{other} 的时间区间重叠")
 
 
-def partition(frames, videos, digest, mode, limit=None, test_only=(), timelines=None):
+def partition(frames, videos, digest, mode, limit=None, test_only=(), timelines=None, strategy="events"):
+    stratified = mode == "detection" and strategy == "frames"
     test_only = set(test_only)
     if test_only - videos.keys():
         raise ValueError("仅测试源必须是已勾选的 IDS 源视频")
@@ -214,14 +295,23 @@ def partition(frames, videos, digest, mode, limit=None, test_only=(), timelines=
                                          "boxes": len(frame.boxes), "pts_us": frame.pts,
                                          "time_s": values[frame.id] * scale if scale is not None else None})
 
+    holdouts = None
+    if stratified:
+        plan, assignment, holdouts = stratify_frames(plan, assignment, test_only)
     for i, side in enumerate(SIDES):
         for other in SIDES[i + 1:]:
-            for key in ("frame", "asset", "group"):
+            for key in (("frame", "asset") if stratified else ("frame", "asset", "group")):
                 if {p[key] for p in plan[side]} & {p[key] for p in plan[other]}:
                     raise ValueError(f"{side}/{other} 存在跨集合重复{'图像资产' if key == 'asset' else '帧或片段组'}，已阻止拆分")
-            hashes = {p["asset"].rsplit("/", 1)[-1].split(".", 1)[0] for p in plan[side]}
-            if any(p["asset"].rsplit("/", 1)[-1].split(".", 1)[0] in hashes for p in plan[other]):
+            hashes = {asset_key(p["asset"]) for p in plan[side]}
+            if any(asset_key(p["asset"]) in hashes for p in plan[other]):
                 raise ValueError(f"{side}/{other} 存在跨集合重复图像内容，已阻止拆分")
+            if stratified:
+                left = {e for p in plan[side] for e in p["events"]}
+                right = {e for p in plan[other] for e in p["events"]}
+                if left & right & {e for p in plan["test"] if p["video"] in test_only for e in p["events"]}:
+                    raise ValueError("仅测试源与 Train 或 Val 共用明确标记的事件，已阻止拆分")
+                continue
             if {e for p in plan[side] for e in p["events"]} & {e for p in plan[other] for e in p["events"]}:
                 raise RuntimeError(f"{side}/{other} 共用事件，无法安全拆分")
             for video, (_, values, gap, _, _) in clocks.items():
@@ -252,9 +342,16 @@ def partition(frames, videos, digest, mode, limit=None, test_only=(), timelines=
         report["purpose"] = "test_only" if video in test_only else "automatic"
         report["destinations"] = [side for side in SIDES if report[side]["images"]]
         reports[video] = report
-    manifest = {"method": "temporal_three_way_v2", "mode": mode, "seed": SEED, "document_sha256": digest,
+    manifest = {"method": "frame_stratified_three_way_v1" if stratified else "temporal_three_way_v2",
+                "split_strategy": "frames" if stratified else "events",
+                "mode": mode, "seed": SEED, "document_sha256": digest,
                 "selected_videos": videos, "videos": reports, "planned": plan,
                 "test_only_videos": sorted(test_only),
                 "used": {k: [f.id for f in rows] for k, rows in used.items()},
                 "validation": mode == "detection" and any(f.boxes for f in used["valid"])}
+    if stratified:
+        manifest["automatic_holdouts"] = holdouts
+        manifest["test_only_counts"] = {"images": sum(p["video"] in test_only for p in plan["test"]),
+                                        "positive": sum(p["video"] in test_only and p["boxes"] > 0 for p in plan["test"]),
+                                        "boxes": sum(p["boxes"] for p in plan["test"] if p["video"] in test_only)}
     return used, manifest

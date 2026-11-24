@@ -35,6 +35,7 @@ def options():
     parser.add_argument("--limit", type=int, help="Use at most this many images per split for short verification")
     parser.add_argument("--source-video", action="append", help="Retain this IDS video ID (repeat for multiple videos)")
     parser.add_argument("--test-only-video", action="append", default=[], help="Isolate this selected video in Test")
+    parser.add_argument("--split-strategy", choices=["events", "frames"], default="events")
     parser.add_argument("--early-stop", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--roi", nargs=4, type=float, default=(0, 0, 1, 1))
     parser.add_argument("--manifest", type=Path)
@@ -92,7 +93,7 @@ def train(args, plan_only=False):
     print(f"OUTPUT {run}", flush=True)
     mode = "anomaly" if args.model == "anomaly" else "detection"
     splits, split = write_plan(run, summary, frames, videos, mode, args.model, args.early_stop, args.limit,
-                               args.test_only_video)
+                               args.test_only_video, args.split_strategy)
     if plan_only:
         return
     if mode == "anomaly":

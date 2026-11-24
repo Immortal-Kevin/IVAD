@@ -56,7 +56,7 @@ internal sealed partial class TrainerForm : Form
         importer = new WorkerJob(this);
         trainer = new WorkerJob(this);
         verifier = new WorkerJob(this);
-        Text = "IVAD Open Trainer v0.2.7";
+        Text = "IVAD Open Trainer v0.2.8";
         Font = Views.UiFont(10);
         AutoScaleMode = AutoScaleMode.None;
         StartPosition = FormStartPosition.Manual;
@@ -165,7 +165,7 @@ internal sealed partial class TrainerForm : Form
             nav[i] = button;
         }
         Views.Row(grid, new Panel(), -1);
-        var bottom = Views.Text("本地工作区   ·   v0.2.7", 9);
+        var bottom = Views.Text("本地工作区   ·   v0.2.8", 9);
         bottom.ForeColor = subtitle.ForeColor;
         bottom.Margin = Views.Pads(7, 0, 0, 0);
         Views.Row(grid, bottom, 24);

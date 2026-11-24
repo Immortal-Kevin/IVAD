@@ -246,9 +246,9 @@ internal sealed partial class TrainerForm
                 string kind = Workspace.Value(message, "kind");
                 if (kind == "evaluation")
                 {
-                    string map = Workspace.Value(message, "map"), recall = Workspace.Value(message, "recall");
-                    summary = label + " · mAP " + (map == "" ? "不可计算" : map) + " · 召回 " +
-                        (recall == "" ? "不可计算" : recall) + " · 正常误报框 " + Workspace.Value(message, "false_positive_boxes");
+                    summary = label + " · mAP@50 " + FormatMetric(message, "map50") + " · mAP@50–95 " +
+                        FormatMetric(message, "map") + " · 召回 " + FormatMetric(message, "recall") +
+                        " · 正常误报框 " + Workspace.Value(message, "false_positive_boxes");
                     report = Workspace.Value(message, "path");
                 }
                 else if (kind == "error") failure = Workspace.Value(message, "value");

@@ -224,13 +224,15 @@ def source_timelines(summary):
             if row["source_origin"]}
 
 
-def write_plan(run, summary, frames, videos, mode, model, early_stop, limit=None, test_only=()):
+def write_plan(run, summary, frames, videos, mode, model, early_stop, limit=None, test_only=(), strategy="events"):
     from events import emit
 
     splits, manifest = partition(frames, videos, summary["target_sha256"], mode, limit, test_only,
-                                 source_timelines(summary))
+                                 source_timelines(summary), strategy)
     status = ("正常片段校准阈值" if mode == "anomaly" else
               "同源视频留出验证" if manifest["validation"] else "无正例验证")
+    if manifest["split_strategy"] == "frames":
+        status = "同源帧评估" + (" · 无正例验证" if not manifest["validation"] else "")
     stop_status = ("不可用（无正例验证）" if not manifest["validation"] else
                    "仅支持 RF-DETR" if model != "rf" else "开启" if early_stop else "关闭")
     manifest_path = run / "split-manifest.json"
@@ -238,6 +240,14 @@ def write_plan(run, summary, frames, videos, mode, model, early_stop, limit=None
     lines = [f"纳入源视频：{'、'.join(videos.values())}", f"自动拆分 · {status}"]
     if mode == "detection":
         lines.append(f"自动早停 · {stop_status}")
+    if manifest["split_strategy"] == "frames":
+        lines.append("按帧分层允许同一事件的不同帧跨集合（同源帧评估）")
+        for side, label in (("valid", "Val"), ("test", "Test")):
+            row = manifest["automatic_holdouts"][side]
+            lines.append(f"自动 {label} 目标 {row['target_images']} 张 / 正例 {row['target_positive']} 张"
+                         f" · 实得 {row['images']} 张 / 正例 {row['positive']} 张 / 正常 {row['normal']} 张 / {row['boxes']} 框")
+        row = manifest["test_only_counts"]
+        lines.append(f"整段仅测试源 Test {row['images']} 张 / 正例 {row['positive']} 张 / {row['boxes']} 框")
     for index, (video, name) in enumerate(videos.items(), 1):
         stats = manifest["videos"][video]
         purpose = "仅测试" if stats["purpose"] == "test_only" else "参与自动拆分"

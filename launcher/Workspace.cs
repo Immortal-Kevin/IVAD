@@ -20,6 +20,7 @@ public sealed class ProjectSettings
     public List<string> SourceVideos { get; set; }
     public List<string> KnownSourceVideos { get; set; }
     public Dictionary<string, string> SourcePurposes { get; set; }
+    public string DetectionSplit { get; set; }
     public bool? AutoEarlyStop { get; set; }
     public string AnomalyRoi { get; set; }
     public Dictionary<string, string> Artifacts { get; set; }

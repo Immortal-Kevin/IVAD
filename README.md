@@ -23,6 +23,8 @@ Choose the source videos on the IDS page, then choose the mode on the training p
 
 Set each checked source to automatic splitting or Test only. Test-only frames are isolated before assigning Train and Val. Source choices are saved by IDS video ID. New or unmatched IDs require confirmation when replacing an IDS. A training-page preview writes the manifest without running training. Exact image duplicates and overlapping intervals with known common video provenance are rejected across sets.
 
+Box detection also offers frame stratification. It reuses the event split's automatic Val and Test sizes and targets 20% confirmed positives in each, rounded half up. It reserves positive training examples, samples unique images without replacement, and reports target versus actual counts. Different frames of one event may appear across sets, so these results are same-source frame metrics. Test-only sources are appended intact and counted separately. Normal-sample anomaly detection keeps its event-based split.
+
 Normal-sample anomaly detection fits a local OpenCV/NumPy appearance model on confirmed-normal Train frames. It calibrates the threshold on separate confirmed-normal Val frames and then plays back Test to count known event hits and false-alarm episodes on normal clips. Set the ROI as normalized left, top, right, bottom coordinates, or keep the default full frame. The native `.npz` model stores the fixed ROI and threshold for video playback with scores, heatmaps and suspected anomaly boxes. Replay time reflects sampled IDS frame coverage rather than the full source-video runtime.
 
 ## GPU runtimes

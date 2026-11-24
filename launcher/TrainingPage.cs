@@ -11,6 +11,9 @@ using System.Windows.Forms;
 internal sealed partial class TrainerForm
 {
     private readonly ComboBox trainModel = Views.Choice("模型", ModelLabels);
+    private static readonly string[] DetectionSplits = { "events", "frames" };
+    private readonly ComboBox trainSplit = Views.Choice("检测拆分", "按事件分组", "按帧分层（Val / Test 各约 20% 正例）");
+    private readonly Label splitHint = Views.Single("");
     private readonly ComboBox trainDevice = Views.Choice("设备", DeviceLabels);
     private readonly NumericUpDown trainSize = Views.Number("输入尺寸", 64, 2048, 384, 32);
     private readonly NumericUpDown trainBatch = Views.Number("Batch Size", 1, 512, 1, 1);
@@ -47,6 +50,9 @@ internal sealed partial class TrainerForm
         Views.Field(left, "项目名称", trainProject);
         Views.Field(left, "已绑定 IDS", boundIds);
         Views.Field(left, "模式与模型", trainModel);
+        Views.Field(left, "检测拆分", trainSplit);
+        Views.Wrap(left, splitHint);
+        Views.Row(left, splitHint, 32);
         Views.Field(left, "设备", trainDevice);
         Views.Field(left, "输入尺寸", trainSize);
         Views.Field(left, "Batch Size", trainBatch);
@@ -89,6 +95,7 @@ internal sealed partial class TrainerForm
             RefreshModeFields();
             RefreshArtifacts();
         };
+        trainSplit.SelectedIndexChanged += delegate { if (!loading) RefreshModeFields(); };
         trainStart.Click += delegate { StartTraining(false); };
         planStart.Click += delegate { StartTraining(true); };
         trainCancel.Enabled = false;
@@ -154,6 +161,7 @@ internal sealed partial class TrainerForm
     private void LoadTrainingFields()
     {
         SelectKey(Models, trainModel, Project.Model);
+        SelectKey(DetectionSplits, trainSplit, Project.DetectionSplit);
         SelectKey(Devices, trainDevice, Project.Device);
         SetNumber(trainSize, Project.Size, 384);
         SetNumber(trainBatch, Project.Batch, 1);
@@ -171,6 +179,7 @@ internal sealed partial class TrainerForm
     private void StoreTrainingFields()
     {
         Project.Model = Key(Models, trainModel);
+        Project.DetectionSplit = Key(DetectionSplits, trainSplit);
         Project.Device = Key(Devices, trainDevice);
         Project.Size = trainSize.Value;
         Project.Batch = trainBatch.Value;
@@ -186,6 +195,9 @@ internal sealed partial class TrainerForm
         string model = Key(Models, trainModel);
         bool detection = model != "anomaly";
         trainDevice.Enabled = trainSize.Enabled = trainBatch.Enabled = trainEpochs.Enabled = detection;
+        trainSplit.Enabled = detection;
+        splitHint.Text = detection && Key(DetectionSplits, trainSplit) == "frames" ?
+            "同源帧评估 · 同一事件的不同帧可跨集合" : "";
         anomalyRoi.Enabled = !detection;
         earlyStop.Enabled = model == "rf";
     }
@@ -218,6 +230,7 @@ internal sealed partial class TrainerForm
         string manifest = null;
         bool stoppedEarly = false;
         var args = new List<string> { planOnly ? "plan" : "train", "--ids", Project.Ids, "--model", model, "--output", trainingOutput };
+        if (detection) args.AddRange(new[] { "--split-strategy", Project.DetectionSplit });
         if (!planOnly && detection)
             args.AddRange(new[] { "--device", Project.Device, "--size", DecimalArg(Project.Size), "--batch",
                 DecimalArg(Project.Batch), "--epochs", DecimalArg(Project.Epochs) });
@@ -332,10 +345,19 @@ internal sealed partial class TrainerForm
         foreach (var label in metricLabels)
         {
             string text = Workspace.Value(values, label.Key);
-            label.Value.Text = String.IsNullOrEmpty(text) ?
-                (values != null && (label.Key == "map" || label.Key == "map50" || label.Key == "recall") ? "不可计算" : "暂无") :
-                Workspace.Number(values, label.Key).ToString("0.0000");
+            bool validationMetric = label.Key == "map" || label.Key == "map50" || label.Key == "recall";
+            label.Value.Text = validationMetric && values != null ? FormatMetric(values, label.Key) :
+                String.IsNullOrEmpty(text) ? "暂无" : Workspace.Number(values, label.Key).ToString("0.0000");
         }
+    }
+
+    private static string FormatMetric(Dictionary<string, object> values, string key)
+    {
+        double value;
+        if (!Double.TryParse(Workspace.Value(values, key), NumberStyles.Float, CultureInfo.InvariantCulture, out value)
+            || Double.IsNaN(value) || Double.IsInfinity(value)) return "不可计算";
+        return value.ToString(value == 0 ? "0" : Math.Abs(value) < 0.0001 ? "0.###E+0" : "0.0000",
+            CultureInfo.InvariantCulture);
     }
 
     private void AppendLog(string line)

@@ -49,7 +49,8 @@ def evaluate(args):
     videos, frames = select_videos(summary, frames, stored["selected_videos"])
     lookup = {f.id: f for f in frames}
     _, rebuilt = partition(frames, videos, summary["target_sha256"], "detection",
-                           test_only=stored.get("test_only_videos", ()), timelines=source_timelines(summary))
+                           test_only=stored.get("test_only_videos", ()), timelines=source_timelines(summary),
+                           strategy=stored.get("split_strategy", "events"))
     if (stored.get("mode") != "detection" or stored["document_sha256"] != summary["target_sha256"]
             or rebuilt["planned"] != stored["planned"]):
         raise ValueError("IDS 与检测拆分清单不匹配")
@@ -81,7 +82,7 @@ def evaluate(args):
                     normal_frames += 1
                     false_positives += flags
                     normal_flagged += flags > 0
-    ap, recalls = [], []
+    ap, ap50, recalls = [], [], []
     for label, truth in labels.items():
         total = sum(map(len, truth.values()))
         candidates = sorted(predictions[label], key=lambda item: -item[0])
@@ -90,11 +91,14 @@ def evaluate(args):
             tp = np.cumsum([ok for _, ok in paired])
             recall = tp / total
             precision = tp / np.arange(1, len(tp) + 1)
-            ap.append(float(np.mean([precision[recall >= r].max(initial=0) for r in np.linspace(0, 1, 101)])))
+            value = float(np.mean([precision[recall >= r].max(initial=0) for r in np.linspace(0, 1, 101)]))
+            ap.append(value)
             if iou == .5:
+                ap50.append(value)
                 recalls.append(sum(ok for score, ok in paired if score >= threshold) / total)
     result = {"set": args.evaluation_set, "weights_sha256": fingerprint, "threshold": threshold,
-              "images": len(rows), "map": float(np.mean(ap)) if ap else None,
+              "images": len(rows), "map50": float(np.mean(ap50)) if ap50 else None,
+              "map": float(np.mean(ap)) if ap else None,
               "recall": float(np.mean(recalls)) if recalls else None, "normal_frames": normal_frames,
               "normal_frames_flagged": normal_flagged, "false_positive_boxes": false_positives}
     output = args.manifest.parent / f"{args.evaluation_set}-evaluation-{uuid4().hex[:8]}.json"
